@@ -1,32 +1,45 @@
-nt-retention：计算 27B 与 Muse Wonder 改动在最终稿里的留存率
+第 3 步：合并与留存率
 
-一、到时候要放进本文件夹的文件（和 run_retention.py 同一层）
-  nt-final.tex     最终稿（branch1 与 branch2 合并后的版本）
-  nt-branch2.tex   27B 的分支（LOW 分诊、引用核查的修改都在里面，算作 27B）
-  nt.tex           27B 开始改之前的主文件。若和 snapshots/nt-branch1-muse-before.tex 相同可以不放；
-                   不放时脚本会用后者代替并提示。
+先合并：把 MERGE_PROMPT.md 整份交给前沿模型（agent 模式），由它以 baseline.tex 为共同祖先、
+逐单元把 branch1.tex 和 branch2.tex 合并成主文件夹的 final.tex，并写 merge-log.md。
+merge_check.py 是给它（和你）用的辅助：
+  python3 merge_check.py plan               列出每个单元哪边改过、baseline → branch1 的 label 对照（写 merge-plan.md）
+  python3 merge_check.py verify --compile   核对 final.tex：label 与编号环境同 branch1、引用可解析、无冲突标记、能编译
+它不做合并。
+
+再算留存率（下面各节）：计算 27B 与 Muse Wonder 改动在最终稿里的留存率。
+
+一、要用到的文件（都在上一层的主文件夹 nt-final-stage/ 里，不用复制到本文件夹）
+  baseline.tex   27B 的基线。固定用它，不用任何别的稿子代替；运行时校验 SHA-256（8684a76e…），
+                 不一致就停下，说明 baseline 被改过或换错了。
+  branch2.tex    第 2 步 nt27b 产出的 27B 分支（润色、LOW 初筛、引用核查带来的修改都在里面，都算 27B）。
+                 没有时跳过 27B 这一组。
+  final.tex      第 3 步由前沿模型合并出的最终稿（见本文件夹 MERGE_PROMPT.md）。
+                 没有时用主文件夹的 branch1.tex 当最终稿做一次演示。
+  Muse Wonder 那一组用本文件夹 snapshots/ 里的 muse-before → muse-after，不需要准备。
 
 二、运行
   双击 run_retention.py。macOS 上若双击后打开的是编辑器而不是终端，
   可改为双击“双击运行（macOS）.command”（第一次需右键 → 打开），
   或在终端进入本文件夹运行：python3 run_retention.py
+  文件不在默认位置时：python3 run_retention.py --final 某稿.tex --branch2 某分支.tex
   需要 Python 3.10 或更新版本，不需要安装任何第三方包。
-  还没放 nt-final.tex 时，会用 snapshots 里的 v5 当最终稿做一次演示。
 
-三、结果
+三、结果（写在本文件夹）
   retention.md   总表、按单元汇总、逐处明细（含行号，便于抽查）
   retention.csv  同样的明细，可用表格软件打开
 
-四、判定规则
+四、判定规则（与上一版相同）
   改动块：一处连续的改动，按词比较，忽略空白和换行；中间只隔 2 个以内未改动词的改动合并成一块。
   保留：这处改后的文字原样、连续地还在最终稿里（旁边另外加了字仍算保留）。
   撤回：改前的文字回到了那里。对 27B 来说，合并时采用了 branch1 的版本而 branch1 没动过原文，也会算撤回。
   改写：两者都不是。
+  另有按单元（定理/定义及其证明，或标题下的说明文字）的汇总和明细。
 
 五、snapshots 文件夹
-  nt-branch1-muse-before.tex   Muse Wonder 那一轮之前（最早的 nt-branch1.tex）
+  nt-branch1-muse-before.tex   Muse Wonder 那一轮之前（已含 branch1 最早的 7 处小修正，不是分叉点）
   nt-branch1-muse-after.tex    Muse Wonder 那一轮之后（= v0-before-review）
-  v1–v5                        之后各轮的 branch1，仅供参考；v5 为 branch1 定稿
+  v1–v5                        之后各轮的 branch1，仅供参考。branch1 的当前版是主文件夹的 branch1.tex
 
 六、自检
-  python3 test_retention.py    运行 7 个小测试
+  python3 -m unittest discover -s . -p 'test_*.py'    运行 19 个小测试（原 7 个 + 目录结构 6 个 + merge_check 6 个）
