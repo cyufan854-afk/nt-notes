@@ -1,4 +1,49 @@
-# Co-op v0.4.1
+# Co-op v0.4.2
+
+## v0.4.2：Gemini 改走 Antigravity CLI（agy），全程用 Argon，仲裁自动调用
+
+Google 已在 2026-06-18 停止 Gemini CLI 对个人订阅的服务。本版新增 provider kind `antigravity`（官方可执行文件 `agy`），默认配置里的 `gemini` provider 就是它；原来的 `gemini` kind（Gemini CLI）保留，给付费 API key 的情况用。
+
+- **调用方式**：headless，提示从 stdin 以一行 `{"event":"user","message":{"content":…}}` 送入（`--input-format stream-json --output-format stream-json`），取最后一个 `result` 事件的 `response`；`init` / `step_update`（工具调用、思考、半截文字）从不当作回答。也可以在 provider 里写 `"input": "argv"`，改用 `agy -p "<prompt>" --output-format json` 的单个信封（`status` 为 `SUCCESS` 才算成功）。
+- **超时**：`--print-timeout` 默认只有 5 分钟，coop 每次按岗位超时显式传入（比 coop 自己的硬超时少 15 秒，让 agy 先报出超时）；分析岗位 1200 秒，仲裁 1200 秒。单位默认按秒写数字，`agy --help` 若要求别的格式，在 provider 里写 `"print_timeout_unit": "ms"` 或 `"duration"`（如 `1185s`）。
+- **模型**：`--model` 固定传 Argon 的 slug（默认配置写的是 `gemini-4-argon`，**要用 `agy models` 核对**）。每次 `edit run` / `edit resume` 和 `check` 之前先运行 `agy models`，slug 不在列表里就直接停下报错，并列出列表中含 argon 的项；agy 运行中报未知模型也按致命错误停下。不会回退到 Flash。`--effort` 可在 provider 里写 `"effort": "low|medium|high"`，默认不传（用 CLI 默认）。
+- **工具权限**：agy 的工具关不掉。每次调用的工作目录是调用目录下一个空的 `agy-workspace/`（不是放着提示副本和日志的调用目录本身）；shell 命令在 headless 下被软拒绝；从不传 `--dangerously-skip-permissions`。提示里也写明不要读写文件、不要运行命令。
+- **登录与计费**：agy 没有 `login` 子命令，第一次交互运行时登录，之后 headless 读缓存凭据；未登录会报 `authentication required` 退出。订阅模式下子进程去掉 `GEMINI_API_KEY` 等环境变量；`~/.gemini/antigravity-cli/settings.json` 里若设了 `modelProvider: gemini` 加 `GEMINI_API_KEY`，`doctor` 会提示“会走 API 计费”，实际调用会拒绝（`billing`），不会悄悄按 API 计费。coop 只看这个文件里有没有这些键，从不输出键值。
+- **错误分类**：补上 agy 的报错文本：`authentication required`（认证）、`RESOURCE_EXHAUSTED` / quota / rate limit（额度，暂停后 resume）、`unknown model`（模型名，停下）、`deadline exceeded`（超时）。
+
+### 仲裁：默认通过 agy 自动调 Argon
+
+v0.4.1 的“仲裁轮”是攒批次、人工复制到网页版 Argon。现在新建的工作区（`init`）默认 `edit.web.mode = "cli"`：单元没有收敛时，调度器直接调用 `edit.roles.arbiter`（默认 `gemini`，即 agy 上的 Argon），**新开一次调用、作为独立仲裁**，不与该单元的分析者 B 共享对话（每次调用都是独立的 headless 进程，提示里也说明它没有参与之前的讨论）。仲裁的回答和以前导入的网页回复一样，取代这一轮的分析与合并，再经过调度器预检和同一位独立审查，批准后写入，最后两位分析者确认。一个仲裁轮的调用：仲裁 1 次、审查 1 次、两位分析者确认各 1 次。
+
+- 额度用完、被限流：按现有机制整次运行暂停（单元状态 `paused`），额度恢复后 `edit resume EDIT_ID` 接着做，已完成的调用不会重复。
+- agy 额度不够时改用网页人工中转（保留为后备）：`edit resume EDIT_ID --arbiter manual`，之后需要仲裁的单元照 v0.4.1 的方式导出批次、粘贴、导入；额度恢复后可以 `--arbiter cli` 切回来。已导入的网页回复总是优先。
+- 工作区 `config.json` 里没有 `mode` 的（v0.4.1 建的）保持人工中转；v0.4.1 建的未完成会话也保持原行为。演示配置（`init --demo`）没有真实仲裁模型，也是人工中转。
+- 每单元默认最多 32 次调用（3 轮 × 9 + 一个仲裁轮 4 次 + 余量）；`edit units` 的上限估算已计入仲裁轮。
+
+### nt-final-stage 第 4 步：怎么跑、怎么分批
+
+最终稿是主文件夹的 `final.tex`。在本目录（`4-final-review/`）：
+
+```bash
+python3 -m coop --workspace .coop-final init          # 新工作区：规划 deepseek，分析 codex / gemini(agy, Argon)，审查 claude，仲裁 gemini
+python3 -m coop --workspace .coop-final doctor        # 本地检查：agy 是否找得到、settings.json 是否会走 API 计费
+python3 -m coop --workspace .coop-final models gemini --fetch   # 运行 agy models，看 Argon 的 slug；不对就 configure gemini --model <slug>
+python3 -m coop --workspace .coop-final check gemini  # 先核对 slug，再发一个极小请求
+python3 -m coop --workspace .coop-final check codex
+python3 -m coop --workspace .coop-final check claude
+python3 -m coop --workspace .coop-final check deepseek
+```
+
+合并之后几乎每个单元都变了，Argon、Claude、Codex 的订阅额度都要分几天用。建议分两批（同一源文件同时只能有一个未完成的会话，所以一批跑完再开下一批）：
+
+1. **先审 27B 带进来的新内容**：与 branch1 不同的单元（branch2 的润色、初筛和引用修补，以及合并时的取舍）还没有被前沿模型审过。
+   `python3 -m coop --workspace .coop-final edit units ../final.tex --changed-from ../branch1.tex` 看数量和调用估算，
+   先 `edit run ../final.tex --changed-from ../branch1.tex --limit 3` 试跑，满意后去掉 `--limit` 正式跑（新建会话）。
+2. **再审其余单元**：与 branch1 相同的单元在 branch1 上已经过多轮前沿模型审查，优先级低，额度紧时可以放到最后或只抽查：
+   `edit run ../final.tex --unchanged-from ../branch1.tex`。
+   第 1 批里被 coop 改过或保留 27B 文字的单元都与 branch1 不同，不会在第 2 批里重复。
+
+每天跑到某家订阅额度用完，整次运行就暂停（`paused`，报告里写明是哪家）；第二天 `edit resume EDIT_ID` 继续。规模：一个没问题的单元 4 次调用（规划 1、两位分析 2、审查 1），Claude 每单元约 1–3 次、Codex 与 Argon 各约 1–3 次；`edit units` 会给出最少和最多调用数。第一天跑完后看 `edit status` 的调用数，就能估算每家每天能处理多少单元。`merge-log.md` 里记着的单元可以用 `--only 单元id`（可重复）单独先跑。
 
 Python 独立多模型调度器。v0.4 新增 **edit 模式**：把一份 LaTeX 源文件按“定理／定义 + 其后的证明”切成单元，由 1 个规划、2 个分析、1 个独立审查逐轮讨论并直接修改源文件，所有人都同意结束（或到达轮数上限）才处理下一个单元；每次写入前都有 git 备份。v0.3 的 `run` / `batch`（只给结论、不改文件）保持不变，说明见后文。
 
@@ -33,7 +78,8 @@ v0.4.1 新增 **网页仲裁**：日常循环照旧自动跑，只有分析者�
 |---|---|---|
 | 规划（每轮 2 次：清单 + 合并） | deepseek（API） | 调用最多、按量计费最便宜；合并错误会被预检和审查拦下 |
 | 分析者 A | codex（ChatGPT Plus） | 数学推理最强的一路，负责提出修复 |
-| 分析者 B | gemini（CLI 里的 Gemini 3.8 Flash） | 换一家厂商保证意见多样；收不拢的单元升级给网页版 Argon 仲裁（v0.4.1） |
+| 分析者 B | gemini（Antigravity CLI `agy` 上的 Argon，v0.4.2） | 换一家厂商保证意见多样；不再用 Flash |
+| 仲裁（只在不收敛时） | gemini（agy 上的 Argon，新开调用，v0.4.2） | 与分析者 B 不共享对话；额度不够时可改回网页人工中转 |
 | 独立审查（闸门） | claude（Claude Pro） | 不参与其他岗位，保持上下文和厂商都独立 |
 
 在工作区 `config.json` 的 `edit.roles` 改动即可。四家厂商互不重复时独立性最好。
@@ -67,9 +113,9 @@ python3 -m coop --workspace .coop-live edit restore EDIT_ID --to original   # �
 
 结论是模型辅助判断，不是数学认证；“全部同意结束”只表示没有人再提出合格的 blocking 问题。
 
-## v0.4.1：难单元交给网页版 Argon（人工中转）
+## v0.4.1：难单元交给网页版 Argon（人工中转；v0.4.2 起是 `--arbiter manual` 的后备方式）
 
-日常循环照旧自动跑（分析者 B 用 CLI 里的 Gemini 3.8 Flash）。某一轮**没有收敛**，并且属于下面任一情况时，这个单元停下来等网页仲裁，不再继续自动轮次：
+日常循环照旧自动跑。某一轮**没有收敛**，并且属于下面任一情况时，这个单元停下来等网页仲裁，不再继续自动轮次：
 
 - 两位分析者交换意见后，方案（按应用后的效果比较）仍不同；
 - 补丁被独立审查打回（revise / unresolved，且附合格的 blocking 问题）；

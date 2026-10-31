@@ -12,9 +12,11 @@ import urllib.request
 import urllib.error
 from urllib.parse import urlsplit, urlunsplit
 try:
-    from .access import environment_for, parse_kimi, classify_error
+    from .access import (environment_for, parse_kimi, classify_error, parse_antigravity, antigravity_argv,
+                         antigravity_stdin, antigravity_billing, default_executable)
 except ImportError:  # Direct execution in the isolated transport worker.
-    from access import environment_for, parse_kimi, classify_error
+    from access import (environment_for, parse_kimi, classify_error, parse_antigravity, antigravity_argv,
+                        antigravity_stdin, antigravity_billing, default_executable)
 
 
 def _invoke(spec, prompt, stage, folder, timeout):
@@ -80,7 +82,8 @@ def _invoke(spec, prompt, stage, folder, timeout):
     model = spec.get('model')
     stdin = prompt
     env = environment_for(spec)
-    executable = spec.get('executable', kind)
+    executable = spec.get('executable', default_executable(kind))
+    cwd = folder
     if kind == 'codex':
         argv = [executable, 'exec', '--skip-git-repo-check', '--sandbox', 'read-only', '-o', str(result_file)]
         if spec.get('auth_mode') == 'subscription':
@@ -106,6 +109,22 @@ def _invoke(spec, prompt, stage, folder, timeout):
         if model:
             argv += ['--model', model]
         stdin = ''
+    elif kind == 'antigravity':
+        # Official Antigravity CLI, headless. The prompt goes in on stdin as one stream-json user event (coop prompts
+        # reach 180k characters), or as the -p argument when the spec says input=argv. Tools cannot be switched off:
+        # agy may read and write files inside its workspace, so it gets an empty directory of its own, not the call
+        # folder (which holds the prompt copy and the logs). Shell commands are soft-denied headless; coop never passes
+        # --dangerously-skip-permissions.
+        if not model:
+            raise ValueError('model: antigravity provider 必须写明模型 slug（Argon）；不写时 agy 会用自己的默认模型')
+        if spec.get('auth_mode') == 'subscription':
+            billing = antigravity_billing(spec)
+            if billing['billing'] == 'api':
+                raise RuntimeError('billing: ' + billing['note'])
+        argv = antigravity_argv(executable, spec, prompt, timeout)
+        stdin = antigravity_stdin(spec, prompt)
+        cwd = folder / 'agy-workspace'
+        cwd.mkdir(exist_ok=True)
     elif kind == 'command':
         argv = spec['argv']
     else:
@@ -129,7 +148,7 @@ def _invoke(spec, prompt, stage, folder, timeout):
         raise ValueError('argv 必须为非空字符串数组')
     # Logs are files so CLI output does not accumulate in process memory.
     with (folder / 'stdout.log').open('wb') as out, (folder / 'stderr.log').open('wb') as err:
-        proc = subprocess.Popen(argv, stdin=subprocess.PIPE, stdout=out, stderr=err, cwd=folder, env=env)
+        proc = subprocess.Popen(argv, stdin=subprocess.PIPE, stdout=out, stderr=err, cwd=cwd, env=env)
         try:
             proc.communicate(stdin.encode(), timeout=timeout)
         except BaseException:
@@ -151,6 +170,15 @@ def _invoke(spec, prompt, stage, folder, timeout):
     raw = path.read_text(encoding='utf-8')
     if kind == 'kimi':
         raw = parse_kimi(raw)
+    if kind == 'antigravity':
+        result = parse_antigravity(raw, spec.get('input', 'stream-json'))
+        (folder / 'transport.json').write_text(json.dumps({k: v for k, v in result.items() if k != 'response'},
+                                                          ensure_ascii=False), encoding='utf-8')
+        if not result['ok']:
+            error = classify_error(result['error'])
+            raise RuntimeError(f'antigravity status={result["status"]}; {error["category"]}: {error["hint"]}; '
+                               f'{str(result["error"])[:300]}; 查看 {folder / "stdout.log"}')
+        raw = result['response']
     if kind in ('claude', 'gemini'):
         envelope = json.loads(raw)
         if envelope.get('is_error') or envelope.get('error'):

@@ -1,4 +1,4 @@
-coop v0.4.1 test run (2026-10-29, Python 3.13.18; latexmk present, Docker integration skipped)
+coop v0.4.2 test run (2026-10-31, Python 3.13.18; latexmk absent here -> 2 compile tests skipped, Docker integration skipped)
 
 test_categories (test_access.AccessTests.test_categories) ... ok
 test_configure_is_validated_and_preserves_existing_roles (test_access.AccessTests.test_configure_is_validated_and_preserves_existing_roles) ... ok
@@ -8,13 +8,34 @@ test_subscription_scrubs_gateway_env_without_changing_parent (test_access.Access
 test_api_request_and_model_listing_without_network (test_access.EntryIntegration.test_api_request_and_model_listing_without_network) ... ok
 test_demo_check_all_and_missing_provider (test_access.EntryIntegration.test_demo_check_all_and_missing_provider) ... ok
 test_subscription_status_guards_api_route (test_access.EntryIntegration.test_subscription_status_guards_api_route) ... ok
+test_changed_and_unchanged_from_split_the_units_in_two (test_antigravity.BatchSelection.test_changed_and_unchanged_from_split_the_units_in_two) ... ok
+test_arbiter_is_the_configured_provider (test_antigravity.CliArbitrationTests.test_arbiter_is_the_configured_provider) ... ok
+test_manual_web_relay_as_fallback (test_antigravity.CliArbitrationTests.test_manual_web_relay_as_fallback) ... ok
+test_preview_counts_the_arbitration_round (test_antigravity.CliArbitrationTests.test_preview_counts_the_arbitration_round) ... ok
+test_quota_pauses_then_resume_or_manual_fallback (test_antigravity.CliArbitrationTests.test_quota_pauses_then_resume_or_manual_fallback) ... ok
+test_unsettled_unit_is_arbitrated_automatically_in_a_fresh_call (test_antigravity.CliArbitrationTests.test_unsettled_unit_is_arbitrated_automatically_in_a_fresh_call) ... ok
+test_configure_can_switch_between_the_two_google_entries (test_antigravity.ConfigTests.test_configure_can_switch_between_the_two_google_entries) ... ok
+test_default_config_uses_argon_through_agy_everywhere (test_antigravity.ConfigTests.test_default_config_uses_argon_through_agy_everywhere) ... ok
+test_v041_config_without_mode_keeps_the_manual_relay (test_antigravity.ConfigTests.test_v041_config_without_mode_keeps_the_manual_relay) ... ok
+test_agy_error_texts (test_antigravity.ParserTests.test_agy_error_texts) ... ok
+test_print_timeout_formats (test_antigravity.ParserTests.test_print_timeout_formats) ... ok
+test_variants_of_the_result_event (test_antigravity.ParserTests.test_variants_of_the_result_event) ... ok
+test_unlisted_slug_stops_before_anything_is_created (test_antigravity.PreflightBlocksSession.test_unlisted_slug_stops_before_anything_is_created) ... ok
+test_api_billing_in_settings_is_refused_in_subscription_mode (test_antigravity.TransportTests.test_api_billing_in_settings_is_refused_in_subscription_mode) ... ok
+test_argv_mode_uses_the_json_envelope (test_antigravity.TransportTests.test_argv_mode_uses_the_json_envelope) ... ok
+test_check_command_runs_models_then_the_probe (test_antigravity.TransportTests.test_check_command_runs_models_then_the_probe) ... ok
+test_errors_are_classified (test_antigravity.TransportTests.test_errors_are_classified) ... ok
+test_model_slug_must_be_listed_and_never_falls_back (test_antigravity.TransportTests.test_model_slug_must_be_listed_and_never_falls_back) ... ok
+test_preflight_names_the_provider (test_antigravity.TransportTests.test_preflight_names_the_provider) ... ok
+test_stream_json_over_stdin_returns_the_result_text_only (test_antigravity.TransportTests.test_stream_json_over_stdin_returns_the_result_text_only) ... ok
+test_subscription_mode_hides_gemini_api_key_from_agy (test_antigravity.TransportTests.test_subscription_mode_hides_gemini_api_key_from_agy) ... ok
 test_batch_commands (test_cli.BatchCLI.test_batch_commands) ... ok
 test_budget_pause_then_resume (test_cli.Integration.test_budget_pause_then_resume) ... ok
 test_complete_and_resume_without_repeating_calls (test_cli.Integration.test_complete_and_resume_without_repeating_calls) ... ok
 test_missing_file_does_not_start_run (test_cli.Integration.test_missing_file_does_not_start_run) ... ok
 test_unapproved_memory_is_not_retrieved (test_cli.Integration.test_unapproved_memory_is_not_retrieved) ... ok
-test_compile_failure_blocks_the_write (test_editloop.CompileTests.test_compile_failure_blocks_the_write) ... ok
-test_new_undefined_reference_blocks_the_write (test_editloop.CompileTests.test_new_undefined_reference_blocks_the_write) ... ok
+test_compile_failure_blocks_the_write (test_editloop.CompileTests.test_compile_failure_blocks_the_write) ... skipped 'needs latexmk'
+test_new_undefined_reference_blocks_the_write (test_editloop.CompileTests.test_new_undefined_reference_blocks_the_write) ... skipped 'needs latexmk'
 test_clean_units_cost_four_calls_and_leave_source (test_editloop.EditLoopTests.test_clean_units_cost_four_calls_and_leave_source) ... ok
 test_crash_between_write_and_backup_commit_is_recovered (test_editloop.EditLoopTests.test_crash_between_write_and_backup_commit_is_recovered) ... ok
 test_disagreement_runs_exchange_merge_and_confirm (test_editloop.EditLoopTests.test_disagreement_runs_exchange_merge_and_confirm) ... ok
@@ -98,6 +119,6 @@ test_revision_is_bounded_and_not_promoted (test_workflow.Workflow.test_revision_
 test_same_job_is_locked (test_workflow.Workflow.test_same_job_is_locked) ... ok
 
 ----------------------------------------------------------------------
-Ran 96 tests in 11.078s
+Ran 117 tests in 14.748s
 
-OK (skipped=1)
+OK (skipped=3)

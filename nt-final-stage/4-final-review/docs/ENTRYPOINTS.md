@@ -1,4 +1,4 @@
-# 五家入口适配：v0.3
+# 五家入口适配：v0.3（Gemini 一行 v0.4.2 更新）
 
 接入方案以 2026-10-27 官方文档为依据。程序已经有对应适配器和离线测试；你账户的真实登录、模型权限和额度需要在你的 Mac 上验证。CLI 可选模型不一定与网页聊天产品相同，工具不会把网页模型名猜成 CLI 模型 ID。
 
@@ -6,7 +6,8 @@
 |---|---|---|---|
 | ChatGPT Plus | Codex CLI | `codex login`，选择 ChatGPT 账户 | `codex exec`，stdin 输入，最终结果文件 |
 | Claude Pro | Claude Code | `claude auth login`，claude.ai 账户 | `claude -p`，JSON `result` |
-| Gemini Pro / Google AI Pro | Gemini CLI | `gemini`，Sign in with Google，选订阅所在账户 | headless JSON `response`，复用已缓存登录 |
+| Google AI Pro（Gemini Argon） | Antigravity CLI `agy`（v0.4.2 起；Gemini CLI 已停止个人订阅服务） | 第一次交互运行 `agy` 时登录，之后读缓存凭据 | headless：stdin stream-json，取 `result` 事件的 `response`；`--model` 固定 Argon，`--print-timeout` 按岗位超时 |
+| Gemini API key（付费） | Gemini CLI（kind `gemini`，保留） | `GEMINI_API_KEY`，`auth_mode: native` | headless JSON `response` |
 | Kimi Pro | Kimi Code CLI | `kimi login`，浏览器设备授权 | `kimi -p`，JSONL Assistant 消息 |
 | DeepSeek API | 官方 HTTPS API | `DEEPSEEK_API_KEY` 环境变量 | Chat Completions；可查询 `/models` |
 
@@ -138,3 +139,19 @@ v0.3 保留入口命令，但数学正文协议已变化。请在独立目录与
 - [Kimi 命令](https://www.kimi.com/code/docs/en/kimi-code-cli/reference/kimi-command.html)
 - [Kimi 自定义 agent 的工具限制](https://www.kimi.com/code/docs/en/kimi-code-cli/customization/agents.html)
 - [DeepSeek 模型列表](https://api-docs.deepseek.com/api/list-models/)
+
+## v0.4.2：Antigravity CLI（agy）
+
+- 依据：antigravity.google/docs/cli/headless（2026-10）。本工具按文档写了适配和用假 `agy` 的离线测试；事件的实际字段以你 Mac 上的输出为准。
+- 在 Mac 上核对：
+
+```bash
+agy --help                      # 看 -p 是否带值、--print-timeout 的单位、--input-format / --output-format / --effort / --disable-slash-commands 是否都在
+agy models                      # 找 Argon 的 slug
+python3 -m coop --workspace .coop-final configure gemini --model <Argon 的 slug>
+python3 -m coop --workspace .coop-final check gemini
+printf '%s\n' '{"event":"user","message":{"content":"Reply with the single word OK."}}' | agy -p --input-format stream-json --output-format stream-json --model <slug> --print-timeout 120
+```
+
+- 最后一条若报参数错误（例如 `-p` 必须带提示文字），把 provider 改成 `"input": "argv"`（提示改作 `-p` 的参数，输出用 `--output-format json`）；macOS 的参数总长上限约 1 MB，coop 最长的提示也放得下。
+- `configure gemini --kind gemini` / `--kind antigravity` 在两种入口之间切换（切到 antigravity 时同时给 `--model`）。

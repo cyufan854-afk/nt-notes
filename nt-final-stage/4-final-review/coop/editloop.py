@@ -43,13 +43,15 @@ BLOCKING = ('math_error', 'missing_hypothesis', 'missing_step', 'broken_referenc
             'contradiction', 'notation_conflict', 'latex_error')
 NOTES = ('style', 'clarity', 'typography', 'other')
 ACCEPTED = ('approve', 'approve_with_notes')
-EDIT_KINDS = ('analysis', 'exchange', 'merge')
+EDIT_KINDS = ('analysis', 'exchange', 'merge', 'arbitration')
 LABEL_RE = re.compile(r'\\label\{([^}]+)\}')
 REF_RE = re.compile(r'\\(?:ref|eqref|cref|Cref|autoref|pageref)\*?\{([^}]+)\}')
 EDIT_OPEN = re.compile(r'^<<<COOP_EDIT(?:[ \t]+([^>\s]+))?>>>[ \t]*$')
 OLD_MARK, NEW_MARK, END_MARK = '<<<COOP_OLD>>>', '<<<COOP_NEW>>>', '<<<COOP_EDIT_END>>>'
 UNIT_BEGIN, UNIT_END = '<<<UNIT_TEXT_BEGIN>>>', '<<<UNIT_TEXT_END>>>'
-FATAL_HINTS = ('rate_limit', 'authentication', 'quota', '额度', '未设置环境变量', '调用已取消')
+FATAL_HINTS = ('rate_limit', 'authentication', 'quota', '额度', '未设置环境变量', '调用已取消', '; model:', 'model: ',
+               'billing', '; cli_version:')
+ARBITER_MODES = ('cli', 'manual')
 
 
 class EditError(ValueError):
@@ -74,7 +76,7 @@ def edit_defaults():
         # Four different vendors; Kimi is deliberately unused.  The reviewer gate gets the
         # model that is not otherwise involved, the planner (two calls per round) runs on
         # the pay-per-token API, and the analysts carry the subscription quota.
-        'roles': {'planner': 'deepseek', 'analysts': ['codex', 'gemini'], 'reviewer': 'claude'},
+        'roles': {'planner': 'deepseek', 'analysts': ['codex', 'gemini'], 'reviewer': 'claude', 'arbiter': 'gemini'},
         'check_command': ['latexmk', '-pdf', '-interaction=nonstopmode', '-halt-on-error',
                           '-outdir={outdir}', '{file}'],
         'check_timeout': 600,
@@ -86,12 +88,15 @@ def edit_defaults():
         'history_chars': 30000,
         'max_unit_chars': 40000,
         # Units the automatic loop cannot settle (analysts still disagree after the
-        # exchange, the reviewer rejects the patch, or the unit oscillates) are parked and
-        # exported in batches for a stronger model used by hand in its web app; the reply is
-        # imported and replayed as an arbitration round that still goes through the
-        # precheck and the same independent reviewer.
+        # exchange, the reviewer rejects the patch, or the unit oscillates) get an arbitration
+        # round that still goes through the precheck and the same independent reviewer.
+        # mode "cli": the arbiter provider (roles.arbiter, Gemini Argon through the official
+        # agy CLI) is called in a fresh context of its own.  mode "manual": the v0.4.1 relay,
+        # units are parked and exported in batches for the web app, the reply is imported.
+        # A config without "mode" keeps the v0.4.1 manual relay; `coop init` writes "cli".
         'web': {
             'enabled': True,
+            'mode': 'manual',
             'after_rounds': 1,      # escalate from this ordinary round on (1 = at the first failure)
             'max_per_unit': 1,      # arbitrations per unit; afterwards the ordinary loop continues
             'batch_units': 8,
@@ -116,6 +121,8 @@ def web_config(user, max_rounds):
         raise ValueError('edit.web.after_rounds 不能大于 edit.max_rounds')
     if not isinstance(w['label'], str) or not w['label'].strip():
         raise ValueError('edit.web.label 必须为非空字符串')
+    if w['mode'] not in ARBITER_MODES:
+        raise ValueError('edit.web.mode 只能是 cli（通过 roles.arbiter 自动调用）或 manual（网页人工中转）')
     return w
 
 
@@ -149,10 +156,22 @@ def edit_config(cfg):
     analysts = roles.get('analysts')
     if not isinstance(analysts, list) or len(analysts) != 2 or analysts[0] == analysts[1]:
         raise ValueError('edit.roles.analysts 需要两个不同的 provider')
-    for name in [roles.get('planner'), *analysts, roles.get('reviewer')]:
+    names = [roles.get('planner'), *analysts, roles.get('reviewer')]
+    if e['web']['enabled'] and e['web']['mode'] == 'cli':
+        names.append(roles.get('arbiter'))
+    for name in names:
         if name not in cfg['providers']:
             raise ValueError('edit.roles 引用了不存在的 provider: ' + str(name))
     return e
+
+
+def role_providers(e):
+    """Provider names this edit configuration calls (the arbiter only when it is called automatically)."""
+    roles = e['roles']
+    names = [roles['planner'], *roles['analysts'], roles['reviewer']]
+    if e['web']['enabled'] and e['web'].get('mode') == 'cli':
+        names.append(roles['arbiter'])
+    return list(dict.fromkeys(names))
 
 
 # ---------------------------------------------------------------- units
@@ -225,12 +244,13 @@ def split_units(text, e):
     return units
 
 
-def select_units(units, only=(), start=None, limit=None, changed_from=None):
+def select_units(units, only=(), start=None, limit=None, changed_from=None, unchanged_from=None):
     ids = [u['id'] for u in units]
     for x in list(only) + ([start] if start else []):
         if x not in ids:
             raise ValueError('未知单元 id: ' + x)
     old = norm_ws(changed_from) if changed_from is not None else None
+    kept = norm_ws(unchanged_from) if unchanged_from is not None else None
     began, count = start is None, 0
     for u in units:
         began = began or u['id'] == start
@@ -241,6 +261,8 @@ def select_units(units, only=(), start=None, limit=None, changed_from=None):
             reason = '未在 --only 中'
         elif old is not None and norm_ws(u['text']) in old:
             reason = '与 --changed-from 文件相同'
+        elif kept is not None and norm_ws(u['text']) not in kept:
+            reason = '与 --unchanged-from 文件不同'
         elif limit is not None and count >= limit:
             reason = '超出 --limit'
         u['selected'] = not reason
@@ -558,12 +580,16 @@ def _brief(output, limit):
     return f'问题：{_issues_line(output)}\n' + _clip(output['body'], limit)
 
 
+def _arb_tag(rec):
+    return '（仲裁）' if rec.get('via') == 'cli' else '（网页仲裁）'
+
+
 def history_text(records, e, for_reviewer=False):
     if not records:
         return '（这是第 1 轮，没有历史。）'
     parts = []
     for rec in records:
-        p = [f'### 第 {rec["round"]} 轮' + ('（网页仲裁）' if rec.get('web') else '')]
+        p = [f'### 第 {rec["round"]} 轮' + (_arb_tag(rec) if rec.get('web') else '')]
         if not for_reviewer and rec.get('web'):
             p.append('仲裁者方案与理由：' + _brief(rec.get('arbitration'), 3000))
         elif not for_reviewer:
@@ -664,6 +690,7 @@ class Session:
         self.e = self.cfg['edit']
         # Sessions created before web arbitration existed keep their frozen behaviour.
         self.e.setdefault('web', {**edit_defaults()['web'], 'enabled': False})
+        self.e['web'].setdefault('mode', 'manual')   # v0.4.1 sessions: the manual web relay they were created with
         self.baseline = json.loads(self.row['baseline'])
         self.source = Path(self.row['source'])
         self.folder = store.root / sid
@@ -1104,7 +1131,7 @@ def _web_round(S, u, r, st, answer):
     patch = parse_edits(answer['body'])
     arbiter_done = vote(answer, '仲裁', notes)
     pre = S.checkpoint(uid, r, 'precheck', lambda: S.precheck(start, patch, _registry(past, answer)))
-    record = {'round': r, 'web': True, 'arbitration': answer, 'patch_proposed': patch, 'patch_kept': pre['kept'],
+    record = {'round': r, 'web': True, 'via': answer.get('via', 'manual'), 'arbitration': answer, 'patch_proposed': patch, 'patch_kept': pre['kept'],
               'precheck': pre, 'review': None, 'commit': '', 'confirm': [None, None], 'notes': notes, 'triggers': triggers}
     if not pre['ok']:
         record['votes'] = {'仲裁': arbiter_done, 'precheck': False}
@@ -1157,6 +1184,46 @@ def _web_round(S, u, r, st, answer):
     return {'converged': all(votes.values()), 'triggers': triggers}
 
 
+def _arbiter_prompt(S, u, reason, file_text):
+    """One unit, the same material as a web batch packet, answered as one plain COOP frame."""
+    e = S.e
+    uid = u['unit']
+    return (
+        f'你是 coop 编辑循环中的「仲裁」岗位（{e["web"]["label"]}）。这是一次全新的对话：你没有参与过这个单元之前的讨论，'
+        '与分析者不共享任何上下文。下面这个单元先经过了自动循环：规划者冻结问题清单，两位分析者独立给出修改并交换意见，规划者合并，'
+        '调度器预检，独立审查把关。它没有收敛（原因见下）。请独立裁决并给出最终补丁。你的补丁仍要经过调度器预检'
+        '（逐字定位、label、全文编译）和同一位独立审查，批准后才写入源文件；之后两位分析者会被问是否同意结束。\n'
+        '所需资料全部在本消息里：不要读写文件、不要运行命令、不要联网或调用任何工具。\n\n'
+        + _rules(e) +
+        '\n你要做的：\n'
+        '1. 逐条裁决历史中仍有争议的问题（规划清单 P…、分析者 A…/B…、合并 M…、审查 R…）：成立还是不成立，给出数学理由。'
+        '分析者和审查者都可能出错。\n'
+        '2. 写出完整的最终补丁（不是在某位分析者方案上的增量）。OLD 必须从「可编辑单元」逐字复制——自动循环可能已经写入过修改，'
+        '以那里的当前原文为准。每个修改块标注问题 id；你新发现的问题用 G1、G2…。没有需要修改的地方就不写修改块。\n'
+        '3. 元数据 issues 列出你认定成立的 blocking 问题（包括你已修复的和仍需人工处理的），每条都要有 category 和 location。'
+        '修改块标注的问题 id 若既不在你的 issues 里、也不是历史中的 blocking 问题，会被调度器丢弃。'
+        'done=true 表示按你的补丁处理后此单元不再有 blocking 问题。\n'
+        '4. 不执行代码，不要写 python coop-check 脚本；需要计算就在说明里推演。\n\n'
+        + EDIT_FORMAT + _frame('arbitration') +
+        _web_shared(file_text, e) + _web_packet(S, u, reason, file_text) +
+        f'\n\n===== 单元 {uid} 到此结束 =====\n只输出一个 COOP 帧（kind 为 arbitration），帧外不要写任何文字。\n')
+
+
+def arbitrate(S, u, rnd, reason, current):
+    """Automatic arbitration (edit.web.mode = cli): one call to roles.arbiter in a fresh context, cached like every
+    other stage, then recorded as the answer of round ``rnd`` exactly like an imported web reply."""
+    uid = u['unit']
+    unit = {**u, 'current': current}
+    out = S.ask(u['job'], f'edit-r{rnd}-arbitration', 'arbiter', 'arbitration',
+                lambda: _arbiter_prompt(S, unit, reason, S.source_text()), 'arbitration')
+    out = {**out, 'meta': {**out['meta'], 'check': False}, 'via': 'cli'}
+    with S.store.db() as db:
+        db.execute('INSERT OR REPLACE INTO edit_web(session,unit,round,state,reason,batch,answer,raw,created,imported) '
+                   'VALUES(?,?,?,"answered",?,0,?,?,?,?)',
+                   (S.sid, uid, rnd, reason, dumps(out), out['body'], time.time(), time.time()))
+    return out
+
+
 def run_unit(S, u):
     """Ordinary rounds until everyone agrees; a round that fails for a reason a stronger model can
     settle parks the unit as ``awaiting_web`` (its answer is replayed as the next round on resume)."""
@@ -1180,9 +1247,11 @@ def run_unit(S, u):
             return ('done_edited' if st['edited'] else 'done_unchanged'), ''
         if (res['triggers'] and w['enabled'] and arbitrations < w['max_per_unit']
                 and normal >= w['after_rounds']):
-            answer = S.web_answer(uid, r + 1)
+            reason = '；'.join(res['triggers'])
+            answer = S.web_answer(uid, r + 1)          # an imported web reply always wins
+            if answer is None and w['mode'] == 'cli':
+                answer = arbitrate(S, u, r + 1, reason, st['current'])
             if answer is None:
-                reason = '；'.join(res['triggers'])
                 S.web_wait(uid, r + 1, reason)
                 return 'awaiting_web', reason
             continue
@@ -1205,27 +1274,34 @@ def load_config(store):
     cfg['edit'] = edit_config(cfg)
     # Workspaces created by v0.3 lack timeouts for the new roles; analysts' exchange and the
     # merge are as long as an analysis, so do not let them fall back to the short global value.
-    defaults = {'exchange0': 1200, 'exchange1': 1200, 'merge': 900, 'confirm0': 600, 'confirm1': 600}
+    defaults = {'exchange0': 1200, 'exchange1': 1200, 'merge': 900, 'confirm0': 600, 'confirm1': 600, 'arbitration': 1200}
     cfg['timeouts'] = {**defaults, **cfg.get('timeouts', {})}
     return cfg
 
 
-def preview(store, source, only=(), start=None, limit=None, changed_from=None):
+def _read_opt(path):
+    return Path(path).expanduser().read_bytes().decode('utf-8') if path else None
+
+
+def preview(store, source, only=(), start=None, limit=None, changed_from=None, unchanged_from=None):
     cfg = load_config(store)
     text = Path(source).expanduser().read_bytes().decode('utf-8')
-    old = Path(changed_from).expanduser().read_bytes().decode('utf-8') if changed_from else None
-    units = select_units(split_units(text, cfg['edit']), only, start, limit, old)
+    units = select_units(split_units(text, cfg['edit']), only, start, limit, _read_opt(changed_from), _read_opt(unchanged_from))
     chosen = [u for u in units if u['selected']]
     big = [u['id'] for u in chosen if len(u['text']) > cfg['edit']['max_unit_chars']]
+    w = cfg['edit']['web']
+    # an arbitration round: the arbiter's own call (cli mode) + review + two confirmations
+    extra = (4 if w['mode'] == 'cli' else 3) * w['max_per_unit'] if w['enabled'] else 0
     return {'units': len(units), 'selected': len(chosen), 'too_large': big,
             'calls_minimum': 4 * len(chosen),
-            'calls_upper_bound': len(chosen) * min(cfg['edit']['max_calls_per_unit'], 9 * cfg['edit']['max_rounds']),
+            'calls_upper_bound': len(chosen) * min(cfg['edit']['max_calls_per_unit'], 9 * cfg['edit']['max_rounds'] + extra),
             'roles': cfg['edit']['roles'], 'scope': cfg['edit']['scope'], 'web': cfg['edit']['web'],
             'list': [{'id': u['id'], 'kind': u['kind'], 'chars': len(u['text']), 'selected': u['selected'],
                       'skip_reason': u['skip_reason']} for u in units]}
 
 
-def create(store, source, only=(), start=None, limit=None, changed_from=None, project='default', max_calls=None):
+def create(store, source, only=(), start=None, limit=None, changed_from=None, project='default', max_calls=None,
+           unchanged_from=None):
     ensure_tables(store)
     cfg = load_config(store)
     if max_calls is not None:
@@ -1234,6 +1310,8 @@ def create(store, source, only=(), start=None, limit=None, changed_from=None, pr
         cfg['edit']['max_calls_per_unit'] = max_calls
     if shutil.which('git') is None:
         raise ValueError('需要 git 来备份源文件')
+    from .access import preflight
+    preflight(cfg, role_providers(cfg['edit']))   # e.g. the Argon slug must be listed by `agy models`; no fallback
     src = Path(source).expanduser().resolve()
     if not src.is_file():
         raise ValueError('源文件不存在: ' + str(src))
@@ -1247,8 +1325,7 @@ def create(store, source, only=(), start=None, limit=None, changed_from=None, pr
                           (str(src),)).fetchone()
     if busy:
         raise ValueError(f'该源文件已有未完成的编辑会话 {busy[0]}；先 resume 完成它，避免两份备份互相冲突')
-    old = Path(changed_from).expanduser().read_bytes().decode('utf-8') if changed_from else None
-    units = select_units(split_units(text, cfg['edit']), only, start, limit, old)
+    units = select_units(split_units(text, cfg['edit']), only, start, limit, _read_opt(changed_from), _read_opt(unchanged_from))
     if not any(u['selected'] for u in units):
         raise ValueError('没有选中任何单元')
     sid = 'edit-' + uuid.uuid4().hex[:12]
@@ -1316,12 +1393,44 @@ def _final_state(S, error=''):
 JOB_STATE = {'done_unchanged': 'completed', 'done_edited': 'completed', 'awaiting_web': 'paused'}
 
 
-def execute(store, sid, add_calls=0, accept_external=False):
+ARBITER_LABELS = {'cli': 'Gemini Argon（Antigravity CLI）', 'manual': 'Gemini Argon（网页版）'}
+
+
+def set_arbiter_mode(store, sid, mode):
+    """Switch a session's arbitration between the automatic CLI call and the manual web relay (e.g. when the Argon
+    quota of the CLI runs out, or back again). Applies to arbitrations that have not been answered yet."""
+    if mode not in ARBITER_MODES:
+        raise ValueError('仲裁方式只能是 cli 或 manual')
+    S = Session(store, sid)
+    cfg = S.cfg
+    w = cfg['edit'].setdefault('web', {**edit_defaults()['web'], 'enabled': False})
+    if not w.get('enabled'):
+        raise ValueError('这个会话没有开启仲裁（edit.web.enabled=false）')
+    if mode == 'cli':
+        arbiter = cfg['edit']['roles'].get('arbiter') or edit_defaults()['roles']['arbiter']
+        if arbiter not in cfg['providers']:
+            raise ValueError('会话配置里没有仲裁 provider ' + arbiter)
+        cfg['edit']['roles']['arbiter'] = arbiter
+        cfg['timeouts'].setdefault('arbitration', 1200)
+    if w.get('label') in ARBITER_LABELS.values():
+        w['label'] = ARBITER_LABELS[mode]
+    w['mode'] = mode
+    with store.db() as db:
+        db.execute('UPDATE edit_sessions SET config=? WHERE id=?', (dumps(cfg), sid))
+    return mode
+
+
+def execute(store, sid, add_calls=0, accept_external=False, arbiter_mode=None):
     if add_calls < 0:
         raise ValueError('add-calls-per-unit 不能为负数')
     S = Session(store, sid)
     if S.row['state'] == 'restored':
         raise ValueError('这个会话已经 restore 过；请新建会话')
+    if arbiter_mode is not None and arbiter_mode != S.e['web'].get('mode'):
+        set_arbiter_mode(store, sid, arbiter_mode)
+        S = Session(store, sid)
+    from .access import preflight
+    preflight(S.cfg, role_providers(S.e))
     with S.locked():
         units = S.units()
         open_jobs = [u['job'] for u in units if u['selected'] and u['job'] and u['state'] not in FINAL]
@@ -1337,7 +1446,8 @@ def execute(store, sid, add_calls=0, accept_external=False):
             for u in S.units():
                 if not u['selected'] or u['state'] in FINAL:
                     continue
-                if u['state'] == 'awaiting_web' and (S.web_open().get(u['unit']) or {}).get('state') != 'answered':
+                if (u['state'] == 'awaiting_web' and S.e['web']['mode'] == 'manual'
+                        and (S.web_open().get(u['unit']) or {}).get('state') != 'answered'):
                     continue  # still waiting for the web reply; other units go on
                 S.set_unit(u['unit'], state='running', error='')
                 try:
@@ -1427,9 +1537,11 @@ def write_report(S):
     lines = [f'# 编辑会话报告 {S.sid}', f'源文件：`{S.source}`', f'状态：{st["state"]}' + (f'；暂停原因：{st["error"]}' if st['error'] else ''),
              f'岗位：规划 {e["roles"]["planner"]}，分析 {" / ".join(e["roles"]["analysts"])}，审查 {e["roles"]["reviewer"]}；'
              f'范围 {e["scope"]}；每单元最多 {e["max_rounds"]} 轮、{e["max_calls_per_unit"]} 次调用；共 {st["calls"]} 次调用。',
-             (f'网页仲裁：开启。交换意见后方案仍不同、补丁被审查打回或来回修改、且该轮没有收敛的单元，从第 {w["after_rounds"]} 轮起'
-              f'交给 {w["label"]} 人工中转仲裁（每单元最多 {w["max_per_unit"]} 次，不计入上面的轮数）；仲裁补丁同样经过预检和独立审查。'
-              if w['enabled'] else '网页仲裁：关闭。'),
+             ((f'仲裁：开启（自动调用 {e["roles"].get("arbiter")}，{w["label"]}，每次新开上下文）。' if w.get('mode') == 'cli' else
+               f'仲裁：开启（{w["label"]}，网页人工中转）。') +
+              f'交换意见后方案仍不同、补丁被审查打回或来回修改、且该轮没有收敛的单元，从第 {w["after_rounds"]} 轮起交给仲裁'
+              f'（每单元最多 {w["max_per_unit"]} 次，不计入上面的轮数）；仲裁补丁同样经过预检和独立审查。'
+              if w['enabled'] else '仲裁：关闭。'),
              f'备份仓库：`{S.repo}`。每次写入前的版本都是它的上一个提交；`git -C "{S.repo}" log --oneline` 查看，'
              f'`coop edit restore {S.sid} --to original` 回到原始版本。',
              '以下结论是模型辅助判断，不是数学认证；“全部同意结束”只表示没有人再提出合格的 blocking 问题。',
@@ -1467,7 +1579,7 @@ def write_report(S):
         for rec in S.records(u['unit']):
             pre = rec.get('precheck') or {}
             votes = rec.get('votes') or {}
-            row = [f'**第 {rec["round"]} 轮' + ('（网页仲裁）' if rec.get('web') else '') + '**',
+            row = [f'**第 {rec["round"]} 轮' + (_arb_tag(rec) if rec.get('web') else '') + '**',
                    '结束投票：' + ', '.join(f'{k}={v}' for k, v in (rec.get('votes') or {}).items()),
                    '预检：' + ('通过' if pre.get('ok') else '未通过 — ' + pre.get('reason', '')),
                    '审查：' + str(rec.get('verdict', '—')),

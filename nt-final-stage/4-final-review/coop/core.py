@@ -14,6 +14,9 @@ from . import execution as executor
 from .workflow import run_workflow
 
 VERSION = 'v3'
+# Gemini runs on Argon everywhere (analysis and arbitration) through the official Antigravity CLI. The slug must be the
+# Argon entry of `agy models` on the user's machine; coop checks it before every run and never falls back to Flash.
+ARGON_SLUG = 'gemini-4-argon'
 
 
 class ExecutionUnavailable(RuntimeError):
@@ -34,14 +37,24 @@ def digest(x):
 
 def default_config(demo=False):
     from .editloop import edit_defaults  # local import: editloop imports core
+    edit = edit_defaults()
+    providers = {k: {'kind': 'demo' if demo else k, 'model': None, 'auth_mode': 'subscription' if not demo else 'native'}
+                 for k in ['claude', 'codex', 'gemini', 'kimi']}
+    if not demo:
+        # Gemini through the Antigravity CLI on Argon; arbitration is called automatically (the demo has no real
+        # arbiter and keeps the manual web relay). The Gemini CLI kind stays available for a paid API key.
+        providers['gemini'] = {'kind': 'antigravity', 'executable': 'agy', 'model': ARGON_SLUG, 'auth_mode': 'subscription',
+                               'input': 'stream-json', 'effort': None}
+        edit['web'].update(mode='cli', label='Gemini Argon（Antigravity CLI）')
+        edit['max_calls_per_unit'] = 32   # 3 rounds x 9 calls + an arbitration round (arbiter, review, 2 confirmations)
     return {'protocol_version': 3, 'demo': demo, 'timeout': 600,
             'timeouts': {'planner': 600, 'analysis0': 1200, 'analysis1': 1200, 'revision0': 1200, 'revision1': 1200, 'reviewer': 600,
-                         'exchange0': 1200, 'exchange1': 1200, 'merge': 900, 'confirm0': 600, 'confirm1': 600},
-            'edit': edit_defaults(),
+                         'exchange0': 1200, 'exchange1': 1200, 'merge': 900, 'confirm0': 600, 'confirm1': 600, 'arbitration': 1200},
+            'edit': edit,
             'execution': executor.defaults(), 'max_calls': 12, 'max_rounds': 1,
             'max_prompt_chars': 180000,
             'roles': {'planner': 'claude', 'analysts': ['codex', 'gemini'], 'reviewer': 'claude'},
-            'providers': {**{k: {'kind': 'demo' if demo else k, 'model': None, 'auth_mode': 'subscription' if not demo else 'native'} for k in ['claude', 'codex', 'gemini', 'kimi']},
+            'providers': {**providers,
                           'deepseek': {'kind': 'demo' if demo else 'api', 'url': 'https://api.deepseek.com/chat/completions', 'model': 'deepseek-flash', 'key_env': 'DEEPSEEK_API_KEY', 'max_tokens': 8192, 'auth_mode': 'api'}}}
 
 

@@ -33,6 +33,7 @@ def main():
         cmd.add_argument('--from', dest='start', help='从这个单元 id 开始')
         cmd.add_argument('--limit', type=int, help='最多处理多少个单元（试跑用）')
         cmd.add_argument('--changed-from', help='只处理与这份旧文件不同的单元')
+        cmd.add_argument('--unchanged-from', help='只处理与这份文件相同的单元（与 --changed-from 互补，用来分批）')
         if name == 'run':
             cmd.add_argument('--project', default='default')
             cmd.add_argument('--max-calls-per-unit', type=int)
@@ -40,6 +41,8 @@ def main():
     edit_resume.add_argument('id')
     edit_resume.add_argument('--add-calls-per-unit', type=int, default=0)
     edit_resume.add_argument('--accept-external', action='store_true', help='接受 coop 之外对源文件的修改（先提交到备份）')
+    edit_resume.add_argument('--arbiter', choices=['cli', 'manual'],
+                             help='切换仲裁方式：cli 自动调用 roles.arbiter（agy 上的 Argon）；manual 网页人工中转（agy 额度不够时的后备）')
     edit_status = edit.add_parser('status')
     edit_status.add_argument('id', nargs='?')
     edit.add_parser('report').add_argument('id')
@@ -83,12 +86,13 @@ def main():
     group.add_argument('--default-model', action='store_true')
     conf.add_argument('--executable')
     conf.add_argument('--auth-mode', choices=['subscription', 'native', 'api'])
+    conf.add_argument('--kind', choices=['gemini', 'antigravity'], help='Google 入口：antigravity（agy，订阅）或 gemini（Gemini CLI，付费 API key）')
     check = sub.add_parser('check', help='发送一次极小测试请求；all 会逐家发送，可能消耗额度')
     check.add_argument('provider', help='provider 名称或 all')
     check.add_argument('--timeout', type=int, default=60)
     models = sub.add_parser('models')
     models.add_argument('provider')
-    models.add_argument('--fetch', action='store_true', help='API: 用已配置密钥请求 /models')
+    models.add_argument('--fetch', action='store_true', help='API: 用已配置密钥请求 /models；antigravity: 运行 agy models 并核对 slug')
     mem = sub.add_parser('memory').add_subparsers(dest='action', required=True)
     for verb in ('approve', 'revoke'):
         mem.add_parser(verb).add_argument('id')
@@ -122,13 +126,13 @@ def main():
             if act in ('units', 'run') and args.limit is not None and args.limit <= 0:
                 raise ValueError('--limit 必须为正整数')
             if act == 'units':
-                result = editloop.preview(store, args.source, args.only, args.start, args.limit, args.changed_from)
+                result = editloop.preview(store, args.source, args.only, args.start, args.limit, args.changed_from, args.unchanged_from)
             elif act == 'run':
                 sid = editloop.create(store, args.source, args.only, args.start, args.limit, args.changed_from,
-                                      args.project, args.max_calls_per_unit)
+                                      args.project, args.max_calls_per_unit, args.unchanged_from)
                 result = editloop.execute(store, sid)
             elif act == 'resume':
-                result = editloop.execute(store, args.id, args.add_calls_per_unit, args.accept_external)
+                result = editloop.execute(store, args.id, args.add_calls_per_unit, args.accept_external, args.arbiter)
             elif act == 'status':
                 result = editloop.status(store, args.id)
             elif act == 'web':
@@ -175,7 +179,7 @@ def main():
                 if name not in cfg['providers'] and not (args.cmd == 'check' and name == 'all'):
                     raise ValueError('未知 provider: ' + name)
                 if args.cmd == 'configure':
-                    result = configure(cfgfile, name, args.model, args.executable, args.auth_mode, args.default_model)
+                    result = configure(cfgfile, name, args.model, args.executable, args.auth_mode, args.default_model, args.kind)
                 elif args.cmd == 'login':
                     result = login(name, cfg['providers'][name])
                 elif args.cmd == 'models':
