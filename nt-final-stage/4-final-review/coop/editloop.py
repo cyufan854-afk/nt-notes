@@ -910,6 +910,11 @@ class Session:
         provider = self.provider(slot)
         try:
             return self.store.call(job, self.cfg, key, provider, kind, prompt, role_key, issue_filter, validate)
+        except RuntimeError as exc:
+            if type(exc) is not RuntimeError:
+                raise
+            # Name the provider, so that a pause for quota says whose quota ran out (see `edit resume --use`).
+            raise RuntimeError(f'{provider}：{exc}') from None
         except ValueError as exc:
             message = str(exc)
             if message.startswith(('提示超过', 'prompt 必须', '输入与记忆')):
@@ -1394,6 +1399,82 @@ JOB_STATE = {'done_unchanged': 'completed', 'done_edited': 'completed', 'awaitin
 
 
 ARBITER_LABELS = {'cli': 'Gemini Argon（Antigravity CLI）', 'manual': 'Gemini Argon（网页版）'}
+ROLE_SLOTS = {'planner': '规划', 'analysts.0': '分析者 A', 'analysts.1': '分析者 B', 'reviewer': '审查', 'arbiter': '仲裁'}
+VENDORS = {'claude': 'Anthropic', 'codex': 'OpenAI', 'antigravity': 'Google', 'gemini': 'Google', 'kimi': 'Moonshot', 'grok': 'xAI'}
+
+
+def vendor(spec):
+    """The company behind a provider (None for demo / command providers, which are not checked)."""
+    kind = spec.get('kind')
+    if kind == 'api':
+        from urllib.parse import urlsplit
+        host = urlsplit(spec.get('url', '')).hostname or ''
+        parts = host.split('.')
+        return parts[-2] if len(parts) >= 2 else host
+    return VENDORS.get(kind)
+
+
+def _role_get(roles, slot):
+    return roles['analysts'][int(slot[-1])] if slot.startswith('analysts.') else roles.get(slot)
+
+
+def check_roles(cfg, roles):
+    """Independence after a change: four different providers for planner, A, B and reviewer; A, B and the reviewer
+    from three different companies; the arbiter never the reviewer (it reviews the arbiter's patch)."""
+    names = {slot: _role_get(roles, slot) for slot in ROLE_SLOTS}
+    four = [names[k] for k in ('planner', 'analysts.0', 'analysts.1', 'reviewer')]
+    if len(set(four)) != 4:
+        raise ValueError('规划、分析者 A、分析者 B、审查要用四个不同的 provider：' + '，'.join(f'{ROLE_SLOTS[k]}={names[k]}' for k in ROLE_SLOTS if k != 'arbiter'))
+    v = {slot: vendor(cfg['providers'][name]) for slot, name in names.items() if name in cfg['providers']}
+    trio = [(slot, v.get(slot)) for slot in ('analysts.0', 'analysts.1', 'reviewer')]
+    known = [(slot, x) for slot, x in trio if x]
+    for i in range(len(known)):
+        for j in range(i + 1, len(known)):
+            if known[i][1] == known[j][1]:
+                raise ValueError(f'{ROLE_SLOTS[known[i][0]]} 和 {ROLE_SLOTS[known[j][0]]} 都是 {known[i][1]} 的模型：两位分析者和审查要来自三家不同的公司')
+    if names['arbiter'] == names['reviewer'] or (v.get('arbiter') and v.get('arbiter') == v.get('reviewer')):
+        raise ValueError('仲裁不能与审查同一家：审查要独立地看仲裁的补丁')
+
+
+def use_providers(store, sid, uses):
+    """`edit resume --use ROLE=PROVIDER`: hand a role to another provider from now on, e.g. while one subscription's
+    quota is exhausted (a Grok trial, Kimi credits). Finished calls are kept as they are (they are cached); only calls not
+    made yet go to the new provider. Every change is recorded in the session and the report."""
+    S = Session(store, sid)
+    cfg = S.cfg
+    roles = json.loads(json.dumps(cfg['edit']['roles']))
+    roles.setdefault('arbiter', edit_defaults()['roles']['arbiter'])
+    workspace = {}
+    path = store.root / 'config.json'
+    if path.exists():
+        workspace = json.loads(path.read_text(encoding='utf-8')).get('providers', {})
+    changed = []
+    for item in uses:
+        slot, sep, name = str(item).partition('=')
+        slot, name = slot.strip(), name.strip()
+        if not sep or slot not in ROLE_SLOTS or not name:
+            raise ValueError(f'--use 的写法是 岗位=provider，岗位取 {" / ".join(ROLE_SLOTS)}：{item}')
+        if name not in cfg['providers']:
+            if name not in workspace:
+                raise ValueError(f'provider {name} 不在会话配置里，也不在工作区 config.json 里')
+            cfg['providers'][name] = workspace[name]          # brought in from the workspace, frozen from now on
+        old = _role_get(roles, slot)
+        if slot.startswith('analysts.'):
+            roles['analysts'][int(slot[-1])] = name
+        else:
+            roles[slot] = name
+        if old != name:
+            changed.append({'role': slot, 'from': old, 'to': name})
+    check_roles(cfg, roles)
+    if not changed:
+        return []
+    finished = sum(1 for u in S.units() if u['selected'] and u['state'] in FINAL)
+    cfg['edit']['roles'] = roles
+    cfg['edit'].setdefault('role_changes', []).append({'at': time.strftime('%Y-%m-%d %H:%M'), 'changes': changed,
+                                                      'units_finished_before': finished})
+    with store.db() as db:
+        db.execute('UPDATE edit_sessions SET config=? WHERE id=?', (dumps(cfg), sid))
+    return changed
 
 
 def set_arbiter_mode(store, sid, mode):
@@ -1420,7 +1501,7 @@ def set_arbiter_mode(store, sid, mode):
     return mode
 
 
-def execute(store, sid, add_calls=0, accept_external=False, arbiter_mode=None):
+def execute(store, sid, add_calls=0, accept_external=False, arbiter_mode=None, uses=()):
     if add_calls < 0:
         raise ValueError('add-calls-per-unit 不能为负数')
     S = Session(store, sid)
@@ -1428,6 +1509,9 @@ def execute(store, sid, add_calls=0, accept_external=False, arbiter_mode=None):
         raise ValueError('这个会话已经 restore 过；请新建会话')
     if arbiter_mode is not None and arbiter_mode != S.e['web'].get('mode'):
         set_arbiter_mode(store, sid, arbiter_mode)
+        S = Session(store, sid)
+    if uses:
+        use_providers(store, sid, uses)
         S = Session(store, sid)
     from .access import preflight
     preflight(S.cfg, role_providers(S.e))
@@ -1503,7 +1587,10 @@ def status(store, sid=None):
               'paused': [{'unit': u['unit'], 'error': u['error']} for u in units if u['state'] == 'paused'],
               'needs_review': [{'unit': u['unit'], 'reason': u['error']} for u in units if u['state'] == 'needs_review'],
               'edited': [u['unit'] for u in units if u['state'] == 'done_edited'],
-              'backup': str(S.repo), 'report': str(S.folder / 'report.md')}
+              'backup': str(S.repo), 'report': str(S.folder / 'report.md'), 'roles': S.e['roles']}
+    if S.row['state'] == 'paused' and 'rate_limit' in (S.row['error'] or ''):
+        result['next'] = (f'额度用完（见 error 开头的 provider）。等额度恢复后 coop edit resume {sid}；或临时换人：'
+                          f'coop edit resume {sid} --use 岗位=provider（岗位：{" / ".join(ROLE_SLOTS)}），额度恢复后再换回来')
     waiting = [u for u in units if u['state'] == 'awaiting_web']
     if waiting:
         open_ = S.web_open()
@@ -1542,6 +1629,10 @@ def write_report(S):
               f'交换意见后方案仍不同、补丁被审查打回或来回修改、且该轮没有收敛的单元，从第 {w["after_rounds"]} 轮起交给仲裁'
               f'（每单元最多 {w["max_per_unit"]} 次，不计入上面的轮数）；仲裁补丁同样经过预检和独立审查。'
               if w['enabled'] else '仲裁：关闭。'),
+             *([('岗位变更：' + '；'.join(f'{c["at"]}（此前已结束 {c["units_finished_before"]} 个单元）'
+                                           + '，'.join(f'{ROLE_SLOTS[x["role"]]} {x["from"]} → {x["to"]}' for x in c['changes'])
+                                           for c in e['role_changes']) + '。换人之前已完成的调用保持原样。')]
+               if e.get('role_changes') else []),
              f'备份仓库：`{S.repo}`。每次写入前的版本都是它的上一个提交；`git -C "{S.repo}" log --oneline` 查看，'
              f'`coop edit restore {S.sid} --to original` 回到原始版本。',
              '以下结论是模型辅助判断，不是数学认证；“全部同意结束”只表示没有人再提出合格的 blocking 问题。',

@@ -16,6 +16,7 @@ CATALOG = {
     'gemini': {'entry': 'Gemini CLI（付费 API key 时使用；个人订阅已停止服务）', 'login_argv': [], 'model_picker': 'gemini → /model', 'install_url': 'https://geminicli.com/docs/get-started/installation/', 'auth_url': 'https://geminicli.com/docs/get-started/authentication/'},
     'antigravity': {'entry': 'Antigravity CLI（agy）/ Google AI Pro 订阅', 'login_argv': [], 'model_picker': 'agy models（或 models NAME --fetch）', 'install_url': 'https://antigravity.google/docs/cli', 'auth_url': 'https://antigravity.google/docs/cli/headless'},
     'kimi': {'entry': 'Kimi Code CLI / Kimi Code login', 'login_argv': ['login'], 'model_picker': 'kimi → /model', 'install_url': 'https://www.kimi.com/code/docs/en/kimi-code-cli/guides/getting-started.html', 'auth_url': 'https://www.kimi.com/code/docs/en/kimi-code-cli/reference/kimi-command.html'},
+    'grok': {'entry': 'Grok CLI（grok）/ SuperGrok 订阅（含试用）', 'login_argv': ['login'], 'model_picker': 'grok --help（-m 指定模型）', 'install_url': 'https://docs.x.ai/build/cli', 'auth_url': 'https://docs.x.ai/build/cli/headless-scripting'},
     'api': {'entry': 'OpenAI-compatible Chat Completions API', 'auth_url': 'https://api-docs.deepseek.com/', 'model_picker': 'models NAME --fetch (requires API key)'},
 }
 # Subscription mode removes only known provider routing/credential overrides.
@@ -26,6 +27,7 @@ PREFIXES = {
     'gemini': ('GEMINI_API_KEY', 'GOOGLE_API_KEY', 'GOOGLE_GENAI_USE_VERTEXAI', 'GOOGLE_GENAI_USE_GCA', 'GOOGLE_GEMINI_BASE_URL'),
     'antigravity': ('GEMINI_API_KEY', 'GOOGLE_API_KEY', 'GOOGLE_GENAI_USE_VERTEXAI', 'GOOGLE_GENAI_USE_GCA', 'GOOGLE_GEMINI_BASE_URL'),
     'kimi': ('KIMI_MODEL', 'KIMI_BASE_URL', 'KIMI_API_KEY', 'KIMI_CODE_API_KEY', 'MOONSHOT_API_KEY'),
+    'grok': ('GROK_CODE_XAI_API_KEY', 'XAI_API_KEY', 'GROK_API_KEY'),
 }
 
 
@@ -319,6 +321,80 @@ def preflight(cfg, names):
     return checked
 
 
+# ---------------------------------------------------------------- prompts passed as a command-line argument (Kimi, Grok)
+
+def argv_prompt_limit(spec, default=60000):
+    """Largest prompt (UTF-8 bytes) that can go into one argument. macOS limits only the total of all arguments and the
+    environment (ARG_MAX, 1 MiB); Linux also limits one argument to 128 KiB. A spec may set max_prompt_bytes."""
+    if spec.get('max_prompt_bytes'):
+        return int(spec['max_prompt_bytes'])
+    if sys.platform == 'darwin':
+        try:
+            arg_max = os.sysconf('SC_ARG_MAX')
+        except (ValueError, OSError):
+            arg_max = 262144
+        env = sum(len(k) + len(v) + 2 for k, v in os.environ.items())
+        return max(default, arg_max - env - 32768)
+    return min(default, 131071)
+
+
+# ---------------------------------------------------------------- Grok CLI (grok)
+#
+# Headless use as documented at docs.x.ai/build/cli/headless-scripting (2026): `grok -p "<prompt>"` (the prompt is an
+# argument; no stdin input is documented), `-m/--model`, `--output-format json` (one JSON object at the end),
+# `--no-auto-update` for scripts. Login: `grok login` (cached); GROK_CODE_XAI_API_KEY would bill the xAI API instead and
+# is removed in subscription mode. coop never passes -c/--continue: every call is a new session.
+
+GROK_FORBIDDEN = ('-c', '--continue', '--resume')
+
+
+def grok_argv(executable, spec, prompt):
+    extra = list(spec.get('extra_args', []))
+    if any(a in GROK_FORBIDDEN for a in extra):
+        raise ValueError('grok 的 extra_args 不能续接以前的会话（-c / --continue）：每次调用都要新开上下文')
+    limit = argv_prompt_limit(spec, 120000)
+    size = len(prompt.encode())
+    if size > limit:
+        raise ValueError(f'Grok 的提示只能作为命令行参数传入：本次 {size} 字节，超过上限 {limit}；'
+                         '在 macOS 上一般不会碰到，必要时在 provider 里写 max_prompt_bytes')
+    argv = [executable, '--no-auto-update', '-p', prompt, '--output-format', 'json']
+    if spec.get('model'):
+        argv += ['-m', spec['model']]
+    return argv + extra
+
+
+def parse_grok(raw):
+    """{'ok', 'response', 'error'} from `grok -p … --output-format json`: one JSON object (a trailing log line before it is
+    tolerated). The answer text is read from the first of result / response / text / output / content / message."""
+    obj = None
+    for text in [raw] + [l for l in raw.splitlines() if l.strip()][::-1]:
+        try:
+            value = json.loads(text)
+        except ValueError:
+            continue
+        if isinstance(value, dict):
+            obj = value
+            break
+    if obj is None:
+        raise ValueError('grok 的 json 输出不是 JSON 对象；检查 CLI 版本和 stdout.log')
+    error = obj.get('error')
+    if isinstance(error, dict):
+        error = error.get('message') or json.dumps(error, ensure_ascii=False)
+    status = str(obj.get('status') or obj.get('subtype') or '').lower()
+    failed = bool(obj.get('is_error')) or bool(error) or status.startswith(('error', 'fail'))
+    response = None
+    for key in ('result', 'response', 'text', 'output', 'content', 'message'):
+        if key in obj:
+            response = _text_of(obj[key])
+            if response is not None:
+                break
+    if failed:
+        return {'ok': False, 'response': None, 'error': str(error or response or status or 'grok 报告失败')}
+    if not (isinstance(response, str) and response.strip()):
+        return {'ok': False, 'response': None, 'error': 'grok 的 json 里没有回答文本'}
+    return {'ok': True, 'response': response, 'error': ''}
+
+
 def classify_error(message):
     s = str(message).lower()
     rules = [
@@ -400,7 +476,7 @@ def configure(path, name, model=None, executable=None, auth_mode=None, reset_mod
             raise ValueError('API 必须指定模型')
         spec['model'] = None
     if executable is not None:
-        if spec['kind'] not in ('codex', 'claude', 'gemini', 'kimi', 'antigravity'):
+        if spec['kind'] not in ('codex', 'claude', 'gemini', 'kimi', 'antigravity', 'grok'):
             raise ValueError('executable 只适用于官方 CLI')
         if not Path(executable).expanduser().is_absolute():
             raise ValueError('executable 必须是绝对路径')

@@ -41,6 +41,9 @@ def main():
     edit_resume.add_argument('id')
     edit_resume.add_argument('--add-calls-per-unit', type=int, default=0)
     edit_resume.add_argument('--accept-external', action='store_true', help='接受 coop 之外对源文件的修改（先提交到备份）')
+    edit_resume.add_argument('--use', action='append', default=[], metavar='岗位=PROVIDER',
+                             help='从现在起把岗位交给另一个 provider（岗位：planner / analysts.0 / analysts.1 / reviewer / arbiter），'
+                                  '例如某家额度用完时 --use analysts.0=grok；可重复；记在报告里')
     edit_resume.add_argument('--arbiter', choices=['cli', 'manual'],
                              help='切换仲裁方式：cli 自动调用 roles.arbiter（agy 上的 Argon）；manual 网页人工中转（agy 额度不够时的后备）')
     edit_status = edit.add_parser('status')
@@ -132,7 +135,7 @@ def main():
                                       args.project, args.max_calls_per_unit, args.unchanged_from)
                 result = editloop.execute(store, sid)
             elif act == 'resume':
-                result = editloop.execute(store, args.id, args.add_calls_per_unit, args.accept_external, args.arbiter)
+                result = editloop.execute(store, args.id, args.add_calls_per_unit, args.accept_external, args.arbiter, args.use)
             elif act == 'status':
                 result = editloop.status(store, args.id)
             elif act == 'web':

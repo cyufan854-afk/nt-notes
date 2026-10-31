@@ -13,10 +13,10 @@ import urllib.error
 from urllib.parse import urlsplit, urlunsplit
 try:
     from .access import (environment_for, parse_kimi, classify_error, parse_antigravity, antigravity_argv,
-                         antigravity_stdin, antigravity_billing, default_executable)
+                         antigravity_stdin, antigravity_billing, default_executable, argv_prompt_limit, grok_argv, parse_grok)
 except ImportError:  # Direct execution in the isolated transport worker.
     from access import (environment_for, parse_kimi, classify_error, parse_antigravity, antigravity_argv,
-                        antigravity_stdin, antigravity_billing, default_executable)
+                        antigravity_stdin, antigravity_billing, default_executable, argv_prompt_limit, grok_argv, parse_grok)
 
 
 def _invoke(spec, prompt, stage, folder, timeout):
@@ -101,8 +101,10 @@ def _invoke(spec, prompt, stage, folder, timeout):
             argv += ['--model', model]
     elif kind == 'kimi':
         # Kimi's -p text is an argument, not an assumed stdin protocol.
-        if len(prompt.encode()) > 60000:
-            raise ValueError('Kimi 提示超过 60 KB；缩小输入或改用 API')
+        # Linux: 60 KB as before; macOS allows far longer arguments (ARG_MAX), so edit-mode prompts fit there.
+        limit = argv_prompt_limit(spec, 60000)
+        if len(prompt.encode()) > limit:
+            raise ValueError(f'Kimi 提示超过 {limit // 1000} KB；缩小输入、在 provider 里写 max_prompt_bytes，或改用 API')
         agent = folder / 'text-only.md'
         agent.write_text('---\nname: coop-text\ndescription: Text-only research collaborator\ntools: []\nsubagents: []\n---\nFollow the supplied task, including its exact response format.\n', encoding='utf-8')
         argv = [executable, '-p', prompt, '--output-format', 'stream-json', '--agent-file', str(agent)]
@@ -124,6 +126,12 @@ def _invoke(spec, prompt, stage, folder, timeout):
         argv = antigravity_argv(executable, spec, prompt, timeout)
         stdin = antigravity_stdin(spec, prompt)
         cwd = folder / 'agy-workspace'
+        cwd.mkdir(exist_ok=True)
+    elif kind == 'grok':
+        # Official Grok CLI, headless, a new session every call; an empty workspace of its own (it is a coding agent).
+        argv = grok_argv(executable, spec, prompt)
+        stdin = ''
+        cwd = folder / 'grok-workspace'
         cwd.mkdir(exist_ok=True)
     elif kind == 'command':
         argv = spec['argv']
@@ -170,6 +178,12 @@ def _invoke(spec, prompt, stage, folder, timeout):
     raw = path.read_text(encoding='utf-8')
     if kind == 'kimi':
         raw = parse_kimi(raw)
+    if kind == 'grok':
+        result = parse_grok(raw)
+        if not result['ok']:
+            error = classify_error(result['error'])
+            raise RuntimeError(f'grok 返回错误; {error["category"]}: {error["hint"]}; {result["error"][:300]}; 查看 {folder / "stdout.log"}')
+        raw = result['response']
     if kind == 'antigravity':
         result = parse_antigravity(raw, spec.get('input', 'stream-json'))
         (folder / 'transport.json').write_text(json.dumps({k: v for k, v in result.items() if k != 'response'},

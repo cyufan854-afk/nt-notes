@@ -155,3 +155,10 @@ printf '%s\n' '{"event":"user","message":{"content":"Reply with the single word 
 
 - 最后一条若报参数错误（例如 `-p` 必须带提示文字），把 provider 改成 `"input": "argv"`（提示改作 `-p` 的参数，输出用 `--output-format json`）；macOS 的参数总长上限约 1 MB，coop 最长的提示也放得下。
 - `configure gemini --kind gemini` / `--kind antigravity` 在两种入口之间切换（切到 antigravity 时同时给 `--model`）。
+
+## v0.4.2：临时额度（Grok CLI、Kimi）
+
+- Grok：kind `grok`，官方 Grok CLI，`grok login` 登录（订阅，含试用），headless `grok --no-auto-update -p "<prompt>" --output-format json [-m MODEL]`。依据 docs.x.ai/build/cli/headless-scripting；json 信封的字段名以你 Mac 上的实际输出为准（coop 依次找 result / response / text / output / content / message）。订阅模式去掉 `GROK_CODE_XAI_API_KEY`、`XAI_API_KEY`。
+- 在 Mac 上核对：`grok --help`（`-p`、`--output-format json`、`-m`、`--no-auto-update` 是否都在；有没有只读或关闭工具的开关，有的话写进 provider 的 `extra_args`）、`grok -p "Reply with OK" --output-format json`（看 JSON 字段）、`python3 -m coop --workspace .coop-final check grok`。
+- Kimi：kind `kimi` 不变；macOS 上提示长度按参数总长计算。开放平台的 API 额度用 kind `api` 的 provider（见 README）。
+- 换人：`edit resume EDIT_ID --use 岗位=provider`，见 README“临时额度”一节。

@@ -43,11 +43,46 @@ python3 -m coop --workspace .coop-final check deepseek
    `edit run ../final.tex --unchanged-from ../branch1.tex`。
    第 1 批里被 coop 改过或保留 27B 文字的单元都与 branch1 不同，不会在第 2 批里重复。
 
-每天跑到某家订阅额度用完，整次运行就暂停（`paused`，报告里写明是哪家）；第二天 `edit resume EDIT_ID` 继续。规模：一个没问题的单元 4 次调用（规划 1、两位分析 2、审查 1），Claude 每单元约 1–3 次、Codex 与 Argon 各约 1–3 次；`edit units` 会给出最少和最多调用数。第一天跑完后看 `edit status` 的调用数，就能估算每家每天能处理多少单元。`merge-log.md` 里记着的单元可以用 `--only 单元id`（可重复）单独先跑。
+每天跑到某家订阅额度用完，整次运行就暂停（`paused`，error 开头写明是哪个 provider）；第二天 `edit resume EDIT_ID` 继续，或用下一节的 `--use` 临时把那个岗位交给 Grok / Kimi。规模：一个没问题的单元 4 次调用（规划 1、两位分析 2、审查 1），Claude 每单元约 1–3 次、Codex 与 Argon 各约 1–3 次；`edit units` 会给出最少和最多调用数。第一天跑完后看 `edit status` 的调用数，就能估算每家每天能处理多少单元。`merge-log.md` 里记着的单元可以用 `--only 单元id`（可重复）单独先跑。
 
 Python 独立多模型调度器。v0.4 新增 **edit 模式**：把一份 LaTeX 源文件按“定理／定义 + 其后的证明”切成单元，由 1 个规划、2 个分析、1 个独立审查逐轮讨论并直接修改源文件，所有人都同意结束（或到达轮数上限）才处理下一个单元；每次写入前都有 git 备份。v0.3 的 `run` / `batch`（只给结论、不改文件）保持不变，说明见后文。
 
 v0.4.1 新增 **网页仲裁**：日常循环照旧自动跑，只有分析者吵不拢、被审查打回或来回修改的单元，攒成批次文件交给网页版 Gemini Argon，你手动粘贴、保存回复、导入后继续。见下文“v0.4.1”一节。
+
+### 临时额度：Grok 7 天试用、Kimi 赠送额度
+
+默认岗位不变（规划 deepseek，分析 codex / gemini(Argon)，审查 claude，仲裁 gemini）。临时额度不进默认岗位，而是在某家订阅当天额度用完、运行暂停时，**由你显式**把那个岗位交给它，额度恢复后再换回来。coop 不会自动换人：换人会改变审查结构，必须是你的决定，并且写进报告。
+
+```bash
+python3 -m coop --workspace .coop-final edit status EDIT_ID                          # error 开头写着是哪家的额度用完
+python3 -m coop --workspace .coop-final edit resume EDIT_ID --use analysts.0=grok    # 从现在起分析者 A 用 Grok
+python3 -m coop --workspace .coop-final edit resume EDIT_ID --use analysts.0=codex   # Codex 额度恢复后换回来
+```
+
+- 岗位名：`planner`、`analysts.0`（分析者 A）、`analysts.1`（分析者 B）、`reviewer`、`arbiter`；`--use` 可重复。
+- 已完成的调用保持原样（有缓存），只有还没做的调用交给新的 provider；正在进行的单元也一样。报告开头记着每次换人的时间、换了谁、此前已结束多少单元。
+- 换人时检查独立性：规划、A、B、审查是四个不同的 provider；A、B、审查来自三家不同的公司；仲裁不能与审查同一家。不满足就拒绝，什么都不改。新 provider 也要先通过 slug 预检。
+- provider 不在会话的冻结配置里时，从工作区 `config.json` 取（例如建会话之后才加的）。
+
+建议的用法：
+
+| 当天额度用完的 | 建议 |
+|---|---|
+| Codex（分析者 A） | `--use analysts.0=grok`（试用期内）或 `analysts.0=kimi`；第二天换回 codex |
+| Argon（分析者 B / 仲裁） | 仲裁可先 `--arbiter manual` 改走网页人工中转；分析者 B 建议等额度恢复（要求全程 Argon）。确实要继续时可 `--use analysts.1=grok`，报告会记下 |
+| Claude（审查） | 建议等额度恢复：审查是写入前的最后一道闸门。必须继续时可交给与两位分析者都不同家的模型 |
+| DeepSeek（规划，API） | 按量计费，一般不会“用完”；余额不足时充值或等待 |
+
+**Grok**：新 provider kind `grok`，用官方 Grok CLI（[docs.x.ai](https://docs.x.ai/build/cli/headless-scripting)）的 headless 模式：`grok --no-auto-update -p "<prompt>" --output-format json -m <model>`，每次新开会话（从不传 `-c/--continue`），工作目录是空的 `grok-workspace/`。订阅模式下子进程看不到 `GROK_CODE_XAI_API_KEY`，所以不会悄悄走 xAI API 计费。文档里没有从 stdin 输入提示的方式，提示只能作为命令行参数；macOS 允许约 1 MB 的参数，coop 最长的提示放得下，超出时直接报错。默认配置里已有 `grok` 条目（不在任何岗位上）。登录：`python3 -m coop --workspace .coop-final login grok`（即 `grok login`），然后 `check grok`。试用结束后忘了换回来，grok 的调用会以认证或额度错误失败，整次运行暂停，不会悄悄计费；但试用到期是否自动转成付费订阅，要你在 xAI 账户里自己看。
+
+**Kimi**：默认配置一直有 `kimi`（Kimi Code CLI，订阅登录），不在任何岗位上。原来的 60 KB 提示上限是按 Linux 单个参数的限制定的；在 macOS 上现在按系统的参数总长计算（约 1 MB），edit 模式的提示都能放下。若赠送的是开放平台的 API 额度（不是 CLI 订阅），在工作区 `config.json` 里另加一个 API provider：
+
+```json
+"kimi-api": {"kind": "api", "url": "https://api.moonshot.cn/v1/chat/completions", "model": "用 models kimi-api --fetch 查到的模型名",
+             "key_env": "MOONSHOT_API_KEY", "max_tokens": 8192, "auth_mode": "api"}
+```
+
+这条是按量计费的 API：赠送额度用完后是否开始扣费，取决于你的账户余额和设置。coop 没有花费上限，只在 API 返回余额或额度错误时暂停。
 
 ## v0.4：按单元修订源文件（edit）
 

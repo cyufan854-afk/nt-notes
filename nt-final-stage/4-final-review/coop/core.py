@@ -47,6 +47,8 @@ def default_config(demo=False):
                                'input': 'stream-json', 'effort': None}
         edit['web'].update(mode='cli', label='Gemini Argon（Antigravity CLI）')
         edit['max_calls_per_unit'] = 32   # 3 rounds x 9 calls + an arbitration round (arbiter, review, 2 confirmations)
+        # Temporary capacity (a Grok trial, Kimi credits): configured but used by no role; `edit resume --use` brings one in.
+        providers['grok'] = {'kind': 'grok', 'model': None, 'auth_mode': 'subscription'}
     return {'protocol_version': 3, 'demo': demo, 'timeout': 600,
             'timeouts': {'planner': 600, 'analysis0': 1200, 'analysis1': 1200, 'revision0': 1200, 'revision1': 1200, 'reviewer': 600,
                          'exchange0': 1200, 'exchange1': 1200, 'merge': 900, 'confirm0': 600, 'confirm1': 600, 'arbitration': 1200},

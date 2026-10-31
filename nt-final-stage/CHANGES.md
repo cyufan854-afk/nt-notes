@@ -109,6 +109,34 @@
   - 第 2 批：与 branch1 相同的单元，在 branch1 上已经过多轮审查，额度紧时可以放到最后。
 - 第 1 批里被 coop 改过或保留 27B 文字的单元都与 branch1 不同，不会在第 2 批里重复。README 写了命令、每单元调用量，以及额度用完后第二天 resume 的节奏。
 
+### 追加：临时额度（Grok 7 天试用、Kimi 赠送额度）
+
+**为什么**：之后可能多一个 Grok 7 天试用和 Kimi 的赠送额度。这些额度是临时的，适合在某家订阅当天额度用完时顶上，不适合放进固定岗位。
+
+**做了什么**（`4-final-review/`）：
+
+- 新 provider kind `grok`：官方 Grok CLI，headless 运行 `grok --no-auto-update -p "<prompt>" --output-format json [-m MODEL]`。
+  - 每次新开会话，从不传 `-c/--continue`；工作目录是空的 `grok-workspace/`。
+  - 订阅模式下去掉 `GROK_CODE_XAI_API_KEY` 等变量，不会悄悄走 xAI API 计费。
+  - 解析 json 信封，错误按认证 / 额度分类，碰到就暂停整次运行。
+  - 提示只能作为参数传入，超过平台上限时直接报错。
+  - 默认配置里加了 `grok` 条目，不在任何岗位上；演示配置不变。
+- Kimi：原来的 60 KB 提示上限在 Linux 上不变；在 macOS 上按系统参数总长（约 1 MB）计算，edit 模式的提示能放下。也可以在 provider 里写 `max_prompt_bytes`。
+- `edit resume EDIT_ID --use 岗位=provider`（可重复）：从现在起把岗位交给另一个 provider。
+  - 已完成的调用保持原样，只有还没做的调用交给新 provider；provider 可以从工作区配置补进会话。
+  - 换人前检查独立性，不满足就什么都不改：四个岗位用四个不同的 provider；两位分析者和审查来自三家不同的公司；仲裁不与审查同家。
+  - 每次换人记在会话配置和报告开头。
+  - 额度暂停时，error 开头写明是哪个 provider，`edit status` 提示可以怎样换人。
+- 不做自动换人：换人会改变审查结构，必须由你决定。
+
+**测试**：新增 `tests/test_temporary_providers.py` 9 项，覆盖：
+- 假 `grok` 程序：参数、空工作目录、API key 不外传、认证和额度错误；
+- 解析器与提示长度（Linux / macOS）；
+- 默认配置；独立性规则；
+- 额度暂停时 error 写明 provider、给出换人提示；
+- 换人后只有未完成的调用交给新 provider、记入报告、能换回来；
+- 错误写法不改任何东西；命令行参数已接上。
+
 ## 三、测试结果
 
 在本环境运行（Python 3.13.18；notebook 测试用 torch 2.15.0、numpy 2.5.4、safetensors 0.8.0；本机没有 latexmk / pdflatex，也没有可用的 Docker）：
@@ -116,7 +144,7 @@
 ```
 $ PYTHON=<装了 torch 的 python> bash check_all.sh
 == 4-final-review
-Ran 117 tests in 12.487s
+Ran 126 tests in 13.996s
 OK (skipped=3)
 == 2-branch2
 Ran 94 tests in 7.574s
@@ -131,7 +159,7 @@ OK
 
 | 套件 | 原有 | 新增 | 结果 | 跳过的 |
 |---|---|---|---|---|
-| coop（`4-final-review`） | 96 | 21 | 117 通过 | 3 项：2 项真实 latexmk 编译（本机没有 latexmk；你的 Mac 上会跑），1 项 Docker 隔离集成测试（需显式开启） |
+| coop（`4-final-review`） | 96 | 30 | 126 通过 | 3 项：2 项真实 latexmk 编译（本机没有 latexmk；你的 Mac 上会跑），1 项 Docker 隔离集成测试（需显式开启） |
 | nt27b（`2-branch2`） | 86 | 8 | 94 通过 | 1 项：实际 pdflatex 编译（本机没有 pdflatex） |
 | 合并与留存率（`3-combine`） | 7 | 12 | 19 通过 | — |
 | 融合 notebook（`1-model-merge`） | — | 23 | 23 通过 | — |

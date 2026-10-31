@@ -66,7 +66,9 @@ python3 -m coop --workspace .coop-final edit run ../final.tex --changed-from ../
 python3 -m coop --workspace .coop-final edit run ../final.tex --unchanged-from ../branch1.tex             # 第 2 批
 ```
 
-岗位：规划 DeepSeek（API），分析者 Codex 和 Gemini（Antigravity CLI `agy` 上的 Argon），独立审查 Claude，仲裁 Argon（自动调用，新开上下文）。每个单元最多 3 轮，范围只看数学。额度用完时整次运行暂停，第二天 `edit resume EDIT_ID` 接着做；agy 额度不够时可以 `edit resume EDIT_ID --arbiter manual` 改回网页人工中转。分批的理由和调用量估算见 `4-final-review/README.md` 开头。
+岗位：规划 DeepSeek（API），分析者 Codex 和 Gemini（Antigravity CLI `agy` 上的 Argon），独立审查 Claude，仲裁 Argon（自动调用，新开上下文）。每个单元最多 3 轮，范围只看数学。额度用完时整次运行暂停，第二天 `edit resume EDIT_ID` 接着做；agy 额度不够时可以 `edit resume EDIT_ID --arbiter manual` 改回网页人工中转。
+临时额度（Grok 7 天试用、Kimi 赠送额度）不进默认岗位：某家当天额度用完时，用 `edit resume EDIT_ID --use analysts.0=grok` 之类显式换人，额度恢复后再换回来。换人前会检查独立性，换人记录写进报告。
+分批的理由、调用量估算和临时额度的用法见 `4-final-review/README.md` 开头。
 
 ## 测试
 
@@ -74,7 +76,7 @@ python3 -m coop --workspace .coop-final edit run ../final.tex --unchanged-from .
 bash check_all.sh
 ```
 
-四套测试：coop 117 项（原 96 + 新 21），nt27b 94 项（原 86 + 新 8），合并与留存率 19 项（原 7 + 新 12），融合 notebook 23 项（需要 numpy、torch、safetensors；没有时这一套跳过）。结果见 `CHANGES.md`。
+四套测试：coop 126 项（原 96 + 新 30），nt27b 94 项（原 86 + 新 8），合并与留存率 19 项（原 7 + 新 12），融合 notebook 23 项（需要 numpy、torch、safetensors；没有时这一套跳过）。结果见 `CHANGES.md`。
 
 ## 需要你验证
 
@@ -94,14 +96,18 @@ bash check_all.sh
 6. agy 实际的报错文本：未登录、额度用完、模型名错误各是什么。coop 目前按 `authentication required`、`RESOURCE_EXHAUSTED` / quota / rate limit、`unknown model` 分类。不一样时把原文发给我。
 7. agy 有没有跨对话的记忆或知识库功能。仲裁要求与分析者 B 不共享上下文：coop 每次都是新的 headless 进程，工作目录是空的。如果 agy 会自动带入以前对话的记忆，请在它的设置里关掉。
 
+8. 用到 Grok / Kimi 时：
+   - Grok：运行 `grok --help`，确认 `-p`、`--output-format json`、`-m`、`--no-auto-update` 都在，并看有没有只读或关闭工具的开关（有就写进 provider 的 `extra_args`）。再运行 `grok -p "Reply with OK" --output-format json`，看回答在哪个字段。确认 `grok login` 用订阅登录后，headless 能读到缓存的凭据。最后 `coop check grok`。
+   - Kimi：赠送的是 Kimi Code CLI 的额度，还是开放平台的 API 额度（后者按 README 另加 `kimi-api`）？
+
 **Colab（融合 notebook）**
 
-8. 第一次运行到 N₂ 停下后，读远程代码，核对 `config.json` 与模型卡（32 层、[4, 28) 两遍、hidden 4096、FFN 12288、16/4 头、词表 248320、3:1 混合注意力），再填 `code_sha256`。
-9. 前向闸门：4 条短提示、与原生前向的余弦、观察到的执行顺序 `0-3,4-27,4-27,28-31`；`k_proj` 搬没搬、为什么；tokenizer 是否与 B 相同。这几项都在 `DRIVE_DIR/tm_delta2/` 的记录里。
-10. 第一段激活打印的估计用时是否在 6–13 小时的量级。
-11. 其余见 `1-model-merge/README.md` 的“需要你在 Colab 上验证”。
+9. 第一次运行到 N₂ 停下后，读远程代码，核对 `config.json` 与模型卡（32 层、[4, 28) 两遍、hidden 4096、FFN 12288、16/4 头、词表 248320、3:1 混合注意力），再填 `code_sha256`。
+10. 前向闸门：4 条短提示、与原生前向的余弦、观察到的执行顺序 `0-3,4-27,4-27,28-31`；`k_proj` 搬没搬、为什么；tokenizer 是否与 B 相同。这几项都在 `DRIVE_DIR/tm_delta2/` 的记录里。
+11. 第一段激活打印的估计用时是否在 6–13 小时的量级。
+12. 其余见 `1-model-merge/README.md` 的“需要你在 Colab 上验证”。
 
 **RunPod（nt27b）**
 
-12. vLLM 能否加载第 1 步的仓库：BF16 在 80GB 卡上没问题；FP8（128×128 分块 e4m3）在 H100 上原生支持，A100 要先看冒烟样本。私有仓库要设 `HF_TOKEN`。
-13. `run_gpu.sh` 打印 “模型 … 固定在 commit …”，vLLM 日志里下载的是这个 commit。
+13. vLLM 能否加载第 1 步的仓库：BF16 在 80GB 卡上没问题；FP8（128×128 分块 e4m3）在 H100 上原生支持，A100 要先看冒烟样本。私有仓库要设 `HF_TOKEN`。
+14. `run_gpu.sh` 打印 “模型 … 固定在 commit …”，vLLM 日志里下载的是这个 commit。
