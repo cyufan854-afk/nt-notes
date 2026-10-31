@@ -6,7 +6,9 @@
 #
 # 可选环境变量：
 #   JOB=job          prepare 生成的目录
-#   MODEL_REVISION=版本 权重或适配器版本；已有响应时必须显式设置，原地更换权重时必须更新
+#   MODEL_REVISION=版本 权重或适配器版本；已有响应时必须显式设置，原地更换权重时必须更新。
+#                    MODEL 是 Hugging Face 仓库名、MODEL_REVISION 是 40 位 commit 时，vLLM 也按这个 commit 下载
+#                    （--revision / --tokenizer-revision），保证跑的正是第 1 步上传的那一版。私有仓库需要 HF_TOKEN。
 #   CONC=64          同时在途的请求数
 #   MAXLEN=16384     上下文长度（最长的请求约 4.5k token，16k 足够）
 #   PORT=8000
@@ -99,8 +101,14 @@ for tool in vllm python3 curl tar; do
   command -v "$tool" >/dev/null || { echo "这台机器上没有 ${tool}。"; exit 2; }
 done
 
+VLLM_REVISION=()
+if [ ! -e "$MODEL" ] && [[ "$MODEL_REVISION" =~ ^[0-9a-f]{40}$ ]]; then
+  VLLM_REVISION=(--revision "$MODEL_REVISION" --tokenizer-revision "$MODEL_REVISION")
+  echo "== 模型 ${MODEL} 固定在 commit ${MODEL_REVISION}"
+fi
+
 echo "== 启动 vLLM（日志 vllm.log）"
-vllm serve "$MODEL" --served-model-name nt27b --port "$PORT" --max-model-len "$MAXLEN" \
+vllm serve "$MODEL" ${VLLM_REVISION[@]+"${VLLM_REVISION[@]}"} --served-model-name nt27b --port "$PORT" --max-model-len "$MAXLEN" \
   --gpu-memory-utilization 0.92 --dtype bfloat16 --enable-prefix-caching > vllm.log 2>&1 &
 VLLM_PID=$!
 

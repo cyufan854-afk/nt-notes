@@ -39,7 +39,11 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 import qwen_polish as qp  # noqa: E402
 
-VERSION = '1.1.1'
+VERSION = '1.1.1'   # unchanged: requests, answers and their validation are the same as 1.1.1; only file locations changed
+# The common ancestor of branch1 and branch2 lives once, in the stage folder above this package (nt-final-stage/).
+# Its content is fixed; prepare reads it from there and checks the hash instead of keeping a second copy.
+BASELINE = HERE.parent / 'baseline.tex'
+BASELINE_SHA256 = '8684a76e6014d66bd520f5b65f12acdb3e24157cfa5f0a227025963b6cb84dd5'
 TASKS = ('polish', 'triage', 'refs')
 CHARS_PER_TOKEN = 3.2          # LaTeX + English, Qwen tokenizer; used only for estimates
 
@@ -1525,6 +1529,16 @@ def cmd_apply(args):
     if failed:
         log('验证失败：候选稿仅供排查，未发布新的正式稿。')
         return 4
+    target = getattr(args, 'out', None)
+    if target is not None:
+        if target.exists() and not getattr(args, 'force', False):
+            log('%s 已存在，未覆盖（初筛和引用核查的修改可能已经写在里面）。确认要替换时加 --force。' % target)
+            return 5
+        target.parent.mkdir(parents=True, exist_ok=True)
+        tmp = target.with_name(target.name + '.tmp')
+        tmp.write_text(new, encoding='utf-8')
+        os.replace(tmp, target)
+        print('已发布到 %s（SHA-256 前缀 %s）。初筛和引用核查要改的地方直接在这份文件上改。' % (target, qp.sha(new)[:12]))
     return 0
 
 
@@ -1565,8 +1579,24 @@ def cmd_prepare(args):
         return 2
 
 
+def resolve_tex(path):
+    """The manuscript to prepare: by default the stage's baseline.tex, which must have its pinned hash."""
+    if path is None:
+        if not BASELINE.is_file():
+            raise ValueError('找不到 %s：nt27b 放在 nt-final-stage/2-branch2/ 里时从上一层读 baseline.tex；'
+                             '单独使用时请用 --tex 指定稿件' % BASELINE)
+        path = BASELINE
+    digest = qp.sha(path.read_text(encoding='utf-8'))
+    if path.resolve() == BASELINE.resolve() and digest != BASELINE_SHA256:
+        raise ValueError('%s 的 SHA-256 是 %s…，应为 %s…：baseline 被改过或换错了文件' % (path, digest[:12], BASELINE_SHA256[:12]))
+    if digest != BASELINE_SHA256:
+        log('注意：--tex 不是 baseline.tex（SHA-256 %s…）。branch2 必须从 baseline 开始改；只在测试或试跑时这样用。' % digest[:12])
+    return path
+
+
 def _cmd_prepare(args):
     out = args.out
+    args.tex = resolve_tex(args.tex)
     tex = args.tex.read_text(encoding='utf-8')
     digest = qp.sha(tex)
     mp = out / 'manifest.json'
@@ -1701,7 +1731,8 @@ def main(argv=None):
     sub = p.add_subparsers(dest='cmd', required=True)
 
     a = sub.add_parser('prepare', help='build the request files; sends nothing')
-    a.add_argument('--tex', type=Path, required=True, help='current nt.tex')
+    a.add_argument('--tex', type=Path, default=None,
+                   help='manuscript to prepare (default: ../baseline.tex, hash-checked; branch2 starts from it)')
     a.add_argument('--out', type=Path, default=Path('job'))
     a.add_argument('--task', choices=TASKS + ('all',), default='all')
     a.add_argument('--list', type=Path, default=HERE / '语言问题清单.txt', help='language list (hints for polish)')
@@ -1768,6 +1799,9 @@ def main(argv=None):
     a = sub.add_parser('apply', help='polish: apply ticked revisions to nt.tex (never modifies the input)')
     a.add_argument('job', type=Path)
     a.add_argument('--tex', type=Path, required=True)
+    a.add_argument('--out', type=Path, help='also publish the verified result here, e.g. ../branch2.tex (never overwritten '
+                                            'without --force: the triage/refs fixes are made in that file afterwards)')
+    a.add_argument('--force', action='store_true', help='with --out: replace an existing file')
     a.add_argument('--accept-clean', action='store_true', help='also apply every revision that passed all checks')
     a.add_argument('--compile', action='store_true', help='run pdflatex twice on the result')
     a.set_defaults(func=cmd_apply)

@@ -1,6 +1,23 @@
-# nt27b 1.1.1
+# nt27b 1.1.1（nt-final-stage 第 2 步）
 
 用本地或 GPU 上的模型批量处理数论讲义。主程序只用 Python 标准库，支持 Python 3.9 及以上版本。
+
+## 在 nt-final-stage 里：从 baseline 生成 branch2
+
+本程序放在 `nt-final-stage/2-branch2/`，讲义只有一份：上一层的 `baseline.tex`。`prepare` 不写 `--tex` 时就读它，并校验 SHA-256（`8684a76e…`），不一致就停下；包里不再有 `data/nt.tex` 副本。产物 `branch2.tex` 也放在上一层，第 3 步直接使用。
+
+| 步骤 | 在哪 | 命令 |
+|---|---|---|
+| 1. 准备任务 | Mac | `python3 nt27b.py prepare --out job-27b`（读 `../baseline.tex`） |
+| 2. 跑模型 | RunPod（vLLM） | 把整个 `2-branch2/`（含 `job-27b/`）传上去，`MODEL=<第 1 步的 HF 仓名> MODEL_REVISION=<该仓库的 commit> JOB=job-27b bash gpu/run_gpu.sh`，取回 `results-*.tgz` |
+| 3. 审阅 | Mac | `collect`；勾选 `job-27b/polish/review.md` |
+| 4. 写出润色稿 | Mac | `python3 nt27b.py apply job-27b --tex ../baseline.tex --compile --out ../branch2.tex` |
+| 5. 初筛与引用修补 | Mac（交给 Claude 或人工） | 按 `job-27b/triage/for-claude.md`、`job-27b/refs/for-claude.md` 逐条判断，要改的直接改在 `../branch2.tex` 上 |
+
+- 第 1 步的成品：BF16 仓库是笔记本 `output_repo`，commit 在笔记本 `uploaded.json`（或 Hub 页面）里；FP8 仓库是 `output_repo + "-FP8"`，commit 在 `fp8_uploaded.json`。`MODEL` 是 Hub 仓名、`MODEL_REVISION` 是 40 位 commit 时，`run_gpu.sh` 会把它作为 `--revision` 交给 vLLM，下载的正是这一版；它同时进入回答缓存的身份。仓库默认私有，RunPod 上要设 `HF_TOKEN`。
+- **BF16 还是 FP8**：FP8 仓库是 128×128 分块的 e4m3 权重（`quant_method: fp8`，动态激活），vLLM 在 H100 上原生支持，显存占用约为 BF16 的一半，KV 缓存更宽裕；A100 没有 FP8 计算单元，vLLM 能否用 weight-only 方式加载分块 FP8 取决于版本，要先用冒烟样本试。BF16 在 80GB 卡上也放得下（权重约 54GB）。两者的回答不保证逐字相同，选定一个后整次运行不要换；换了要换新的 `MODEL_REVISION`。
+- `apply --out` 只在全部检查（和 `--compile`）通过后才写 `../branch2.tex`；文件已存在时不覆盖（第 5 步的修改可能已经在里面），确实要重来时加 `--force`。
+- 第 5 步的修改同样算 27B 的改动，统计在第 3 步的留存率里。不要增删带编号的环境、不要改 `\label`（第 3 步会核对）。
 
 | 任务 | 用途 | 主要产出 |
 |---|---|---|
@@ -28,7 +45,7 @@ python3 nt27b.py status job-v111 --json --details
 
 - 行号、定理环境和章节定位使用预建索引与二分查找，减少生成任务时的重复扫描。
 - 新增 `python3 nt27b.py --version`，输出 `nt27b 1.1.1`。
-- 增加行号偏移、环境边界、章节切换、版本查询与状态诊断测试，共 86 项测试。
+- 增加行号偏移、环境边界、章节切换、版本查询与状态诊断测试，共 86 项测试（nt-final-stage 版另加 8 项，共 94 项）。
 - 随包数据生成的 3090 条请求与升级前逐字节一致；讲义、CSV 和语言清单未改动。
 
 从 1.1.0 升级时，建议使用 `job-v111` 等新目录重新运行完整 `prepare`。版本号参与任务与回答的校验，旧任务不能直接部分重建，旧回答在重新请求时会失效；不要手工修改版本号来复用缓存。独立润色工具 `qwen_polish.py` 保留其自身版本号 2.1.1。
@@ -61,7 +78,7 @@ python3 nt27b.py status job-v111 --json --details
 nt27b.py                    主程序
 qwen_polish.py              共用定位、公式检查和原清单润色工具
 语言问题清单.txt             100 条语言提示
-data/nt.tex                 当前讲义
+../baseline.tex             当前讲义（nt-final-stage 主文件夹，唯一一份；prepare 的默认输入）
 data/nt.before-fixes.tex     审计表行号对应的旧讲义
 data/ntaudit-DS反馈分拣.csv  审计表
 gpu/run_gpu.sh              GPU 批处理入口
@@ -75,7 +92,7 @@ ZIP 已正确标记中文文件名编码。解压后进入 `nt27b` 目录运行�
 ## 准备任务
 
 ```bash
-python3 nt27b.py prepare --tex data/nt.tex --out job-v111
+python3 nt27b.py prepare --out job-v111          # 默认读 ../baseline.tex 并校验哈希
 python3 nt27b.py show job-v111 --task triage --index 100
 python3 nt27b.py estimate job-v111
 ```
@@ -101,11 +118,11 @@ python3 tools/mock_server.py --port 8099
 在另一个终端运行：
 
 ```bash
-python3 nt27b.py prepare --tex data/nt.tex --out job-mock
+python3 nt27b.py prepare --out job-mock
 python3 nt27b.py ask job-mock --base-url http://127.0.0.1:8099/v1 --model mock-27b --concurrency 8
 python3 nt27b.py verify job-mock
 python3 nt27b.py collect job-mock
-python3 nt27b.py apply job-mock --tex data/nt.tex --accept-clean --compile
+python3 nt27b.py apply job-mock --tex ../baseline.tex --accept-clean --compile
 ```
 
 结束后在假服务终端按 Ctrl-C。最后一条要求本机有可用的 pdflatex；失败候选只用于排查，不应采用。
@@ -158,7 +175,7 @@ python3 nt27b.py verify job-v111
 - `已拒绝`，不会应用；如需改写，应重新提出合规的修改。
 
 ```bash
-python3 nt27b.py apply job-v111 --tex data/nt.tex --compile
+python3 nt27b.py apply job-v111 --tex ../baseline.tex --compile --out ../branch2.tex
 ```
 
 加 `--accept-clean` 可同时采用未勾选、但规则检查通过的模型建议。不要把复选框未勾选理解为在该选项下永久拒绝。

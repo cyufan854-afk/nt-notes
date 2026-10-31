@@ -226,6 +226,24 @@ class GpuRunnerTests(unittest.TestCase):
                     self.assertIn("--model-revision", call)
                     self.assertEqual(call[call.index("--model-revision") + 1], expected)
 
+    def test_hub_commit_is_passed_to_vllm(self):
+        commit = "0123456789abcdef0123456789abcdef01234567"
+        local = self.root / "local-model"
+        local.mkdir()
+        cases = [("user/nt27b-merge", commit, True), ("user/nt27b-merge", "checkpoint-a", False), (str(local), commit, False)]
+        for model, revision, forwarded in cases:
+            with self.subTest(model=model, revision=revision):
+                self.events_path.unlink(missing_ok=True)
+                result = self.run_runner(model=model, model_revision=revision)
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                serve = self.events("vllm")[0]["args"]
+                self.assertEqual(serve[:2], ["serve", model])
+                if forwarded:
+                    self.assertEqual(serve[serve.index("--revision") + 1], commit)
+                    self.assertEqual(serve[serve.index("--tokenizer-revision") + 1], commit)
+                else:
+                    self.assertNotIn("--revision", serve)
+
     def test_resuming_existing_answers_requires_explicit_model_revision(self):
         responses = self.job / "polish" / "responses.jsonl"
         responses.parent.mkdir()
