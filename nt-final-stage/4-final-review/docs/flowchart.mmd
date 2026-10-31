@@ -1,0 +1,13 @@
+flowchart TD
+    F[单条 finding 或文件任务] --> P[规划]
+    P --> A[分析 A]
+    P --> B[分析 B]
+    A --> X[可选隔离执行与真实记录]
+    B --> Y[可选隔离执行与真实记录]
+    X --> R[审查 A]
+    Y --> S[审查 B]
+    R -->|revise| A
+    S -->|revise| B
+    R --> O[程序汇集结论与证据]
+    S --> O
+    O --> T[五类 finding 状态]

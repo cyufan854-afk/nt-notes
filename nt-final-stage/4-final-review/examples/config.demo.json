@@ -1,0 +1,103 @@
+{
+  "protocol_version": 3,
+  "demo": true,
+  "timeout": 600,
+  "timeouts": {
+    "planner": 600,
+    "analysis0": 1200,
+    "analysis1": 1200,
+    "revision0": 1200,
+    "revision1": 1200,
+    "reviewer": 600,
+    "exchange0": 1200,
+    "exchange1": 1200,
+    "merge": 900,
+    "confirm0": 600,
+    "confirm1": 600
+  },
+  "execution": {
+    "enabled": true,
+    "backend": "docker",
+    "executable": "docker",
+    "image": "python:3.12-slim",
+    "timeout": 30,
+    "memory_mb": 256,
+    "cpus": 1,
+    "pids": 32,
+    "max_output_bytes": 131072
+  },
+  "max_calls": 12,
+  "max_rounds": 1,
+  "max_prompt_chars": 180000,
+  "roles": {
+    "planner": "claude",
+    "analysts": [
+      "codex",
+      "gemini"
+    ],
+    "reviewer": "claude"
+  },
+  "providers": {
+    "claude": {
+      "kind": "demo",
+      "model": null,
+      "auth_mode": "native"
+    },
+    "codex": {
+      "kind": "demo",
+      "model": null,
+      "auth_mode": "native"
+    },
+    "gemini": {
+      "kind": "demo",
+      "model": null,
+      "auth_mode": "native"
+    },
+    "kimi": {
+      "kind": "demo",
+      "model": null,
+      "auth_mode": "native"
+    },
+    "deepseek": {
+      "kind": "demo",
+      "url": "https://api.deepseek.com/chat/completions",
+      "model": "deepseek-flash",
+      "key_env": "DEEPSEEK_API_KEY",
+      "max_tokens": 8192,
+      "auth_mode": "api"
+    }
+  },
+  "edit": {
+    "max_rounds": 3,
+    "max_calls_per_unit": 30,
+    "scope": "math",
+    "roles": {
+      "planner": "deepseek",
+      "analysts": [
+        "codex",
+        "gemini"
+      ],
+      "reviewer": "claude"
+    },
+    "check_command": [],
+    "check_timeout": 600,
+    "label_number_check": true,
+    "unit_envs": [
+      "theorem",
+      "definition",
+      "lemma",
+      "proposition",
+      "corollary",
+      "remark",
+      "example"
+    ],
+    "heading_commands": [
+      "section",
+      "subsection"
+    ],
+    "background_pattern": "Notation|Conventions",
+    "context_chars": 40000,
+    "history_chars": 30000,
+    "max_unit_chars": 40000
+  }
+}

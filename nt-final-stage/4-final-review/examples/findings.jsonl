@@ -1,0 +1,2 @@
+{"id": "F001", "location": "示例定理 1", "excerpt": "For every prime p, p is odd.", "concern": "是否遗漏 p=2？"}
+{"id": "F002", "location": "示例公式 2", "excerpt": "$\\nu_p(n)$, $\\frac{a}{b}$, $\\theta$, $a \\equiv b$", "concern": "检查公式在传输和报告中是否保持原样；这是协议示例。"}
