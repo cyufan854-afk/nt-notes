@@ -2,30 +2,40 @@
 
 用本地或 GPU 上的模型批量处理数论讲义。主程序只用 Python 标准库，支持 Python 3.9 及以上版本。
 
-## 在 nt-final-stage 里：从 baseline 生成 branch2
+## 在 nt-final-stage 里：从 baseline 生成 branch2（用 branch2.py）
 
-本程序放在 `nt-final-stage/2-branch2/`，讲义只有一份：上一层的 `baseline.tex`。`prepare` 不写 `--tex` 时就读它，并校验 SHA-256（`8684a76e…`），不一致就停下；包里不再有 `data/nt.tex` 副本。产物 `branch2.tex` 也放在上一层，第 3 步直接使用。
+`branch2.py` 是第 2 步的总控。三类请求（polish 570、triage 1800、refs 720）全部基于上一层的 `baseline.tex` 生成，在 RunPod 上一次跑完。之后在 Mac 上分三个阶段应用，每个阶段留一份完整的稿子，用来记录每处修改出自哪一步。`qwen_polish.py` 只作为 nt27b 的公共模块（定位原文、公式检查）保留，不再单独跑：它处理的 100 条语言清单已经作为提示放进了 polish 的请求里。
 
-| 步骤 | 在哪 | 命令 |
-|---|---|---|
-| 1. 准备任务 | Mac | `python3 nt27b.py prepare --out job-27b`（读 `../baseline.tex`） |
-| 2. 跑模型 | RunPod（vLLM） | 把整个 `2-branch2/`（含 `job-27b/`）传上去，`MODEL=<第 1 步的 HF 仓名> MODEL_REVISION=<该仓库的 commit> JOB=job-27b bash gpu/run_gpu.sh`，取回 `results-*.tgz` |
-| 3. 审阅 | Mac | `collect`；勾选 `job-27b/polish/review.md` |
-| 4. 写出润色稿 | Mac | `python3 nt27b.py apply job-27b --tex ../baseline.tex --compile --out ../branch2.tex` |
-| 5. 初筛与引用修补 | Mac（交给 Claude 或人工） | 按 `job-27b/triage/for-claude.md`、`job-27b/refs/for-claude.md` 逐条判断，要改的直接改在 `../branch2.tex` 上 |
+```bash
+python3 branch2.py prepare                       # Mac：读 ../baseline.tex（校验哈希），生成 3090 条请求到 job-27b/
+# RunPod：把整个 2-branch2/（含 job-27b/）传上去，一次跑完三类请求
+MODEL=<第 1 步的仓名> MODEL_REVISION=<该仓库的 commit> JOB=job-27b GPU_PRICE=<时价> bash gpu/run_gpu.sh
+python3 branch2.py import results-….tgz          # Mac：只解出 job-27b/ 下的普通文件
+python3 branch2.py status                        # 随时看到了哪一步、下一步做什么
+python3 branch2.py next                          # 一步一步往下走（见下表）
+```
 
-- 第 1 步的成品：BF16 仓库是笔记本 `output_repo`，commit 在笔记本 `uploaded.json`（或 Hub 页面）里；FP8 仓库是 `output_repo + "-FP8"`，commit 在 `fp8_uploaded.json`。`MODEL` 是 Hub 仓名、`MODEL_REVISION` 是 40 位 commit 时，`run_gpu.sh` 会把它作为 `--revision` 交给 vLLM，下载的正是这一版；它同时进入回答缓存的身份。仓库默认私有，RunPod 上要设 `HF_TOKEN`。
-- **BF16 还是 FP8**：FP8 仓库是 128×128 分块的 e4m3 权重（`quant_method: fp8`，动态激活），vLLM 在 H100 上原生支持，显存占用约为 BF16 的一半，KV 缓存更宽裕；A100 没有 FP8 计算单元，vLLM 能否用 weight-only 方式加载分块 FP8 取决于版本，要先用冒烟样本试。BF16 在 80GB 卡上也放得下（权重约 54GB）。两者的回答不保证逐字相同，选定一个后整次运行不要换；换了要换新的 `MODEL_REVISION`。
-- `apply --out` 只在全部检查（和 `--compile`）通过后才写 `../branch2.tex`；文件已存在时不覆盖（第 5 步的修改可能已经在里面），确实要重来时加 `--force`。
-- 第 5 步的修改同样算 27B 的改动，统计在第 3 步的留存率里。不要增删带编号的环境、不要改 `\label`（第 3 步会核对）。
+| 阶段 | `next` 做什么 | 你做什么 | 产物 |
+|---|---|---|---|
+| 整理 | 校验回答完整，生成 `job-27b/polish/review.md` 等审阅文件 | — | — |
+| 1. 润色 | 应用你勾选的润色（`--accept-clean` 同时采用所有规则检查通过的；`--compile` 编译核对） | 在 `review.md` 里勾选 | `stages/1-polish.tex` |
+| 2. 初筛修补 | 复制出 `2-triage.tex`，写任务说明 `stages/2-triage-task.md` | 把任务说明交给 Claude（agent 模式）：它按 `job-27b/triage/for-claude.md` 逐条判断，修改 `2-triage.tex`，写 `2-triage-log.md`；完成后 `next --done` | `stages/2-triage.tex` |
+| 3. 引用核查修补 | 同上：`3-refs.tex`、`stages/3-refs-task.md` | 同上，依据 `job-27b/refs/for-claude.md`；完成后 `next --done` | `stages/3-refs.tex` |
+| 收尾 | 最后检查，写出 `../branch2.tex`；写来源统计 `stages/provenance.md` | — | `../branch2.tex` |
 
-| 任务 | 用途 | 主要产出 |
-|---|---|---|
-| `polish` | 按块提出英文润色建议 | 可勾选的 `review.md`、修改差异、新稿 |
-| `triage` | 初筛 DeepSeek 表中的未审条目 | 按判断分组的报告和待复核清单 |
-| `refs` | 检查引用用途和前提 | 引用问题报告和待复核清单 |
-
-模型输出仍需审阅。程序能检查原文、公式和结构是否被改动，无法独自证明数学含义等价或引用推理正确。`规则检查通过` 表示通过了本版本的自动规则。
+- 每个阶段结束都会检查：label 和 theorem / definition 环境与 baseline 完全相同，`\begin` / `\end` 配对，没有冲突标记。不通过就停下并说明原因，不进入下一步。
+- `../branch2.tex` 已存在且内容不同时不覆盖，加 `--force` 才替换。
+- 来源：
+  - 润色是 27B 写、你勾选的；
+  - 初筛和引用核查是 27B 提出、agent 决定并写入的。
+  - 第 3 步的 `run_retention.py` 看到 `stages/` 里的三份稿子，会把 27B 的改动按这三个阶段分开统计。
+- 第 1 步的成品：BF16 仓库是笔记本的 `output_repo`，commit 在笔记本的 `uploaded.json`（或 Hub 页面）里；FP8 仓库是 `output_repo + "-FP8"`，commit 在 `fp8_uploaded.json`。`MODEL` 是 Hub 仓名、`MODEL_REVISION` 是 40 位 commit 时，`run_gpu.sh` 会把它作为 `--revision` 交给 vLLM，下载的正是这一版，它同时进入回答缓存的身份。仓库默认私有，RunPod 上要设 `HF_TOKEN`。
+- **BF16 还是 FP8**：
+  - FP8 仓库是 128×128 分块的 e4m3 权重（`quant_method: fp8`，动态激活），vLLM 在 H100 上原生支持。
+  - A100 没有 FP8 计算单元，能否用 weight-only 方式加载分块 FP8 取决于 vLLM 版本，要先用冒烟样本试。
+  - BF16 在 80GB 卡上也放得下（权重约 54GB）。
+  - 两者的回答不保证逐字相同，选定一个后整次运行不要换；换了要换新的 `MODEL_REVISION`。
+- 也可以不用 `branch2.py`，按下面各节直接用 `nt27b.py` 的子命令；那样就没有阶段稿和来源统计。
 
 ## 任务进度与排错
 
@@ -45,7 +55,7 @@ python3 nt27b.py status job-v111 --json --details
 
 - 行号、定理环境和章节定位使用预建索引与二分查找，减少生成任务时的重复扫描。
 - 新增 `python3 nt27b.py --version`，输出 `nt27b 1.1.1`。
-- 增加行号偏移、环境边界、章节切换、版本查询与状态诊断测试，共 86 项测试（nt-final-stage 版另加 8 项，共 94 项）。
+- 增加行号偏移、环境边界、章节切换、版本查询与状态诊断测试，共 86 项测试（nt-final-stage 版另加 11 项，共 97 项）。
 - 随包数据生成的 3090 条请求与升级前逐字节一致；讲义、CSV 和语言清单未改动。
 
 从 1.1.0 升级时，建议使用 `job-v111` 等新目录重新运行完整 `prepare`。版本号参与任务与回答的校验，旧任务不能直接部分重建，旧回答在重新请求时会失效；不要手工修改版本号来复用缓存。独立润色工具 `qwen_polish.py` 保留其自身版本号 2.1.1。
@@ -75,8 +85,9 @@ python3 nt27b.py status job-v111 --json --details
 ## 目录
 
 ```text
+branch2.py                  第 2 步总控（阶段稿、来源统计）
 nt27b.py                    主程序
-qwen_polish.py              共用定位、公式检查和原清单润色工具
+qwen_polish.py              nt27b 的公共模块（定位原文、公式检查）；不再单独运行
 语言问题清单.txt             100 条语言提示
 ../baseline.tex             当前讲义（nt-final-stage 主文件夹，唯一一份；prepare 的默认输入）
 data/nt.before-fixes.tex     审计表行号对应的旧讲义

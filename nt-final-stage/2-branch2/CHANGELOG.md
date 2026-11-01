@@ -1,4 +1,6 @@
-# nt-final-stage 版（2026-10-31，版本号仍为 1.1.1）
+# nt-final-stage 版（2026-10-31 / 11-01，版本号仍为 1.1.1）
+
+- 新增 `branch2.py`：第 2 步总控（prepare / import / status / next），三类请求全部基于 baseline、一次 GPU 跑完；Mac 上分润色、初筛修补、引用核查修补三个阶段应用，每个阶段留一份稿子（`stages/`），给 agent 的任务说明自动生成，每步检查 label 与编号环境，收尾写 `../branch2.tex` 和来源统计。`qwen_polish.py` 只作为公共模块保留，不再单独运行。新增 3 项测试。
 
 - 讲义只保留一份：删去 `data/nt.tex`，`prepare` 不写 `--tex` 时读上一层的 `baseline.tex`，并按固定的 SHA-256 校验，不一致或缺失就停下；`--tex` 指向别的稿子时只提示（测试、试跑用）。
 - `apply --out ../branch2.tex`：全部检查通过后另存一份到给定位置；已存在时不覆盖（加 `--force` 才替换），因为初筛和引用核查的修改会直接写在那份文件上。
