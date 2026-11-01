@@ -66,6 +66,23 @@ class Layout(unittest.TestCase):
         self.assertNotIn('27B', args)
         self.assertEqual(len(notes), 2)
 
+    def test_stage_snapshots_split_the_27b_changes(self):
+        stages = self.root / '2-branch2' / 'stages'
+        stages.mkdir(parents=True)
+        one = BASE.replace('two even numbers', 'two even integers')
+        (stages / '1-polish.tex').write_text(one)
+        (stages / '2-triage.tex').write_text(one.replace('Every prime is odd', 'Every prime $p>2$ is odd'))
+        (stages / '3-refs.tex').write_text((stages / '2-triage.tex').read_text())
+        (self.root / 'branch2.tex').write_text((stages / '3-refs.tex').read_text())
+        args, notes = self.plan()
+        sources = [args[i + 1] for i, a in enumerate(args) if a == '--source']
+        self.assertEqual(sources, ['27B', '27B·润色', '27B·初筛', '27B·引用核查', 'Muse Wonder'])
+        i = args.index('27B·初筛')
+        self.assertEqual(args[i + 1:i + 3], [str(stages / '1-polish.tex'), str(stages / '2-triage.tex')])
+        self.assertEqual(notes, ['【演示】没找到 final.tex（第 3 步的最终稿），先用 branch1.tex 当最终稿。'])
+        (self.root / 'branch2.tex').write_text(one)
+        self.assertTrue(any('阶段稿之后又改过' in n for n in self.plan()[1]))
+
     def test_end_to_end_report(self):
         import retention
         (self.root / 'branch2.tex').write_text(BRANCH2)

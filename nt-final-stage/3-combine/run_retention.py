@@ -22,6 +22,8 @@ ROOT = HERE.parent
 SNAP = HERE / 'snapshots'
 # baseline.tex 是数据，内容固定（= nt27b 1.1.1 的 data/nt.tex）。不一致就说明主文件夹里的 baseline 被改过或换错了。
 BASELINE_SHA256 = '8684a76e6014d66bd520f5b65f12acdb3e24157cfa5f0a227025963b6cb84dd5'
+# Stage snapshots written by 2-branch2/branch2.py: baseline -> 1-polish -> 2-triage -> 3-refs (= branch2.tex).
+STAGES = (('27B·润色', '1-polish.tex'), ('27B·初筛', '2-triage.tex'), ('27B·引用核查', '3-refs.tex'))
 MUSE_BEFORE = 'nt-branch1-muse-before.tex'
 MUSE_AFTER = 'nt-branch1-muse-after.tex'
 sys.path.insert(0, str(HERE))
@@ -42,7 +44,7 @@ def sha256(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
-def plan(root=ROOT, snapshots=SNAP, out=HERE / 'retention', final=None, branch2=None, expected_sha=BASELINE_SHA256):
+def plan(root=ROOT, snapshots=SNAP, out=HERE / 'retention', final=None, branch2=None, expected_sha=BASELINE_SHA256, stages=None):
     """The argument list for retention.main, plus notes to print. Raises SetupError for a missing or wrong baseline."""
     root, snapshots = Path(root), Path(snapshots)
     notes = []
@@ -65,6 +67,18 @@ def plan(root=ROOT, snapshots=SNAP, out=HERE / 'retention', final=None, branch2=
             raise SetupError(f'{base} 的 SHA-256 是 {digest[:12]}…，应为 {expected_sha[:12]}…：baseline 被改过或换错了文件。'
                              '请换回原始的 baseline.tex 再运行。')
         args += ['--source', '27B', str(base), str(branch2)]
+        # The same 27B changes split by where they came from, when step 2 left its stage snapshots.
+        stages = Path(stages) if stages else root / '2-branch2' / 'stages'
+        files = [stages / name for _, name in STAGES]
+        if all(f.exists() for f in files):
+            if files[-1].read_bytes() != branch2.read_bytes():
+                notes.append(f'【注意】{branch2.name} 与阶段稿 {files[-1].name} 不同（阶段稿之后又改过）；分阶段统计只到阶段稿为止。')
+            previous = base
+            for (label, _), f in zip(STAGES, files):
+                args += ['--source', label, str(previous), str(f)]
+                previous = f
+        elif any(f.exists() for f in files):
+            notes.append('【跳过分阶段统计】2-branch2/stages/ 里的阶段稿不全。')
     else:
         notes.append(f'【跳过 27B】没找到 {branch2}。')
     for name in (MUSE_BEFORE, MUSE_AFTER):

@@ -48,6 +48,29 @@ class PlanTests(unittest.TestCase):
         self.assertFalse(by['def:5.7.2']['branch2'])
 
 
+class AuditTests(unittest.TestCase):
+    def test_sources_rollbacks_new_text_and_the_log(self):
+        polished = 'Count the lattice points under the hyperbola $xy=n$.'
+        final = BRANCH1.replace('Count lattice points under the hyperbola.', polished)
+        rows = {r['unit']: r for r in mc.audit(BASE, BRANCH1, BRANCH2, final)}
+        # branch1 only renamed the \\ref here (a label artefact once both sides use final.tex's labels): branch2's polish
+        self.assertEqual((rows['thm:5.7.1']['source'], rows['thm:5.7.1']['needs_note']), ('branch2', None))
+        self.assertEqual(rows['def:5.7.2']['source'].split('/')[0], 'branch1')
+        self.assertIsNone(rows['def:5.7.2']['needs_note'])
+        # text of the merging model's own
+        own = {r['unit']: r for r in mc.audit(BASE, BRANCH1, BRANCH2, final.replace('$xy=n$.', '$xy=n$ for every $n\\ge1$.'))}
+        self.assertEqual(own['thm:5.7.1']['source'], 'new')
+        self.assertIn('新写', own['thm:5.7.1']['needs_note'])
+        # rolling back branch2's only change needs a note
+        rolled = mc.audit(BASE, BRANCH1, BRANCH2, BRANCH1)
+        r = {x['unit']: x for x in rolled}['thm:5.7.1']
+        self.assertIn('回滚', r['needs_note'])
+        with_log = {x['unit']: x for x in mc.audit(BASE, BRANCH1, BRANCH2, BRANCH1, '- thm:5.7.1：回滚 branch2 的润色，原因……')}
+        self.assertTrue(with_log['thm:5.7.1']['in_log'])
+        without = {x['unit']: x for x in mc.audit(BASE, BRANCH1, BRANCH2, BRANCH1, '（空日志）')}
+        self.assertFalse(without['thm:5.7.1']['in_log'])
+
+
 class VerifyTests(unittest.TestCase):
     def test_branch1_itself_passes(self):
         self.assertEqual(mc.verify(BRANCH1, BRANCH1), [])

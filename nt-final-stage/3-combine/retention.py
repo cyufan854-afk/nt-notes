@@ -113,6 +113,102 @@ def intact(amap, start, end, n_src):
     return all(amap[i + 1] == amap[i] + 1 for i in idx[:-1])
 
 
+# ---------------------------------------------------------------- labels renumbered between snapshots
+#
+# Labels are named after their numbers. When a definition is inserted (branch1 did this twice), the labels after it in
+# that subsection move up by one, and the merge renames \ref's accordingly. Before comparing a source with the final
+# text, its labels are renamed to the final text's names, so that a correctly renamed reference is not counted as a
+# rewrite, and units are reported under the final text's labels.
+
+NUMBERED = ('theorem', 'definition')
+LABEL = re.compile(r'\\label\{([^}]+)\}')
+ENV = re.compile(r'\\begin\{(' + '|'.join(NUMBERED) + r')\}(.*?)\\end\{\1\}', re.S)
+LABEL_USE = re.compile(r'(\\(?:label|ref|eqref|cref|Cref|autoref|pageref)\*?\{)([^}]*)(\})')
+
+
+def norm(text):
+    return ' '.join(text.split())
+
+
+def numbered(text):
+    """[(kind, label or None, statement without its label)] in document order."""
+    out = []
+    for m in ENV.finditer(text):
+        label = LABEL.search(m.group(2))
+        out.append((m.group(1), label.group(1) if label else None, norm(LABEL.sub('', m.group(2)))))
+    return out
+
+
+def _group(label):
+    """'def:5.7.1' -> ('def', '5.7'): labels are numbered within a subsection."""
+    m = re.fullmatch(r'([A-Za-z]+):(.*)\.(\d+)', label or '')
+    return (m.group(1), m.group(2)) if m else (label, '')
+
+
+TITLE = re.compile(r'^\[([^\]]*)\]')
+
+
+def similarity(x, y):
+    """Text similarity of two statements; an equal title ([name] right after \\begin) is decisive, a different one
+    counts against (a statement split in two keeps its title on the part that is still the same notion)."""
+    ratio = difflib.SequenceMatcher(None, x, y, autojunk=False).ratio()
+    tx, ty = TITLE.match(x), TITLE.match(y)
+    if tx and ty:
+        return 1.0 + ratio if norm(tx.group(1)).lower() == norm(ty.group(1)).lower() else 0.5 * ratio
+    return ratio
+
+
+def label_map(old_text, new_text):
+    """{old label: new label} for numbered environments, aligned by content inside each (kind, subsection) group.
+
+    Unchanged order is assumed (environments are only inserted or deleted, never moved); within a group the
+    alignment maximises the summed text similarity (Needleman-Wunsch with zero gap cost)."""
+    def groups(text):
+        g = {}
+        for kind, label, body in numbered(text):
+            if label:
+                g.setdefault((kind,) + _group(label), []).append((label, body))
+        return g
+    old, new = groups(old_text), groups(new_text)
+    out = {}
+    for key in old:
+        a, b = old[key], new.get(key, [])
+        n, m = len(a), len(b)
+        sims = [[similarity(x[1], y[1]) for y in b] for x in a]
+        score = [[0.0] * (m + 1) for _ in range(n + 1)]
+        for i in range(n - 1, -1, -1):
+            for j in range(m - 1, -1, -1):
+                sim = sims[i][j]
+                score[i][j] = max(score[i + 1][j], score[i][j + 1], sim + score[i + 1][j + 1] if sim >= 0.5 else 0.0)
+        i = j = 0
+        while i < n and j < m:
+            sim = sims[i][j]
+            if sim >= 0.5 and abs(score[i][j] - (sim + score[i + 1][j + 1])) < 1e-12:
+                out[a[i][0]] = b[j][0]
+                i, j = i + 1, j + 1
+            elif score[i][j] == score[i + 1][j]:
+                i += 1
+            else:
+                j += 1
+    return out
+
+
+def rename_labels(text, mapping):
+    """Every \\label / \\ref-like use of an old label replaced by its new name, all at once (chains are safe)."""
+    if not mapping:
+        return text
+
+    def sub(m):
+        parts = m.group(2).split(',')
+        return m.group(1) + ','.join(p.replace(p.strip(), mapping.get(p.strip(), p.strip())) if p.strip() else p for p in parts) + m.group(3)
+    return LABEL_USE.sub(sub, text)
+
+
+def label_mapping(after_text, final_text):
+    """{label in the source's AFTER snapshot: label in the final text}, only the ones that differ."""
+    return {k: v for k, v in label_map(after_text, final_text).items() if k != v}
+
+
 # ---------------------------------------------------------------- units
 
 def unit_index(text):
@@ -174,7 +270,10 @@ def final_excerpt(after_text, ft, f_text, af_map, a1, a2, reach=60):
     return span_text(f_text, ft, lo, hi)
 
 
-def analyse(name, before_text, after_text, final_text, gap):
+def analyse(name, before_text, after_text, final_text, gap, mapping=None):
+    """Hunks of BEFORE -> AFTER classified against FINAL. `mapping` renames the source's labels to the final text's
+    first (see label_mapping); None or {} compares the texts as they are."""
+    before_text, after_text = rename_labels(before_text, mapping), rename_labels(after_text, mapping)
     bt, at, ops, _ = align(before_text, after_text)
     _, ft, _, af_map = align(after_text, final_text)
     _, _, _, bf_map = align(before_text, final_text)
@@ -209,8 +308,11 @@ def pct(k, n):
     return f'{k} ({100 * k / n:.1f}%)' if n else '0'
 
 
-def write_reports(results, final_path, gap, out):
+def write_reports(results, final_path, gap, out, mappings=None):
+    renamed = [f'{n}：' + '，'.join(f'`{a}`→`{b}`' for a, b in sorted(m.items())) for n, m in (mappings or {}).items() if m]
     lines = ['# 改动留存率', f'最终稿：`{final_path}`', '',
+             *(['比较前已把各来源的 label 按最终稿的编号统一（带编号的环境在后来的版本里有增加，编号顺延）：' + '；'.join(renamed)
+                + '。单元也按最终稿的 label 归类。', ''] if renamed else []),
              f'粒度：按改动块计。一块 = 一处连续的改动（按词比较，忽略空白和换行；相隔不超过 {gap} 个未改动词的改动合并为一块）。',
              '保留 = 改后的文字原样、连续地出现在最终稿的对应位置；撤回 = 改前的文字回到了那里；改写 = 两者都不是。', '',
              '| 来源 | 改动块 | 保留 | 撤回 | 改写 |', '|---|---|---|---|---|']
@@ -257,18 +359,24 @@ def main(argv=None):
                    help='来源名称及其改动前、改动后两份快照；可重复')
     p.add_argument('--gap', type=int, default=2, help='相隔不超过多少个未改动词的改动合并为一块（默认 2）')
     p.add_argument('--out', default='retention', help='输出文件名前缀（写 .md 和 .csv）')
+    p.add_argument('--no-label-map', action='store_true', help='不按最终稿统一 label（默认会统一，见报告开头）')
     args = p.parse_args(argv)
     if args.gap < 0:
         p.error('--gap 不能为负')
     read = lambda path: Path(path).read_bytes().decode('utf-8')
     final = read(args.final)
-    results = []
+    results, mappings = [], {}
     for name, before, after in args.source:
-        rows = analyse(name, read(before), read(after), final, args.gap)
+        after_text = read(after)
+        mapping = {} if args.no_label_map else label_mapping(after_text, final)
+        mappings[name] = mapping
+        if mapping:
+            print(f'{name}：按最终稿统一了 {len(mapping)} 个 label：' + '，'.join(f'{a}→{b}' for a, b in sorted(mapping.items())))
+        rows = analyse(name, read(before), after_text, final, args.gap, mapping)
         results.append((name, rows))
         total, c = summarise(rows)
         print(f'{name}: {total} 处改动；保留 {pct(c["kept"], total)}，撤回 {pct(c["reverted"], total)}，改写 {pct(c["rewritten"], total)}')
-    write_reports(results, args.final, args.gap, args.out)
+    write_reports(results, args.final, args.gap, args.out, mappings)
     print(f'明细：{args.out}.md，{args.out}.csv')
     return 0
 

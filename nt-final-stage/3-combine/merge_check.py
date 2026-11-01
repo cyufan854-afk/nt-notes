@@ -25,10 +25,8 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 import retention  # noqa: E402  (unit boundaries are the same as in the retention report)
 
-NUMBERED = ('theorem', 'definition')
-LABEL = re.compile(r'\\label\{([^}]+)\}')
+from retention import NUMBERED, LABEL, ENV, numbered, label_map, similarity, rename_labels  # noqa: E402  (shared with the retention report)
 REF = re.compile(r'\\(?:ref|eqref|cref|Cref|autoref|pageref)\*?\{([^}]+)\}')
-ENV = re.compile(r'\\begin\{(' + '|'.join(NUMBERED) + r')\}(.*?)\\end\{\1\}', re.S)
 MARKER = re.compile(r'^[ \t]*(?:<{7}|={7}|>{7}|\|{7})(?:\s|$)', re.M)
 
 
@@ -38,69 +36,6 @@ def read(path):
 
 def norm(text):
     return ' '.join(text.split())
-
-
-def numbered(text):
-    """[(kind, label or None, statement without its label)] in document order."""
-    out = []
-    for m in ENV.finditer(text):
-        label = LABEL.search(m.group(2))
-        out.append((m.group(1), label.group(1) if label else None, norm(LABEL.sub('', m.group(2)))))
-    return out
-
-
-def _group(label):
-    """'def:5.7.1' -> ('def', '5.7'): labels are numbered within a subsection."""
-    m = re.fullmatch(r'([A-Za-z]+):(.*)\.(\d+)', label or '')
-    return (m.group(1), m.group(2)) if m else (label, '')
-
-
-TITLE = re.compile(r'^\[([^\]]*)\]')
-
-
-def similarity(x, y):
-    """Text similarity of two statements; an equal title ([name] right after \\begin) is decisive, a different one
-    counts against (a statement split in two keeps its title on the part that is still the same notion)."""
-    ratio = difflib.SequenceMatcher(None, x, y, autojunk=False).ratio()
-    tx, ty = TITLE.match(x), TITLE.match(y)
-    if tx and ty:
-        return 1.0 + ratio if norm(tx.group(1)).lower() == norm(ty.group(1)).lower() else 0.5 * ratio
-    return ratio
-
-
-def label_map(old_text, new_text):
-    """{old label: new label} for numbered environments, aligned by content inside each (kind, subsection) group.
-
-    Unchanged order is assumed (environments are only inserted or deleted, never moved); within a group the
-    alignment maximises the summed text similarity (Needleman-Wunsch with zero gap cost)."""
-    def groups(text):
-        g = {}
-        for kind, label, body in numbered(text):
-            if label:
-                g.setdefault((kind,) + _group(label), []).append((label, body))
-        return g
-    old, new = groups(old_text), groups(new_text)
-    out = {}
-    for key in old:
-        a, b = old[key], new.get(key, [])
-        n, m = len(a), len(b)
-        sims = [[similarity(x[1], y[1]) for y in b] for x in a]
-        score = [[0.0] * (m + 1) for _ in range(n + 1)]
-        for i in range(n - 1, -1, -1):
-            for j in range(m - 1, -1, -1):
-                sim = sims[i][j]
-                score[i][j] = max(score[i + 1][j], score[i][j + 1], sim + score[i + 1][j + 1] if sim >= 0.5 else 0.0)
-        i = j = 0
-        while i < n and j < m:
-            sim = sims[i][j]
-            if sim >= 0.5 and abs(score[i][j] - (sim + score[i + 1][j + 1])) < 1e-12:
-                out[a[i][0]] = b[j][0]
-                i, j = i + 1, j + 1
-            elif score[i][j] == score[i + 1][j]:
-                i += 1
-            else:
-                j += 1
-    return out
 
 
 def units(text):
@@ -136,6 +71,55 @@ def plan(base, b1, b2):
     lost2 = sorted(set(LABEL.findall(base)) - set(LABEL.findall(b2)))
     return rows, {'renamed_in_branch1': renamed, 'baseline_labels_not_in_branch1': lost1,
                   'baseline_labels_not_in_branch2': lost2, 'branch2_renamed': {k: v for k, v in m2.items() if k != v}}
+
+
+def audit(base, b1, b2, final, log_text=None):
+    """Where each unit of final.tex comes from, and whether merge-log.md mentions every decision that needs a word.
+
+    Each side is first renamed to final.tex's labels. A unit of final.tex equals branch1's, branch2's, the baseline's
+    (both sides rolled back), or none of them (combined or new text by the merging model). It needs an explanation in
+    the log when it is new text, or when it rolls back a change that only one side made."""
+    def renamed(text):
+        return rename_labels(text, {k: v for k, v in label_map(text, final).items() if k != v})
+    ub, u1, u2, uf = units(renamed(base)), units(b1), units(renamed(b2)), units(final)
+    rows = []
+    for uid, text in uf.items():
+        sides = {'branch1': u1.get(uid), 'branch2': u2.get(uid), 'baseline': ub.get(uid)}
+        same = [k for k in ('branch1', 'branch2', 'baseline') if sides[k] is not None and sides[k] == text]
+        changed1 = sides['branch1'] is not None and sides['baseline'] is not None and sides['branch1'] != sides['baseline']
+        changed2 = sides['branch2'] is not None and sides['baseline'] is not None and sides['branch2'] != sides['baseline']
+        source = same[0] if same else 'new'
+        need = None
+        if source == 'new':
+            closest = max((k for k in ('branch1', 'branch2') if sides[k]), key=lambda k: similarity(sides[k], text), default=None)
+            need = '新写或融合的文字' + (f'（最接近 {closest}）' if closest else '')
+        elif changed1 != changed2 and source in ('baseline', 'branch2' if changed1 else 'branch1'):
+            need = '回滚了只有 ' + ('branch1' if changed1 else 'branch2') + ' 做过的修改'
+        elif changed1 and changed2 and source == 'baseline':
+            need = '两边的修改都回滚了'
+        mentioned = None if log_text is None or need is None else (uid in log_text)
+        rows.append({'unit': uid, 'source': '/'.join(same) if same else 'new', 'branch1_changed': changed1,
+                     'branch2_changed': changed2, 'needs_note': need, 'in_log': mentioned})
+    return rows
+
+
+def write_audit(rows, out, log_present):
+    need = [r for r in rows if r['needs_note']]
+    missing = [r for r in need if r['in_log'] is False]
+    count = {}
+    for r in rows:
+        count[r['source']] = count.get(r['source'], 0) + 1
+    lines = ['# 合并核对（merge_check.py audit）', '',
+             '最终稿每个单元取自哪边：' + '，'.join(f'{k} {v}' for k, v in sorted(count.items())) + '。',
+             f'需要在 merge-log.md 里说明的单元 {len(need)} 个' + (f'，其中 {len(missing)} 个日志里没有提到。' if log_present else '（还没有 merge-log.md）。'),
+             '', '| 单元 | 取自 | branch1 改过 | branch2 改过 | 需要说明 | 日志里有 |', '|---|---|---|---|---|---|']
+    mark = {True: '是', False: '', None: '—'}
+    for r in rows:
+        if r['needs_note'] or r['source'] == 'new':
+            lines.append(f'| {r["unit"]} | {r["source"]} | {mark[r["branch1_changed"]]} | {mark[r["branch2_changed"]]} | '
+                         f'{r["needs_note"] or ""} | {"—" if r["in_log"] is None else ("有" if r["in_log"] else "**没有**")} |')
+    Path(out).write_text('\n'.join(lines) + '\n', encoding='utf-8')
+    return need, missing
 
 
 def write_plan(rows, maps, out):
@@ -227,17 +211,28 @@ def compile_problems(text, cmd):
 
 def main(argv=None):
     p = argparse.ArgumentParser(description='第 3 步合并的辅助检查（不做合并）')
-    p.add_argument('action', choices=('plan', 'verify'))
+    p.add_argument('action', choices=('plan', 'audit', 'verify'))
     p.add_argument('--root', default=str(HERE.parent), help='放 baseline.tex / branch1.tex / branch2.tex / final.tex 的主文件夹')
-    p.add_argument('--out', default=str(HERE / 'merge-plan.md'))
+    p.add_argument('--out', help='plan: merge-plan.md；audit: merge-audit.md（默认都在本文件夹）')
     p.add_argument('--compile', action='store_true', help='verify 时另用 latexmk -pdf 编译一遍')
     a = p.parse_args(argv)
     root = Path(a.root)
     if a.action == 'plan':
+        out = a.out or str(HERE / 'merge-plan.md')
         rows, maps = plan(read(root / 'baseline.tex'), read(root / 'branch1.tex'), read(root / 'branch2.tex'))
-        both = write_plan(rows, maps, a.out)
-        print(f'{len(rows)} 个单元，两边都改过 {both} 个；label 改名 {len(maps["renamed_in_branch1"])} 处。详见 {a.out}')
+        both = write_plan(rows, maps, out)
+        print(f'{len(rows)} 个单元，两边都改过 {both} 个；label 改名 {len(maps["renamed_in_branch1"])} 处。详见 {out}')
         return 0
+    if a.action == 'audit':
+        out = a.out or str(HERE / 'merge-audit.md')
+        log = HERE / 'merge-log.md'
+        rows = audit(read(root / 'baseline.tex'), read(root / 'branch1.tex'), read(root / 'branch2.tex'), read(root / 'final.tex'),
+                     log.read_text(encoding='utf-8') if log.exists() else None)
+        need, missing = write_audit(rows, out, log.exists())
+        print(f'需要说明的单元 {len(need)} 个，日志里没提到的 {len(missing)} 个' + ('' if log.exists() else '（还没有 merge-log.md）') + f'。详见 {out}')
+        for r in missing:
+            print(f'✗ {r["unit"]}：{r["needs_note"]}，merge-log.md 里没有提到')
+        return 0 if log.exists() and not missing else 2
     cmd = ['latexmk', '-pdf', '-interaction=nonstopmode', '-halt-on-error'] if a.compile else None
     problems = verify(read(root / 'final.tex'), read(root / 'branch1.tex'), cmd)
     for x in problems:

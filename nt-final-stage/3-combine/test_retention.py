@@ -71,5 +71,35 @@ class Outcomes(unittest.TestCase):
         self.assertEqual(unit_of(units, 5), 'preamble')
 
 
+class LabelRenumbering(unittest.TestCase):
+    """A definition inserted later renumbers the labels after it; a correctly renamed \\ref is not a rewrite."""
+    BASE = DOC.replace(r'''\begin{theorem}\label{thm:1.1}''', r'''\begin{definition}[parity]\label{def:1.1}
+	An integer is even if it is divisible by two, and odd otherwise; this is the usual notion of parity.
+\end{definition}
+\begin{theorem}\label{thm:1.1}''').replace('Trivial by inspection', 'Trivial by Definition~\\ref{def:1.1} and inspection')
+
+    def test_renamed_reference_still_counts_as_kept(self):
+        from retention import label_mapping
+        # one hunk that spans the reference: 'Trivial by … and' -> 'Immediate from … by'
+        after = self.BASE.replace('Trivial by Definition~\\ref{def:1.1} and inspection', 'Immediate from Definition~\\ref{def:1.1} by inspection')
+        self.assertNotEqual(after, self.BASE)
+        final = after.replace(r'''\begin{definition}[parity]\label{def:1.1}''', r'''\begin{definition}[integers]\label{def:1.1}
+	The integers are the whole numbers, positive, negative and zero, with the usual addition and order.
+\end{definition}
+\begin{definition}[parity]\label{def:1.2}''').replace('\\ref{def:1.1} by', '\\ref{def:1.2} by')
+        mapping = label_mapping(after, final)
+        self.assertEqual(mapping, {'def:1.1': 'def:1.2'})
+        plain = [r['status'] for r in analyse('S', self.BASE, after, final, 2)]
+        fixed = [r['status'] for r in analyse('S', self.BASE, after, final, 2, mapping)]
+        self.assertEqual(plain, ['rewritten'])          # the label artefact without the mapping
+        self.assertEqual(fixed, ['kept'])
+
+    def test_rename_is_simultaneous(self):
+        from retention import rename_labels
+        text = r'see \ref{def:1.1}, \eqref{def:1.2} and \cref{def:1.1, thm:2}'
+        self.assertEqual(rename_labels(text, {'def:1.1': 'def:1.2', 'def:1.2': 'def:1.3'}),
+                         r'see \ref{def:1.2}, \eqref{def:1.3} and \cref{def:1.2, thm:2}')
+
+
 if __name__ == '__main__':
     unittest.main()
