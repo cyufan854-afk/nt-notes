@@ -1,4 +1,73 @@
-# Co-op v0.4.2
+# Co-op v0.4.3
+
+## v0.4.3：小规模计算检查、跨单元决定台账、可变动的岗位与模型
+
+### 规划者的小规模计算检查（默认开）
+
+规划者每轮冻结问题清单时，如果单元里有能在小范围内穷举验证的命题或计算（同余、整除、恒等式、具体数值例子），会附一个只用标准库的 `python coop-check` 脚本。调度器在无网络的 Docker 容器里实际运行它，真实输出同时交给两位分析者、交换意见和独立审查。脚本只用来找反例，不能代替证明。规划者是 DeepSeek（API），所以这一项不占订阅额度。
+
+- 配置：`edit.checks = {"planner": true, "on_unavailable": "skip"}`。
+- 没有 Docker 时默认跳过，本轮记为 `unavailable`，单元照常进行；改成 `"pause"` 则暂停该单元，等 Docker 就绪后 resume。
+- 报告里每轮写着“计算检查：completed / error / timeout / unavailable”。
+- Docker 的准备见后文“执行 Python 检查”（`docker pull python:3.12-slim`）。
+- v0.4.2 及更早建的会话不受影响（保持关闭）。
+
+### 跨单元决定台账（默认开）
+
+某个单元的修改如果确立了全书应该统一遵守的记号、术语或固定写法，规划者在合并说明末尾（仲裁者在仲裁说明末尾）用 `<<<COOP_LEDGER>>>` … `<<<COOP_LEDGER_END>>>` 列出，最多 5 条。只有审查批准并且补丁写入后，这些条目才记入台账。
+
+- 之后的每个单元，所有岗位的提示里都有一节只读的“跨单元决定台账”。与它冲突的写法可以作为 `notation_conflict` 提出。
+- 台账按源文件保存，跨会话共用：第 2 批会话看得到第 1 批定下的约定。报告末尾列出全部条目。
+- 也可以手工添加或查看：
+
+```bash
+python3 -m coop --workspace .coop-final edit ledger ../final.tex --add "全书用 \\Primes 表示素数集合"
+python3 -m coop --workspace .coop-final edit ledger ../final.tex
+```
+
+- 配置：`edit.ledger = {"enabled": true, "chars": 6000}`（提示里最多放多少字，最新的在前）。
+
+### 可变动的岗位与模型
+
+岗位结构不变（规划、分析者 A / B、审查、仲裁）；谁来担任、用哪个模型、哪天换人，都可以在配置里改。
+
+**1. 新的 CLI 不用改代码（kind `cli`）**：在工作区 `config.json` 里描述它，例如
+
+```json
+"acme": {"kind": "cli", "vendor": "Acme", "executable": "/usr/local/bin/acme", "auth_mode": "subscription",
+         "argv": ["{exe}", "run", "--headless", "--json"], "input": "stdin",
+         "model": "acme-pro", "model_args": ["--model", "{model}"], "timeout_args": ["--timeout", "{timeout}"],
+         "output": {"format": "jsonl", "event_key": "type", "event_value": "result", "path": ["result.text", "text"],
+                    "ok_path": "status", "ok_values": ["success"], "error_path": "error"},
+         "strip_env": ["ACME_API_KEY"], "login_argv": ["login"]}
+```
+
+- `input`：`stdin`（提示从 stdin 送入）、`argv`（argv 里写 `{prompt}`）、`file`（argv 里写 `{prompt_file}`）。
+- `output.format`：`text`（stdout 原样）、`json`（一个对象）、`jsonl`（事件流，取 `event_key` 等于 `event_value` 的最后一个事件）。`path` 是回答文本所在的字段，可用点号分层，可以给几个候选。
+- 其他：每次调用在空的工作目录里运行；订阅模式下去掉 `strip_env` 列出的环境变量；`vendor`（哪家公司）用于岗位独立性检查。
+- 写错了 `init` / `configure` / 建会话时会直接报错。
+
+**2. 排班表（`edit.roster`）**：在某个日期段让某个岗位换人，到期自动换回来，适合试用期。
+
+```json
+"edit": {"roster": [{"role": "analysts.0", "provider": "grok", "from": "2026-11-05", "to": "2026-11-11"}]}
+```
+
+**3. 候补名单（`edit.fallbacks`）**：某家额度用完、运行暂停时，`edit status` 直接给出换人命令（例如 `--use analysts.0=grok`）。
+
+```json
+"edit": {"fallbacks": {"analysts.0": ["grok", "kimi"], "reviewer": []}, "auto_fallback": false}
+```
+
+- 显式设 `"auto_fallback": true` 时，调度器会自己把那个岗位交给下一位候补，同一单元接着做，已完成的调用取缓存。
+- 每次新的运行（resume）先换回原班人马：额度可能已经恢复，还用完就再换一次。
+
+排班表和候补名单每次运行时从工作区 `config.json` 读取，不随会话冻结，所以会话建好之后也能加。所有换人都要通过岗位独立性检查：
+- 四个岗位用四个不同的 provider；
+- 两位分析者和审查来自三家不同的公司；
+- 仲裁不与审查同一家。
+
+通不过的候补会被跳过。每次换人都写进报告开头的“岗位变更”，注明原因（手动、排班表、自动候补、换回原班）。
 
 ## v0.4.2：Gemini 改走 Antigravity CLI（agy），全程用 Argon，仲裁自动调用
 

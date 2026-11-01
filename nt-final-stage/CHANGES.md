@@ -137,6 +137,57 @@
 - 换人后只有未完成的调用交给新 provider、记入报告、能换回来；
 - 错误写法不改任何东西；命令行参数已接上。
 
+### 追加（2026-11-01）：讨论后定下的改动
+
+**步骤 2：`branch2.py` 总控，不再单独跑 qwen_polish**（`2-branch2/`）
+
+- qwen_polish 处理的 100 条语言清单已经作为提示放进 polish 的请求，算是 polish / triage / refs 的子集，所以不再单独运行。`qwen_polish.py` 只作为 nt27b 的公共模块保留。
+- 三类请求都基于 baseline，一次 GPU 跑完（`run_gpu.sh` 不变）。
+- Mac 上用 `branch2.py` 走完全程：
+  - 命令：`prepare` / `import`（只解出 `job-27b/` 下的普通文件）/ `status` / `next`；
+  - 阶段稿：`stages/1-polish.tex` → `2-triage.tex` → `3-refs.tex`；
+  - 初筛和引用核查两步自动生成给 Claude 的任务说明；
+  - 每步检查 label、编号环境、环境配对和冲突标记；
+  - 收尾写 `../branch2.tex`（不悄悄覆盖）和来源统计 `stages/provenance.md`。
+- 阶段稿就是“来源标记”：润色是 27B 写、你勾选的；初筛和引用修补是 27B 提出、agent 决定并写入的。
+- 新增 3 项测试：完整流程、安全解包、结构检查。
+
+**步骤 3：合并模型有更多自主权，但要说明**（`3-combine/`）
+
+- `MERGE_PROMPT.md` 重写：
+  - 硬约束只留四条：label 与编号环境同 branch1、引用按对照改名、能编译、不在聊天里输出整份文件；
+  - 由它判断：回滚只有一边做过的修改、冲突处的选择 / 融合 / 重写、小幅的数学修正、自行优化；
+  - 每一处都要在 `merge-log.md` 里按固定格式写一条；所有“新的数学修改”还要在聊天总结里逐条列出。
+- `merge_check.py audit`：逐单元判断最终稿取自 branch1、branch2、baseline 还是新写的文字。凡是新写或回滚了一边修改的单元，日志里必须提到，否则不通过。
+- 留存率：
+  - 比较前把各来源的 label 按最终稿统一。以前，被正确改名的 `\ref` 会被算成“改写”，例如 `def:5.7.1→def:5.7.2`，baseline 里有 3 处这样的引用。单元也按最终稿的 label 归类。
+  - 有阶段稿时，27B 另外按润色、初筛、引用核查分开统计。
+  - 用当前 branch1 代替最终稿试算，Muse Wonder 仍是 50 处、保留 43（86.0%）、撤回 0、改写 7（14.0%），已自动统一 `def:5.7.1→def:5.7.2`。
+- 新增 4 项测试：audit、label 改名的误判与修正、同时改名、分阶段统计。
+
+**步骤 4：coop 0.4.3**（`4-final-review/`）
+
+- **小规模计算检查**：
+  - 规划者遇到可计算的命题时附一个只用标准库的穷举脚本，在无网络的 Docker 容器里实际运行，真实输出交给两位分析者、交换意见和独立审查；脚本只找反例。
+  - 规划者是 DeepSeek API，不占订阅额度。
+  - 没有 Docker 时默认跳过（`edit.checks.on_unavailable`，可改为 `pause`）。
+- **跨单元决定台账**：
+  - 合并或仲裁说明里用 `<<<COOP_LEDGER>>>` 块提出全书约定，审查批准并写入后才记入；之后所有单元的提示里只读展示。
+  - 按源文件跨会话共用；`edit ledger SOURCE [--add …]` 可以查看或手工添加。
+- **可变动的岗位与模型**：
+  - kind `cli`：新的 CLI 在配置里描述（参数模板、stdin / 参数 / 文件输入、text / json / jsonl 输出、要去掉的环境变量、所属公司），不用改代码。
+  - `edit.roster`：按日期段排班，到期自动换回来。
+  - `edit.fallbacks`：候补名单；默认只在暂停时给出换人命令，显式设 `auto_fallback: true` 才自动换人，每次新的运行先换回原班人马。
+  - 排班表和候补名单每次运行时从工作区配置读取，不随会话冻结。
+  - 所有换人都通过独立性检查，写进报告。
+- v0.4.2 及更早建的会话保持原行为：计算检查和台账都关闭。
+- 新增 16 项测试（`tests/test_v043.py`）：
+  - 检查输出到达分析者和审查且只跑一次、无 Docker 时跳过、`pause`、缺代码块时格式重试；
+  - 台账跨单元跨会话、审查打回时不记录、解析；
+  - `cli` 的三种输入方式、错误与校验、厂商独立性；
+  - 排班窗口与到期换回；候补的提示、自动换人与下次换回、不破坏独立性；
+  - 命令行参数。
+
 ## 三、测试结果
 
 在本环境运行（Python 3.13.18；notebook 测试用 torch 2.15.0、numpy 2.5.4、safetensors 0.8.0；本机没有 latexmk / pdflatex，也没有可用的 Docker）：
@@ -144,27 +195,27 @@
 ```
 $ PYTHON=<装了 torch 的 python> bash check_all.sh
 == 4-final-review
-Ran 126 tests in 13.996s
+Ran 142 tests in 14.568s
 OK (skipped=3)
 == 2-branch2
-Ran 94 tests in 7.574s
+Ran 97 tests in 7.899s
 OK (skipped=1)
 == 3-combine
-Ran 19 tests in 0.018s
+Ran 23 tests in 0.038s
 OK
 == 1-model-merge
-Ran 23 tests in 0.255s
+Ran 23 tests in 3.754s
 OK
 ```
 
 | 套件 | 原有 | 新增 | 结果 | 跳过的 |
 |---|---|---|---|---|
-| coop（`4-final-review`） | 96 | 30 | 126 通过 | 3 项：2 项真实 latexmk 编译（本机没有 latexmk；你的 Mac 上会跑），1 项 Docker 隔离集成测试（需显式开启） |
-| nt27b（`2-branch2`） | 86 | 8 | 94 通过 | 1 项：实际 pdflatex 编译（本机没有 pdflatex） |
-| 合并与留存率（`3-combine`） | 7 | 12 | 19 通过 | — |
+| coop（`4-final-review`） | 96 | 46 | 142 通过 | 3 项：2 项真实 latexmk 编译（本机没有 latexmk；你的 Mac 上会跑），1 项 Docker 隔离集成测试（需显式开启） |
+| nt27b（`2-branch2`） | 86 | 11 | 97 通过 | 1 项：实际 pdflatex 编译（本机没有 pdflatex） |
+| 合并与留存率（`3-combine`） | 7 | 16 | 23 通过 | — |
 | 融合 notebook（`1-model-merge`） | — | 23 | 23 通过 | — |
 
-原有测试文件一行没删、一行没改，只在 `2-branch2/tests/test_gpu_runner.py` 里加了一个测试方法。详细的逐项输出见 `4-final-review/docs/test-results.txt`，或用 `-v` 重跑。
+原有测试文件一行没删、一行没改；只在 `2-branch2/tests/test_gpu_runner.py`、`3-combine/test_retention.py`、`test_run_retention.py`、`test_merge_check.py` 里追加了测试。详细的逐项输出见 `4-final-review/docs/test-results.txt`，或用 `-v` 重跑。
 
 ## 四、没有验证、只能在你那边验证的
 

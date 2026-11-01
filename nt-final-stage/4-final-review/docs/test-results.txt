@@ -1,4 +1,4 @@
-coop v0.4.2 test run (2026-10-31, Python 3.13.18; latexmk absent here -> 2 compile tests skipped, Docker integration skipped)
+coop v0.4.3 test run (2026-11-01, Python 3.13.18; latexmk absent here -> 2 compile tests skipped, Docker integration skipped)
 
 test_categories (test_access.AccessTests.test_categories) ... ok
 test_configure_is_validated_and_preserves_existing_roles (test_access.AccessTests.test_configure_is_validated_and_preserves_existing_roles) ... ok
@@ -91,6 +91,22 @@ test_kimi_and_gemini_defer_to_task_response_format (test_transports.FrameInstruc
 test_cli_envelopes (test_transports.TransportTests.test_cli_envelopes) ... ok
 test_output_limit (test_transports.TransportTests.test_output_limit) ... ok
 test_sigint_pauses_parallel_processes_promptly (test_transports.TransportTests.test_sigint_pauses_parallel_processes_promptly) ... ok
+test_flags (test_v043.CliWiring.test_flags) ... ok
+test_errors_and_validation (test_v043.GenericCli.test_errors_and_validation) ... ok
+test_three_input_modes (test_v043.GenericCli.test_three_input_modes) ... ok
+test_vendor_counts_for_independence (test_v043.GenericCli.test_vendor_counts_for_independence) ... ok
+test_approved_decisions_reach_later_units_and_sessions (test_v043.Ledger.test_approved_decisions_reach_later_units_and_sessions) ... ok
+test_parse_ledger (test_v043.Ledger.test_parse_ledger) ... ok
+test_rejected_patch_records_nothing (test_v043.Ledger.test_rejected_patch_records_nothing) ... ok
+test_check_without_code_block_gets_a_format_retry (test_v043.PlannerChecks.test_check_without_code_block_gets_a_format_retry) ... ok
+test_disabled_checks_and_old_sessions (test_v043.PlannerChecks.test_disabled_checks_and_old_sessions) ... ok
+test_on_unavailable_pause (test_v043.PlannerChecks.test_on_unavailable_pause) ... ok
+test_output_reaches_analysts_and_reviewer_and_runs_once (test_v043.PlannerChecks.test_output_reaches_analysts_and_reviewer_and_runs_once) ... ok
+test_without_docker_the_check_is_skipped_not_paused (test_v043.PlannerChecks.test_without_docker_the_check_is_skipped_not_paused) ... ok
+test_automatic_fallback_finishes_the_unit_and_next_run_restores (test_v043.Scheduling.test_automatic_fallback_finishes_the_unit_and_next_run_restores) ... ok
+test_fallback_never_breaks_independence (test_v043.Scheduling.test_fallback_never_breaks_independence) ... ok
+test_manual_fallback_hint (test_v043.Scheduling.test_manual_fallback_hint) ... ok
+test_roster_window (test_v043.Scheduling.test_roster_window) ... ok
 test_missing_runtime_resume_reuses_paid_analysis (test_v3_workflow.FeedbackTests.test_missing_runtime_resume_reuses_paid_analysis) ... ok
 test_real_record_reaches_review_and_status (test_v3_workflow.FeedbackTests.test_real_record_reaches_review_and_status) ... ok
 test_bad_check_fence_is_retryable (test_v3_workflow.MalformedCheckTests.test_bad_check_fence_is_retryable) ... ok
@@ -128,6 +144,6 @@ test_revision_is_bounded_and_not_promoted (test_workflow.Workflow.test_revision_
 test_same_job_is_locked (test_workflow.Workflow.test_same_job_is_locked) ... ok
 
 ----------------------------------------------------------------------
-Ran 126 tests in 13.211s
+Ran 142 tests in 14.105s
 
 OK (skipped=3)
