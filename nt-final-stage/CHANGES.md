@@ -1,13 +1,13 @@
 # 本次改动（2026-10-31）
 
-起点是归档里的 coop v0.4.1、nt27b 1.1.1、nt-retention 和融合 notebook e14。按交接说明重排成 `nt-final-stage/` 的四个文件夹，做了三项必须的改动和几项优化。`baseline.tex` 的内容没有改；`branch1.tex` 只在核对之后按你的要求改了 5 处（见文末“追加：branch1 对 baseline 的核对”）：
+起点是归档里的 coop v0.4.1、nt27b 1.1.1、nt-retention 和融合 notebook e14。按交接说明重排成 `nt-final-stage/` 的四个文件夹，做了三项必须的改动和几项优化。`baseline.tex` 的内容没有改；`branch1.tex` 只在核对之后按你的要求改了 5 处，并统一了备选证明的标题（见文末“追加：branch1 对 baseline 的核对”）：
 
 | 文件 | SHA-256 | 与归档的关系 |
 |---|---|---|
 | `baseline.tex` | `8684a76e6014d66bd520f5b65f12acdb3e24157cfa5f0a227025963b6cb84dd5` | 与 `nt-baseline.tex` 逐字节相同 |
-| `branch1.tex` | `74104ec4901c42acac4eb18bd0c53d13922a35be4f95283f6625e4338e93c739` | 在 `nt-branch1.tex`（`25992e5b…110b`）上改了 5 处，见文末；只用来记录这次交付的版本，没有任何工具写死它 |
+| `branch1.tex` | `e7a13de3c33efbece4dcba9203f2c1996941caeae12fa8880fe5300d16ccec91` | 在 `nt-branch1.tex`（`25992e5b…110b`）上改了 5 处并统一了备选证明标题，见文末；只用来记录这次交付的版本，没有任何工具写死它 |
 
-除 branch1 的这 5 处外，数学内容没有改动。git 仓库的第一个提交是原样导入，之后每一步一个提交，`git log -p` 可以逐行看改了什么。
+除 branch1 的这 5 处外，数学内容没有改动（备选证明标题的统一只改标题）。git 仓库的第一个提交是原样导入，之后每一步一个提交，`git log -p` 可以逐行看改了什么。
 
 ## 一、必须的改动
 
@@ -223,10 +223,19 @@
 | thm:10.8.2（Pick）证明 | “uw 是内部对角线”的论证过于紧凑 | 重写这一段：先证 vu、vw 以外的边与 T 的交只能在 u、w；再说明 T 的内部连同开线段 uw 不碰边界、在 v 附近位于多边形内部，因此开线段 uw 在多边形内部 |
 | thm:3.2.8 | branch1 把主证明换成“单射 + 计数”，baseline 原来的证明（你想出的：乘以与 n 互素的 a 不改变与 n 的 gcd，再用 thm:3.2.5）没有了 | 主证明保持 branch1 的；baseline 的证明逐字放回，作为紧跟其后的 “Alternative proof of Theorem 3.2.8”（备选证明不编号，label 和编号环境不变） |
 
+**备选证明标题统一加 via**：45 个备选证明（altproof）的标题都写成 “Alternative proof of … via …”，via 后面是这篇证明实际用的方法，并与同一定理的主证明和其他备选证明区分开。原来已有 via 的 8 个不动；其余 37 个补上，例如：
+- thm:2.1.2 的三篇：via Fermat numbers / via the Euler product / via squarefree decomposition；
+- thm:3.2.8：via preservation of the gcd with $n$；
+- thm:6.10.3：via the pigeonhole principle / via the Cauchy--Davenport theorem；
+- thm:8.1.2 充分性：via Zagier's involution / via descent；
+- thm:6.2.6 的分情形标题从 “Case 3: LTE” 这类冒号写法改成 “Case 3, via the lifting-the-exponent lemma”。
+
+只改 `\begin{altproof}[…]` 里的标题，正文、label 和编号都不变。
+
 **验证**：
 - 改后结构检查同上，全部通过（备选证明 43 → 45：新增 thm:1.2.1 与 thm:3.2.8 各一篇，thm:5.1.5 的一篇来自原 thm:5.7.4 证明，删去 thm:7.1.2 的一篇）；
 - 四个套件照常通过（notebook 的测试不读 branch1）；
-- 用改后的 branch1 代替最终稿试算留存率，Muse Wonder 仍是 50 处、保留 43、撤回 0、改写 7。
+- 用改后的 branch1 代替最终稿试算留存率：5 处修改后仍是 50 处、保留 43、撤回 0、改写 7；统一标题后变为保留 42（84.0%）、改写 8（16.0%）。多出的一处“改写”是 Muse Wonder 新增的 thm:1.2.1 备选证明，它的标题加了 via。
 
 ## 三、测试结果
 

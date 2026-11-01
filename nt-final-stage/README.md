@@ -1,6 +1,6 @@
 # nt-final-stage：nt.tex 收尾的五步
 
-英文 LaTeX 初等数论讲义（约 13,500 行、200 页、372 个定理、116 个定义）的最后五步。每步一个文件夹，按顺序做。两份讲义 `baseline.tex`、`branch1.tex` 放在本文件夹，是数据：工具不改它们（`branch1.tex` 在核对后按你的要求改过 5 处，见 `CHANGES.md`）；各步的产物也放回这里，下一步直接从这里读。
+英文 LaTeX 初等数论讲义（约 13,500 行、200 页、372 个定理、116 个定义）的最后五步。每步一个文件夹，按顺序做。两份讲义 `baseline.tex`、`branch1.tex` 放在本文件夹，是数据：工具不改它们（`branch1.tex` 在核对后按你的要求改过 5 处，并统一了备选证明的标题，见 `CHANGES.md`）；各步的产物也放回这里，下一步直接从这里读。
 
 ```
 nt-final-stage/
@@ -70,7 +70,7 @@ python3 branch2.py next                          # 整理 → 润色（先勾选
    - 27B 一组固定是 `baseline.tex → branch2.tex`；有第 2 步的阶段稿时，另外按润色 / 初筛修补 / 引用核查修补分开统计。
    - Muse Wonder 一组是 `snapshots/` 里的 muse-before → muse-after。
    - 比较前先把各来源的 label 按最终稿统一，正确改名的引用不会被误算成改写。
-   - 结果在 `retention.md` 和 `retention.csv`。用当前 branch1 代替最终稿试算：Muse Wonder 共 50 处，保留 43（86.0%），撤回 0，改写 7（14.0%）。
+   - 结果在 `retention.md` 和 `retention.csv`。用当前 branch1 代替最终稿试算：Muse Wonder 共 50 处，保留 42（84.0%），撤回 0，改写 8（16.0%）。
 
 ### 4. 交叉审查合并（`4-cross-review/`）
 

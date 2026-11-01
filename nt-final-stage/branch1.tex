@@ -208,7 +208,7 @@ Results are numbered in the form section.subsection.item; definitions and theore
 		+ r = q'b + r'$ with $0 \le r, r' < b$; then $b \mid (r-r')$. If $r-r'=0$, then $r=r'$ immediately. Otherwise, Theorem~\ref{thm:1.1.1} gives $b\le |r-r'|$, contradicting $|r-r'|<b$, which holds because $0\le r,r'<b$ gives $-b<r-r'<b$. Hence $r=r'$ in all cases; then $(q-q')b=r'-r=0$ with $b\neq0$, so $q=q'$.
 
 \end{proof}
-\begin{altproof}[Alternative proof of Theorem~\ref{thm:1.2.1}]
+\begin{altproof}[Alternative proof of Theorem~\ref{thm:1.2.1} via the well-ordering principle]
 	Fix $a\in\mathbb{Z}$ and $b>0$.
 	For existence, consider
 	\[
@@ -705,7 +705,7 @@ Replacing $a,b$ by $|a|,|b|$ changes neither their gcd nor the set of
 	$d\mid 2$; but $\mathcal{F}_n$ is odd, hence $d=1$.
 
 \end{proof}
-\begin{altproof}[Alternative proof of Theorem~\ref{thm:2.1.2}]
+\begin{altproof}[Alternative proof of Theorem~\ref{thm:2.1.2} via Fermat numbers]
 	For every $n\ge0$, choose a prime divisor $q_n$ of $\mathcal{F}_n$.
 	If $m\neq n$, Theorem~\ref{thm:2.4.1} gives
 	$\gcd(\mathcal{F}_m, \mathcal{F}_n)=1$, so $q_m\neq q_n$. Hence the terms of the
@@ -1163,7 +1163,7 @@ Put $k=\varphi(n)$. Since $a$ and every $r_i$ are coprime to $n$,
     This is a reduced residue system by Definition~\ref{def:3.2.4}.
 
 \end{proof}
-\begin{altproof}[Alternative proof of Theorem~\ref{thm:3.2.8}] Write $k=\varphi(n)$. By Definition~\ref{def:3.2.4}, the
+\begin{altproof}[Alternative proof of Theorem~\ref{thm:3.2.8} via preservation of the gcd with $n$] Write $k=\varphi(n)$. By Definition~\ref{def:3.2.4}, the
 	given reduced residue system consists of the elements coprime to $n$
 	in some complete residue system. Label the remaining elements of that complete residue system
 	$r_{k+1},\ldots,r_n$, so that $\gcd(r_i,n)=1$ exactly when $1\le i\le k$. For every $1 \le i \le n$, the common
@@ -1370,7 +1370,7 @@ Suppose first that $p$ is prime. For $p=2$, the result is
 	since $\varphi(1)=1$.
 
 \end{proof}
-\begin{altproof}[Alternative proof of Theorem~\ref{thm:3.4.3}]
+\begin{altproof}[Alternative proof of Theorem~\ref{thm:3.4.3} via inclusion--exclusion]
 	Among the integers $1,2,\ldots,n$, an integer is not coprime to $n$
 	if and only if it is divisible by at least one of the distinct prime
 	divisors $p_1,\ldots,p_k$ of $n$. For each $1\le i\le k$, let
@@ -1810,7 +1810,7 @@ Suppose first that $p$ is prime. For $p=2$, the result is
 	divisible by $p^{a+1}$. Hence $m^p\equiv1\pmod{p^{a+1}}$.\qedhere
 
 \end{proof}
-\begin{altproof}[Alternative proof of Theorem~\ref{thm:3.3.1}]
+\begin{altproof}[Alternative proof of Theorem~\ref{thm:3.3.1} via prime powers and the Chinese remainder theorem]
 	Let $a\in\mathbb{Z}$ and $m\in\mathbb{Z}^+$ with $\gcd(a,m)=1$.
 	If $m=1$, the congruence is automatic. Assume $m>1$ and, by the
 	fundamental theorem of arithmetic (Theorem~\ref{thm:2.3.3}), write
@@ -1905,7 +1905,7 @@ Suppose first that $p$ is prime. For $p=2$, the result is
 	$n$ because $p\nmid a_n$.
 
 \end{proof}
-\begin{altproof}[Alternative proof of Theorem~\ref{thm:3.6.2}, modulo $p$] Assume $f(x)$ has $n+1$ distinct roots
+\begin{altproof}[Alternative proof of Theorem~\ref{thm:3.6.2} modulo $p$ via leading terms] Assume $f(x)$ has $n+1$ distinct roots
 	$x_1, \ldots, x_{n+1}$ modulo $p$. By Theorem~\ref{thm:3.6.1}, $f(x) \equiv (x
 		- x_1) \cdots (x - x_n)\, g(x) \pmod{p}$ for some integer-coefficient
 	polynomial $g$. Let $b x^m$ be the highest-degree term of $g$ whose
@@ -2819,21 +2819,21 @@ the positive integers not exceeding $x$.
 	Here the two factors on the right are $a$ and $b$, which are coprime by hypothesis.
 
 \end{proof}
-\begin{altproof}[Alternative proof of Theorem~\ref{thm:2.2.11}]
+\begin{altproof}[Alternative proof of Theorem~\ref{thm:2.2.11} via $p$-adic valuations]
 	By Theorems~\ref{thm:4.6.1} and~\ref{thm:4.5.1}(b), together with
 	$\min\{x,y\}+\max\{x,y\}=x+y$,
 	we have $v_p\big(\gcd(a,b)\lcm(a,b)\big)=v_p(a)+v_p(b)=v_p(ab)$ for every prime
 	$p$; Theorem~\ref{thm:4.5.3} then gives $\gcd(a,b)\lcm(a,b)=ab$.
 
 \end{altproof}
-\begin{altproof}[Alternative proof of Theorem~\ref{thm:2.2.12}]
+\begin{altproof}[Alternative proof of Theorem~\ref{thm:2.2.12} via $p$-adic valuations]
 	By Theorem~\ref{thm:4.6.1}, $\min\{v_p(a)+v_p(b),\,v_p(a)+v_p(c)\}
 		=v_p(a)+\min\{v_p(b),v_p(c)\}$, and likewise with $\max$ in place of
 	$\min$; Theorems~\ref{thm:4.5.1}(b) and~\ref{thm:4.5.3} then give both
 	identities.
 
 \end{altproof}
-\begin{altproof}[Alternative proof of Theorem~\ref{thm:2.2.13}]
+\begin{altproof}[Alternative proof of Theorem~\ref{thm:2.2.13} via $p$-adic valuations]
 	Write $d=\gcd(a,b)$, $a=da_1$, $b=db_1$. Theorem~\ref{thm:4.6.1} gives
 	\[
 		\min\{v_p(a_1),v_p(b_1)\}=\min\{v_p(a)-v_p(d),\,v_p(b)-v_p(d)\}=0
@@ -2874,7 +2874,7 @@ the positive integers not exceeding $x$.
 	proves the formula.
 
 \end{proof}
-\begin{altproof}[Alternative proof of Theorem~\ref{thm:4.7.1}]
+\begin{altproof}[Alternative proof of Theorem~\ref{thm:4.7.1} via a recursion for $v_p(n!)$]
 	Put $m=\lfloor n/p\rfloor$. The multiples of $p$ in
 	$\{1,2,\ldots,n\}$ are $p,2p,\ldots,mp$, while every other integer in
 	this set has $p$-adic valuation $0$. Hence Theorem~\ref{thm:4.5.1}(b) gives
@@ -3244,7 +3244,7 @@ Write $n=p^t m$ with $p\nmid m$, so $t=v_p(n)$, and set
 	$y=3$.
 
 \end{proof}
-\begin{altproof}[Alternative proof of Theorem~\ref{thm:4.9.2}] Write the equation as $2^{y}+1=3^{x}$. Reduction modulo $3$
+\begin{altproof}[Alternative proof of Theorem~\ref{thm:4.9.2} via the lifting-the-exponent lemma] Write the equation as $2^{y}+1=3^{x}$. Reduction modulo $3$
 	shows that $y$ is odd. The sum version of the lifting-the-exponent
 	lemma (Theorem~\ref{thm:4.8.4}), with $p=3$, $a=2$, $b=1$, and
 	$n=y$, therefore gives
@@ -3414,7 +3414,7 @@ Write $n=p^t m$ with $p\nmid m$, so $t=v_p(n)$, and set
 	$n=\sum_{d\mid n}\varphi(d)$.
 
 \end{proof}
-\begin{altproof}[Alternative proof of Theorem~\ref{thm:5.1.5}]
+\begin{altproof}[Alternative proof of Theorem~\ref{thm:5.1.5} via multiplicativity]
 	Since $\varphi$ is multiplicative, Theorem~\ref{thm:5.1.3} shows that
 	$F(n)=\sum_{d\mid n}\varphi(d)$ is multiplicative. If
 	$n=\prod_{i=1}^{k}p_i^{a_i}$, where the $p_i$ are distinct primes and
@@ -3780,7 +3780,7 @@ Write $n=p^t m$ with $p\nmid m$, so $t=v_p(n)$, and set
 	\end{enumerate}
 
 \end{proof}
-\begin{altproof}[Alternative proof of Theorem~\ref{thm:5.3.2}(c)]
+\begin{altproof}[Alternative proof of Theorem~\ref{thm:5.3.2}(c) via Dirichlet convolution]
 	Part (a) and commutativity give
 	$\mu*\mathbf{1}=\mathbf{1}*\mu=\varepsilon$. Therefore, by
 	associativity and the identity law from Theorem~\ref{thm:5.3.1}, convolving both
@@ -4058,7 +4058,7 @@ Write $n=p^t m$ with $p\nmid m$, so $t=v_p(n)$, and set
 	$y$ is the second index of $\zeta_P(x,y)$ and $\mu_P(x,y)$.
 
 \end{proof}
-\begin{altproof}[Alternative proof of Theorem~\ref{thm:5.3.2}(c)] Put $P=\mathbb{Z}^+$ with $x\le y$ if and only if $x\mid y$. This poset is locally finite because $[x,y]$ is empty unless $x\mid y$, and if $x\mid y$, then every element of $[x,y]$ is a divisor of $y$. The map $z\mapsto z/x$ identifies $[x,y]$ with $[1,y/x]$, so $\mu_P(x,y)=\mu_P(1,y/x)$.
+\begin{altproof}[Alternative proof of Theorem~\ref{thm:5.3.2}(c) via the M{\"o}bius function of the divisor poset] Put $P=\mathbb{Z}^+$ with $x\le y$ if and only if $x\mid y$. This poset is locally finite because $[x,y]$ is empty unless $x\mid y$, and if $x\mid y$, then every element of $[x,y]$ is a divisor of $y$. The map $z\mapsto z/x$ identifies $[x,y]$ with $[1,y/x]$, so $\mu_P(x,y)=\mu_P(1,y/x)$.
 
 	We compute the latter value from prime factorization. If $n=\prod_{i=1}^{r}p_i^{a_i}$, then the map $d=\prod_i p_i^{b_i}\mapsto(b_1,\ldots,b_r)$ identifies $[1,n]$ with the product of the chains $0\le b_i\le a_i$. For locally finite posets $P_1,P_2$, the function
 	\[
@@ -4343,7 +4343,7 @@ Both sides equal
 	squeeze theorem $\sum_{n=1}^{\infty}\frac{1}{n^2}=\frac{\pi^2}{6}$.
 
 \end{proof}
-\begin{altproof}[Alternative proof of Theorem~\ref{thm:2.1.2}] Fix $s>1$. For a finite set of primes $P$, expanding each absolutely convergent geometric series and multiplying gives
+\begin{altproof}[Alternative proof of Theorem~\ref{thm:2.1.2} via the Euler product] Fix $s>1$. For a finite set of primes $P$, expanding each absolutely convergent geometric series and multiplying gives
 	\[
 		\prod_{p\in P}(1-p^{-s})^{-1}=\prod_{p\in P}\sum_{j=0}^{\infty}p^{-js}=\sum_{\substack{n\ge1\\\text{every prime divisor of }n\text{ lies in }P}}\frac1{n^s},
 	\]
@@ -4896,7 +4896,7 @@ Both sides equal
 	$v_2\bigl(\tbinom{2^{e-2}}{j}(2k)^j\bigr) \ge e$.
 
 \end{proof}
-\begin{altproof}[Alternative proof of Theorem~\ref{thm:6.2.4}]
+\begin{altproof}[Alternative proof of Theorem~\ref{thm:6.2.4} via the absorption identity]
 	The case $k=0$ is immediate, so assume $k\neq0$.
 	Put $s = e-2$, so the
 	binomial coefficient in question is $\binom{2^{s}}{j}$. From $\binom{2^{s}}{j} =
@@ -5053,7 +5053,7 @@ Both sides equal
 	Combining all cases completes the proof.
 
 \end{proof}
-\begin{altproof}[Alternative proof of Theorem~\ref{thm:6.2.6}, Case 2, Step 1: root count] First we prove that for all $d \mid p-1$, the congruence $x^{d}
+\begin{altproof}[Alternative proof of Theorem~\ref{thm:6.2.6}, Case 2, Step 1, via root counting] First we prove that for all $d \mid p-1$, the congruence $x^{d}
 		\equiv 1 \pmod{p}$ has exactly $d$ distinct solutions. Since $d \mid
 		p-1$, write $x^{p-1} - 1 = (x^{d} - 1)\,h(x)$ with $\deg h = p - 1 -
 		d$. By Fermat's little theorem $x^{p-1} - 1 \equiv 0 \pmod{p}$ has
@@ -5068,7 +5068,7 @@ Both sides equal
 	$N(p-1) = \varphi(p-1) > 0$ and a primitive root modulo $p$ exists.
 
 \end{altproof}
-\begin{altproof}[Alternative proof of Theorem~\ref{thm:6.2.6}, Case 2, Step 1: prime-power assembly]
+\begin{altproof}[Alternative proof of Theorem~\ref{thm:6.2.6}, Case 2, Step 1, via elements of prime-power order]
 	As shown in the alternative proof above, for $d \mid p-1$ the congruence $x^{d}
 		\equiv 1 \pmod{p}$ has exactly $d$ solutions in
 	$\ZmodUnits{p}$. We claim that if $q^{c} \mid p-1$ with $q$ prime
@@ -5087,7 +5087,7 @@ Both sides equal
 	Hence $g := a_1 a_2 \cdots a_t$ is a primitive root modulo $p$.
 
 \end{altproof}
-\begin{altproof}[Alternative proof of Theorem~\ref{thm:6.2.6}, Case 3: the power congruence] Write $a = 2k+1$. Then
+\begin{altproof}[Alternative proof of Theorem~\ref{thm:6.2.6}, Case 3, via the binomial expansion] Write $a = 2k+1$. Then
 	\[
 		a^{2^{e-2}} = (2k+1)^{2^{e-2}} \equiv 1 + \binom{2^{e-2}}{1}(2k) +
 		\binom{2^{e-2}}{2}(2k)^{2} \pmod{2^e}
@@ -5109,7 +5109,7 @@ Both sides equal
 	modulo $2^e$ exists.
 
 \end{altproof}
-\begin{altproof}[Alternative proof of Theorem~\ref{thm:6.2.6}, Case 3: LTE] For any $a \in \mathbb{Z}^+$ with
+\begin{altproof}[Alternative proof of Theorem~\ref{thm:6.2.6}, Case 3, via the lifting-the-exponent lemma] For any $a \in \mathbb{Z}^+$ with
 	$2 \nmid a$, we have $\gcd(a, 2^e) = 1$; the case $a = 1$ is trivial, so assume $a > 1$, whence $a \neq \pm 1$. Since $e \ge 3$, the exponent $2^{e-2}$ is even, so Theorem~\ref{thm:4.8.6} gives $v_2\big(a^{2^{e-2}} -
 		1\big) = v_2(a-1) + v_2(a+1) + v_2(2^{e-2}) - 1 = v_2(a-1) + v_2(a+1)
 		+ e - 3 \ge e$, where the last step follows because $a-1$ and $a+1$ are consecutive
@@ -5595,7 +5595,7 @@ Both sides equal
 	\end{enumerate}
 
 \end{proof}
-\begin{altproof}[Alternative proof of Theorem~\ref{thm:6.2.6}, Case 3: noncyclicity] Consider $f : \ZmodUnits{2^e} \to
+\begin{altproof}[Alternative proof of Theorem~\ref{thm:6.2.6}, Case 3, via reduction modulo $8$] Consider $f : \ZmodUnits{2^e} \to
 		\ZmodUnits{8}$, $f(a) = a \bmod 8$, which is a
 	homomorphism; it is surjective because $e\ge3$: each odd residue
 	modulo $8$ is the reduction of the same odd integer modulo $2^e$. The image of a cyclic group under a homomorphism is
@@ -5612,7 +5612,7 @@ Both sides equal
 	primitive root exists.
 
 \end{altproof}
-\begin{altproof}[Alternative proof of Theorem~\ref{thm:6.2.6}, Case 4] We reprove that
+\begin{altproof}[Alternative proof of Theorem~\ref{thm:6.2.6}, Case 4, via products of cyclic groups] We reprove that
 	$\ZmodUnits{m}$ is cyclic (equivalently, a primitive root
 	modulo $m$ exists) if and only if $m = 1, 2, 4, p^{e}$, or
 	$2 p^{e}$ ($p$ an odd prime, $e \ge 1$) by assembling the general
@@ -5786,7 +5786,7 @@ Both sides equal
 	Since $g^m-1$ is invertible modulo $p$, the sum is $0\pmod{p}$.
 
 \end{proof}
-\begin{altproof}[Alternative proof of Theorem~\ref{thm:6.8.1}] If $(p-1) \mid m$, then for each $a \in \{1,\ldots,p-1\}$ Fermat's little theorem (Theorem~\ref{thm:3.3.2}) gives $a^{m} = (a^{p-1})^{m/(p-1)} \equiv 1 \pmod{p}$, so the sum is congruent to $p-1 \equiv -1 \pmod{p}$.
+\begin{altproof}[Alternative proof of Theorem~\ref{thm:6.8.1} via the polynomial root bound] If $(p-1) \mid m$, then for each $a \in \{1,\ldots,p-1\}$ Fermat's little theorem (Theorem~\ref{thm:3.3.2}) gives $a^{m} = (a^{p-1})^{m/(p-1)} \equiv 1 \pmod{p}$, so the sum is congruent to $p-1 \equiv -1 \pmod{p}$.
 If $(p-1) \nmid m$, put $d = \gcd(m, p-1)$, a proper divisor of $p-1$.
 If $a^{m} \equiv 1 \pmod{p}$ held for every $a \in \{1,\ldots,p-1\}$, then choosing integers $u,v$ with $um + v(p-1) = d$ (B{\'e}zout's identity,
 Theorem~\ref{thm:2.2.5}) would give $a^{d} = (a^{m})^{u} (a^{p-1})^{v} \equiv 1 \pmod{p}$ for all such $a$ (using Theorem~\ref{thm:3.3.2}), so $x^{d} - 1$ would have $p-1 > d$ roots modulo $p$, contradicting the polynomial root bound (Theorem~\ref{thm:3.6.2}).
@@ -6244,7 +6244,7 @@ Finally, substituting $-t$ for $t$ in $tD(t)=e^{t}-1$, which preserves sums and 
 	$x_0^{-2}$ gives $1 + x^{2} + y^{2} \equiv 0 \pmod{p}$.
 
 \end{proof}
-\begin{altproof}[Alternative proof of Theorem~\ref{thm:6.10.3}] The $\tfrac{p+1}{2}$ values $\{x^{2} \mid 0
+\begin{altproof}[Alternative proof of Theorem~\ref{thm:6.10.3} via the pigeonhole principle] The $\tfrac{p+1}{2}$ values $\{x^{2} \mid 0
 		\le x \le \tfrac{p-1}{2}\}$ are pairwise distinct modulo $p$: if
 	$x^{2} \equiv y^{2}$ with $0 \le x, y \le \tfrac{p-1}{2}$, then $p
 		\mid (x-y)(x+y)$, and since $|x-y| < p$ and $0 \le x + y \le p-1 < p$,
@@ -6851,7 +6851,7 @@ By Theorem~\ref{thm:6.11.7} (or Theorem~\ref{thm:6.1.1}(c) applied to $ab^{-1}$)
 	quadratic residues in all, they represent every one of them.
 
 \end{proof}
-\begin{altproof}[Alternative proof of Theorem~\ref{thm:7.2.2}] The map $x
+\begin{altproof}[Alternative proof of Theorem~\ref{thm:7.2.2} via the squaring map] The map $x
 		\mapsto x^{2}$ from the $p-1$ nonzero classes onto the set of
 	quadratic residues is two-to-one: $x^{2} \equiv y^{2} \pmod{p}$ holds if and
 	only if $p \mid (x-y)(x+y)$, that is, if and only if $y \equiv \pm x$,
@@ -6877,7 +6877,7 @@ By Theorem~\ref{thm:6.11.7} (or Theorem~\ref{thm:6.1.1}(c) applied to $ab^{-1}$)
 		a^{(p-1)/2} b^{(p-1)/2}$, so the $\pm 1$ values multiply according to the usual sign rule.
 
 \end{proof}
-\begin{altproof}[Alternative proof of Theorem~\ref{thm:7.2.3}] Let
+\begin{altproof}[Alternative proof of Theorem~\ref{thm:7.2.3} via counting] Let
 	$Q$ be the set of quadratic residues and $N$ the set of non-residues
 	modulo $p$, so that $\ZmodUnits{p} = Q \sqcup N$ and, by
 	Theorem~\ref{thm:7.2.2}, $|Q| = |N| = \tfrac{p-1}{2}$.
@@ -8337,7 +8337,7 @@ By Theorem~\ref{thm:6.11.7} (or Theorem~\ref{thm:6.1.1}(c) applied to $ab^{-1}$)
 	of $g$, which are precisely the unit quadratic residues.
 
 \end{proof}
-\begin{altproof}[Alternative proof of the power-of-$2$ part of Theorem~\ref{thm:7.8.4}]
+\begin{altproof}[Alternative proof of the power-of-$2$ part of Theorem~\ref{thm:7.8.4} via the structure of $\ZmodUnits{2^e}$]
 	Modulo $2$, there is one unit. Modulo $4$, both units square to $1$,
 	so the congruence $x^2\equiv a\pmod4$ has two roots when
 	$a\equiv1\pmod4$ and none when $a\equiv3\pmod4$.
@@ -9070,7 +9070,7 @@ By Theorem~\ref{thm:6.11.7} (or Theorem~\ref{thm:6.1.1}(c) applied to $ab^{-1}$)
 		+ y^2 = p$.
 
 \end{proof}
-\begin{altproof}[Alternative proof of sufficiency in Theorem~\ref{thm:8.1.2}] ($\Leftarrow$) Assume $p \equiv 1
+\begin{altproof}[Alternative proof of sufficiency in Theorem~\ref{thm:8.1.2} via Zagier's involution] ($\Leftarrow$) Assume $p \equiv 1
 		\pmod{4}$ and let $S = \{(x, y, z) \in (\mathbb{Z}^+)^3 \mid x^2 + 4yz =
 		p\}$, which is nonempty because $(1, 1, \tfrac{p-1}{4}) \in S$. This set is finite:
 	from $x^2+4yz=p$ with $y,z\ge1$ we get $4y\le 4yz\le p-1$ and
@@ -9098,7 +9098,7 @@ By Theorem~\ref{thm:6.11.7} (or Theorem~\ref{thm:6.1.1}(c) applied to $ab^{-1}$)
 	fixed point, where $y = z$, giving $p = x^2 + (2y)^2$.
 
 \end{altproof}
-\begin{altproof}[Alternative proof of sufficiency in Theorem~\ref{thm:8.1.2}]
+\begin{altproof}[Alternative proof of sufficiency in Theorem~\ref{thm:8.1.2} via descent]
 	($\Leftarrow$) Let $p\equiv1\pmod{4}$. Then $-1$ is a quadratic residue modulo $p$
 	(Theorem~\ref{thm:7.2.4}): there is an integer $x_0$ with
 	$x_0^{2}\equiv-1\pmod{p}$, and replacing $x_0$ by its representative in
@@ -9211,7 +9211,7 @@ By Theorem~\ref{thm:6.11.7} (or Theorem~\ref{thm:6.1.1}(c) applied to $ab^{-1}$)
 		= 1$ and $(c, d) = (b, a)$. In either case $\{c, d\} = \{a, b\}$.
 
 \end{proof}
-\begin{altproof}[Alternative proof of Theorem~\ref{thm:8.1.7}]
+\begin{altproof}[Alternative proof of Theorem~\ref{thm:8.1.7} via square roots of $-1$ modulo $p$]
 	If $p=2$, positivity forces $a=b=c=d=1$, so the result is immediate.
 	Hence we may assume that $p$ is odd. From $p=a^{2}+b^{2}$ with $p$ prime, we
 	get $p\nmid b$ (otherwise $p\mid
@@ -10947,7 +10947,7 @@ By Theorem~\ref{thm:6.11.7} (or Theorem~\ref{thm:6.1.1}(c) applied to $ab^{-1}$)
 	a contradiction.
 
 \end{proof}
-\begin{altproof}[Alternative proof of sufficiency in Theorem~\ref{thm:9.1.6}] Assume $a^{(n-1)/2}\equiv-1\pmod{n}$ and write $n-1=2^{m}h$
+\begin{altproof}[Alternative proof of sufficiency in Theorem~\ref{thm:9.1.6} via Pocklington's criterion] Assume $a^{(n-1)/2}\equiv-1\pmod{n}$ and write $n-1=2^{m}h$
 	with $h$ odd. In Theorem~\ref{thm:9.1.9}, take $q=2$, $k=m$, and
 	$r=h$. Squaring
 	gives $a^{n-1}\equiv1\pmod{n}$, and $a^{(n-1)/2}-1\equiv-2\pmod{n}$ with
@@ -10993,7 +10993,7 @@ By Theorem~\ref{thm:6.11.7} (or Theorem~\ref{thm:6.1.1}(c) applied to $ab^{-1}$)
 		2^{p} - 1 = M_p$.
 
 \end{proof}
-\begin{altproof}[Alternative proof of Theorem~\ref{thm:9.2.2}]
+\begin{altproof}[Alternative proof of Theorem~\ref{thm:9.2.2} via the order of $2$ modulo $q$]
 	Let $q=2p+1$ be prime; then $q\ge7$, and $d=\delta_q(2)$ divides
 	$q-1=2p$, so $d\in\{1,2,p,2p\}$. The values $d=1$ and $d=2$ are
 	impossible, since they would give $q\mid1$ or $q\mid3$ while $q>3$. If
@@ -11067,7 +11067,7 @@ By Theorem~\ref{thm:6.11.7} (or Theorem~\ref{thm:6.1.1}(c) applied to $ab^{-1}$)
 	$S_{p-2}=\omega^{2^{p-2}}+\omega^{-2^{p-2}}=\omega^{-2^{p-2}}\big(\omega^{2^{p-1}}+1\big)\equiv0\pmod{M}$, that is, $M\mid S_{p-2}$.
 
 \end{proof}
-\begin{altproof}[Alternative proof of sufficiency in Theorem~\ref{thm:9.3.2}]
+\begin{altproof}[Alternative proof of sufficiency in Theorem~\ref{thm:9.3.2} via the rings $R_n(3)$]
 	For any modulus $n\ge2$, the ring
 	$R_n(3)=(\mathbb{Z}/n\mathbb{Z})[\sqrt{3}]$ of
 	Definition~\ref{def:7.9.1} with $d=3$ is the set of pairs $(x,y)$ modulo
@@ -11279,7 +11279,7 @@ By Theorem~\ref{thm:6.11.7} (or Theorem~\ref{thm:6.1.1}(c) applied to $ab^{-1}$)
 	$p_1=2<p_2=3<p_3=5<\cdots$ for the primes in increasing order.
 
 \end{definition}
-\begin{altproof}[Alternative proof of Theorem~\ref{thm:2.1.2}]
+\begin{altproof}[Alternative proof of Theorem~\ref{thm:2.1.2} via squarefree decomposition]
 	Suppose there were only finitely many primes, say $p_1,\ldots,p_k$. Every
 	positive integer $n$ can be written as $n=ms^{2}$ with $m$ squarefree:
 	take $s^{2}$ to be the largest square dividing $n$ and put $m=n/s^2$.
@@ -13161,7 +13161,7 @@ By Theorem~\ref{thm:6.11.7} (or Theorem~\ref{thm:6.1.1}(c) applied to $ab^{-1}$)
 	factor to vanish, a contradiction.
 
 \end{proof}
-\begin{altproof}[Alternative proof of Theorem~\ref{thm:6.10.3}] Let
+\begin{altproof}[Alternative proof of Theorem~\ref{thm:6.10.3} via the Cauchy--Davenport theorem] Let
 	$A = \{x^{2} \bmod p \mid 0 \le x \le \tfrac{p-1}{2}\} \subseteq
 		\mathbb{Z}_p$. If $x^2\equiv y^2\pmod{p}$ with
 	$0\le x,y\le\tfrac{p-1}{2}$, then $p\mid(x-y)(x+y)$ and the
@@ -13243,7 +13243,7 @@ By Theorem~\ref{thm:6.11.7} (or Theorem~\ref{thm:6.1.1}(c) applied to $ab^{-1}$)
 	gives $\sum_{i \in I} a_i \equiv 0 \pmod{p}$.
 
 \end{proof}
-\begin{altproof}[Alternative proof of Theorem~\ref{thm:12.3.1}]
+\begin{altproof}[Alternative proof of Theorem~\ref{thm:12.3.1} via the Cauchy--Davenport theorem]
 	Sort the residues as $r_1\le\cdots\le r_{2p-1}$ in
 	$\{0,\ldots,p-1\}$. If $r_i=r_{i+p-1}$ for some $1\le i\le p-1$,
 	then $r_i,\ldots,r_{i+p-1}$ are $p$ equal residues summing to $0$.
@@ -13444,7 +13444,7 @@ By Theorem~\ref{thm:6.11.7} (or Theorem~\ref{thm:6.1.1}(c) applied to $ab^{-1}$)
 	coefficients.\qedhere
 
 \end{proof}
-\begin{altproof}[Alternative proof of Theorem~\ref{thm:12.5.2}] Define a map from partitions into odd parts to partitions into distinct parts as follows: for each odd part $m$ occurring with
+\begin{altproof}[Alternative proof of Theorem~\ref{thm:12.5.2} via a bijection] Define a map from partitions into odd parts to partitions into distinct parts as follows: for each odd part $m$ occurring with
 	multiplicity $c_m\ge0$, write $c_m = \sum_{j}2^{e_j}$ in binary and
 	replace the $c_m$ copies of $m$ by the parts $2^{e_j}m$. The
 	resulting parts are distinct: if $2^{e}m = 2^{e'}m'$ with $m, m'$
