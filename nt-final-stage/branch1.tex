@@ -83,7 +83,7 @@ We use the following facts without separate proof.
   \item \emph{Arithmetic and counting.} The ordered-ring properties of $\mathbb{Z}$ and the ordered-field properties of $\mathbb{Q}$ and $\mathbb{R}$; completeness and the Archimedean property of $\mathbb{R}$; well-ordering and strong induction on $\mathbb{Z}_{\ge0}$;
     finite counting, including the interpretation of $\binom{n}{k}$ as the number of $k$-element subsets; the binomial theorem and inclusion--exclusion.
     We also use the pigeonhole principle, including the fact that one of finitely many classes containing infinitely many objects must be infinite, and the equivalence of injectivity and surjectivity for maps between finite sets of equal size.
-  \item \emph{Algebra.} Elementary complex arithmetic, conjugation, absolute values, and the triangle inequality; Euler's formula $e^{i\theta}=\cos\theta+i\sin\theta$ and the equivalence $e^{2\pi i x}=1\iff x\in\mathbb{Z}$ for real $x$; basic linear algebra over a field, including matrices, triangularity, invertibility, trace, and determinant; formal differentiation of polynomials, its use in detecting repeated roots, and Newton's identities.
+  \item \emph{Algebra.} Elementary complex arithmetic, conjugation, absolute values, and the triangle inequality; Euler's formula $e^{i\theta}=\cos\theta+i\sin\theta$ for real $\theta$ (so that $|e^{i\theta}|=1$) and the equivalence $e^{2\pi i x}=1\iff x\in\mathbb{Z}$ for real $x$; basic linear algebra over a field, including matrices, triangularity, invertibility, trace, and determinant; formal differentiation of polynomials, its use in detecting repeated roots, and Newton's identities.
   \item \emph{Analysis.} Limits, continuity, differentiation, integration of functions of one real variable, the mean value theorem, and the AM--GM inequality.
     We use rearrangement of absolutely convergent series and interchange of sums in absolutely convergent double series.
     We assume the elementary properties of $\exp$, $\ln$, $\sin$, $\cos$, $\tan$, and $\cot$, including their derivatives, monotonicity on the usual intervals, power series, and the trigonometric addition formulas.
@@ -6495,8 +6495,8 @@ By Theorem~\ref{thm:6.11.7} (or Theorem~\ref{thm:6.1.1}(c) applied to $ab^{-1}$)
 	Hence assume $n \ge 3$ and suppose that $a^{n} - b^{n}$ has no
 	primitive prime factor.
 
-	We first reduce this assumption to a condition involving a single cyclotomic value. For
-	$x > y \ge 1$ and every root of unity $\zeta$,
+	We first reduce this assumption to a condition involving a single cyclotomic value. We use the
+	following root estimate: for $x > y \ge 1$ and every root of unity $\zeta$,
 	\[
 		|x - \zeta y| \ge x - y,
 	\]
@@ -6569,9 +6569,10 @@ By Theorem~\ref{thm:6.11.7} (or Theorem~\ref{thm:6.1.1}(c) applied to $ab^{-1}$)
 
 	Thus $\alpha = 1$. Since $p \nmid k$, the second identity above gives
 	$\Phi_{kp}(x, y) = \Phi_k(x^p, y^p)/\Phi_k(x, y)$. For every
-	primitive $k$-th root $\zeta$, the earlier root estimate and the triangle
-	inequality give $|a^p-\zeta b^p|\ge a^p-b^p$ and
-	$0<|a-\zeta b|\le a+b$. Hence
+	primitive $k$-th root $\zeta$, the root estimate with $x=a^p$ and $y=b^p$ gives
+	$|a^p-\zeta b^p|\ge a^p-b^p$, while the root estimate with $x=a$ and $y=b$,
+	together with the triangle inequality, gives
+	$1=a-b\le|a-\zeta b|\le a+b$. Hence
 	\[
 		\frac{|a^p - \zeta b^p|}{|a - \zeta b|}
 		\ge \frac{a^p - b^p}{a + b}.
@@ -6729,8 +6730,12 @@ By Theorem~\ref{thm:6.11.7} (or Theorem~\ref{thm:6.1.1}(c) applied to $ab^{-1}$)
 
 \end{theorem}
 
-\begin{proof} This is the even-power characterization established in the
-	second step of the primitive-root proof of Theorem~\ref{thm:7.1.2}.
+\begin{proof} If $k=2j$ is even, then $g^{k}\equiv(g^{j})^{2}$ is a
+	quadratic residue. Conversely, let $g^{k}\equiv x^{2}\pmod{p}$. Then
+	$p\nmid x$, so $x\equiv g^{i}$ for some $i$, and $g^{2i}\equiv g^{k}$
+	forces $2i\equiv k\pmod{p-1}$ because $g$ has order $p-1$
+	(Theorem~\ref{thm:6.1.1}(a)--(b)). Writing $k=2i+(p-1)t$ and using the fact that $p-1$ is
+	even, we conclude that $k$ is even.
 
 \end{proof}
 \subsection{The Legendre Symbol and the Supplementary Laws}
@@ -12521,14 +12526,28 @@ By Theorem~\ref{thm:6.11.7} (or Theorem~\ref{thm:6.1.1}(c) applied to $ab^{-1}$)
 	polygon with at least four vertices has an interior diagonal. At a
 	convex-hull vertex $v$, the interior angle is less than $180^{\circ}$. If the
 	triangle $T$ spanned by $v$ and its neighbors $u,w$ contains no other
-	vertex, then $uw$ is an interior diagonal. To see this, suppose an
-	edge met the open segment $uw$. If it had no endpoint in $T$, convexity
-	and the impossibility of crossing the polygon sides $vu$ or $vw$ would
-	force it to be collinear with $uw$; it would then either have an endpoint
-	in $T$ or contain $u$ or $w$ in its relative interior, contrary to the
-	assumption or to simplicity. Thus no edge meets the open segment. The
-	interior of $T$ meets the local interior at $v$, so connectedness shows
-	that the open segment $uw$ lies inside the polygon. Otherwise a vertex
+	vertex, then $uw$ is an interior diagonal. To see this, let $e$ be an
+	edge other than $vu$ and $vw$. In a simple polygon two edges meet only at
+	a common endpoint, and the only edges at $v$ are $vu$ and $vw$. Hence $e$
+	avoids $v$, meets $vu\cup vw$ at most in $u$ and $w$, and, by the
+	assumption on $T$, has no endpoint in $T$ other than $u$ or $w$. The set
+	$e\cap T$ is a segment; each of its ends is an endpoint of $e$ or a point
+	where $e$ leaves $T$, and in either case lies on the closed segment $uw$.
+	Thus $e\cap T$ is contained in the closed segment $uw$. If $e$ met $T$ at a
+	point $x\notin\{u,w\}$, then $x$ would lie in the open segment $uw$ and
+	would not be an endpoint of $e$. A segment passing through such a point
+	either enters the interior of $T$ or lies on the line $uw$; the first is
+	excluded, so $e$ would lie on the line $uw$. Then $e$ would have an endpoint
+	in the open segment $uw$ (contrary to the assumption on $T$), contain $u$
+	or $w$ in its relative interior (contrary to simplicity), or equal $uw$
+	(so that $vu$, $vw$, $uw$ would form the whole boundary, contrary to the
+	polygon having at least four vertices). Hence the boundary of the polygon
+	does not meet the convex set $C$ formed by the interior of $T$ together
+	with the open segment $uw$, so $C$ lies entirely inside or entirely
+	outside the polygon. Since the interior angle at $v$ is less than
+	$180^{\circ}$, points of the interior of $T$ near $v$ lie inside the
+	polygon; therefore the open segment $uw$ lies inside the polygon, and $uw$
+	is an interior diagonal. Otherwise a vertex
 	$z\notin\{u,v,w\}$ of the polygon lying in the closed triangle $T$ and
 	maximizing the distance to the line $uw$ makes $vz$ an interior diagonal.
 	Here $z$ is allowed to lie on the segment $uw$, which covers the case in
