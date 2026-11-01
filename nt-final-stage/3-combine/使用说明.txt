@@ -9,6 +9,8 @@ merge_check.py 是给它（和你）用的辅助，不做合并：
   python3 merge_check.py audit              最终稿每个单元取自哪边；新写的、回滚了一边修改的单元，日志里有没有说明（写 merge-audit.md）
   python3 merge_check.py verify --compile   核对 final.tex：label 与编号环境同 branch1、引用可解析、无冲突标记、能编译
 
+合并之后先做第 4 步的交叉审查（../4-cross-review/），按审查意见修改 final.tex 之后再算留存率。
+
 再算留存率（下面各节）：计算 27B 与 Muse Wonder 改动在最终稿里的留存率。
 
 一、要用到的文件（都在上一层的主文件夹 nt-final-stage/ 里，不用复制到本文件夹）

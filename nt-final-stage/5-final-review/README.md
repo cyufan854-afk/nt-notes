@@ -89,9 +89,9 @@ v0.4.1 的“仲裁轮”是攒批次、人工复制到网页版 Argon。现在�
 - 工作区 `config.json` 里没有 `mode` 的（v0.4.1 建的）保持人工中转；v0.4.1 建的未完成会话也保持原行为。演示配置（`init --demo`）没有真实仲裁模型，也是人工中转。
 - 每单元默认最多 32 次调用（3 轮 × 9 + 一个仲裁轮 4 次 + 余量）；`edit units` 的上限估算已计入仲裁轮。
 
-### nt-final-stage 第 4 步：怎么跑、怎么分批
+### nt-final-stage 第 5 步：怎么跑、怎么分批
 
-最终稿是主文件夹的 `final.tex`。在本目录（`4-final-review/`）：
+最终稿是主文件夹的 `final.tex`（已经过第 4 步的交叉审查和修改）。在本目录（`5-final-review/`）：
 
 ```bash
 python3 -m coop --workspace .coop-final init          # 新工作区：规划 deepseek，分析 codex / gemini(agy, Argon)，审查 claude，仲裁 gemini

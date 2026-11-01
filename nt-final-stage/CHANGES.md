@@ -11,7 +11,7 @@
 
 ## 一、必须的改动
 
-### 1. coop v0.4.2：Gemini 改走 Antigravity CLI（`agy`），全程 Argon（`4-final-review/`）
+### 1. coop v0.4.2：Gemini 改走 Antigravity CLI（`agy`），全程 Argon（`5-final-review/`）
 
 **为什么**：Gemini CLI 已停止服务个人订阅。
 
@@ -113,7 +113,7 @@
 
 **为什么**：之后可能多一个 Grok 7 天试用和 Kimi 的赠送额度。这些额度是临时的，适合在某家订阅当天额度用完时顶上，不适合放进固定岗位。
 
-**做了什么**（`4-final-review/`）：
+**做了什么**（`5-final-review/`）：
 
 - 新 provider kind `grok`：官方 Grok CLI，headless 运行 `grok --no-auto-update -p "<prompt>" --output-format json [-m MODEL]`。
   - 每次新开会话，从不传 `-c/--continue`；工作目录是空的 `grok-workspace/`。
@@ -165,7 +165,7 @@
   - 用当前 branch1 代替最终稿试算，Muse Wonder 仍是 50 处、保留 43（86.0%）、撤回 0、改写 7（14.0%），已自动统一 `def:5.7.1→def:5.7.2`。
 - 新增 4 项测试：audit、label 改名的误判与修正、同时改名、分阶段统计。
 
-**步骤 4：coop 0.4.3**（`4-final-review/`）
+**步骤 4：coop 0.4.3**（`5-final-review/`）
 
 - **小规模计算检查**：
   - 规划者遇到可计算的命题时附一个只用标准库的穷举脚本，在无网络的 Docker 容器里实际运行，真实输出交给两位分析者、交换意见和独立审查；脚本只找反例。
@@ -188,34 +188,56 @@
   - 排班窗口与到期换回；候补的提示、自动换人与下次换回、不破坏独立性；
   - 命令行参数。
 
+### 追加（2026-11-01）：新的第 4 步“交叉审查合并”，原第 4 步改为第 5 步
+
+**为什么**：第 3 步的合并由一个模型完成，而且现在给了它更多自主权（回滚、重写、小幅数学修改）。进入逐单元审查之前，先请其他模型对照四份稿子检查合并本身。
+
+**做了什么**（`4-cross-review/`，原 `4-final-review/` 改名为 `5-final-review/`，内容不变）：
+
+- `CROSS_REVIEW_PROMPT.md`：给审查模型的 prompt。
+  - 先核对收到的四份稿子：行数、最后一行，用来发现粘贴被截断；
+  - 按重要性检查：丢失修改、冲突处理、回归、引用改名、结构，合并模型自己写的数学修改与回滚理由、未记录的修改，一致性，LaTeX；
+  - 看不完时有优先顺序；
+  - 回复是固定格式：总述四行，加 `<<<FINDING Fn>>>` 问题块（单元、类别、严重度、逐字原文、问题、依据、建议），可以“继续”接着写。
+- `make_packet.py`：生成可直接粘贴或上传的文件。
+  - `cross-review-full.md`：prompt + 日志 + 4 份带标记的全文，约 84 万 token；
+  - `cross-review-compact*.md`：只含合并中有风险的单元（final 全文 + baseline→branch1、baseline→branch2、branch1→final 三段差异），其余单元列 id，按大小分部分。
+- `APPLY_REVIEW_PROMPT.md`：把审查意见交回第 3 步的合并模型。它逐条核对、采纳 / 部分采纳 / 不采纳，修改 `final.tex`，在 `merge-log.md` 里补“交叉审查的处理”，重跑 `verify` 与 `audit`，并在总结里列出所有 blocking 的处理和新的数学修改。
+- `MERGE_PROMPT.md`、`使用说明.txt`、`check_all.sh`、各 README 的步骤编号已同步。
+- 新增 4 项测试（`4-cross-review/test_make_packet.py`）。
+
 ## 三、测试结果
 
 在本环境运行（Python 3.13.18；notebook 测试用 torch 2.15.0、numpy 2.5.4、safetensors 0.8.0；本机没有 latexmk / pdflatex，也没有可用的 Docker）：
 
 ```
 $ PYTHON=<装了 torch 的 python> bash check_all.sh
-== 4-final-review
-Ran 142 tests in 14.568s
+== 5-final-review
+Ran 142 tests in 16.748s
 OK (skipped=3)
 == 2-branch2
-Ran 97 tests in 7.899s
+Ran 97 tests in 8.432s
 OK (skipped=1)
 == 3-combine
-Ran 23 tests in 0.038s
+Ran 23 tests in 0.035s
+OK
+== 4-cross-review
+Ran 4 tests in 0.022s
 OK
 == 1-model-merge
-Ran 23 tests in 3.754s
+Ran 23 tests in 0.507s
 OK
 ```
 
 | 套件 | 原有 | 新增 | 结果 | 跳过的 |
 |---|---|---|---|---|
-| coop（`4-final-review`） | 96 | 46 | 142 通过 | 3 项：2 项真实 latexmk 编译（本机没有 latexmk；你的 Mac 上会跑），1 项 Docker 隔离集成测试（需显式开启） |
+| coop（`5-final-review`） | 96 | 46 | 142 通过 | 3 项：2 项真实 latexmk 编译（本机没有 latexmk；你的 Mac 上会跑），1 项 Docker 隔离集成测试（需显式开启） |
 | nt27b（`2-branch2`） | 86 | 11 | 97 通过 | 1 项：实际 pdflatex 编译（本机没有 pdflatex） |
 | 合并与留存率（`3-combine`） | 7 | 16 | 23 通过 | — |
 | 融合 notebook（`1-model-merge`） | — | 23 | 23 通过 | — |
+| 交叉审查打包（`4-cross-review`） | — | 4 | 4 通过 | — |
 
-原有测试文件一行没删、一行没改；只在 `2-branch2/tests/test_gpu_runner.py`、`3-combine/test_retention.py`、`test_run_retention.py`、`test_merge_check.py` 里追加了测试。详细的逐项输出见 `4-final-review/docs/test-results.txt`，或用 `-v` 重跑。
+原有测试文件一行没删、一行没改；只在 `2-branch2/tests/test_gpu_runner.py`、`3-combine/test_retention.py`、`test_run_retention.py`、`test_merge_check.py` 里追加了测试。详细的逐项输出见 `5-final-review/docs/test-results.txt`，或用 `-v` 重跑。
 
 ## 四、没有验证、只能在你那边验证的
 

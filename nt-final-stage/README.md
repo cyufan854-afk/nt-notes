@@ -1,6 +1,6 @@
-# nt-final-stage：nt.tex 收尾的四步
+# nt-final-stage：nt.tex 收尾的五步
 
-英文 LaTeX 初等数论讲义（约 13,500 行、200 页、372 个定理、116 个定义）的最后四步。每步一个文件夹，按顺序做。两份讲义 `baseline.tex`、`branch1.tex` 放在本文件夹，是数据，内容不改；各步的产物也放回这里，下一步直接从这里读。
+英文 LaTeX 初等数论讲义（约 13,500 行、200 页、372 个定理、116 个定义）的最后五步。每步一个文件夹，按顺序做。两份讲义 `baseline.tex`、`branch1.tex` 放在本文件夹，是数据，内容不改；各步的产物也放回这里，下一步直接从这里读。
 
 ```
 nt-final-stage/
@@ -9,24 +9,26 @@ nt-final-stage/
   baseline.tex       共同祖先（= nt27b 1.1.1 的 data/nt.tex），SHA-256 8684a76e6014d66bd520f5b65f12acdb3e24157cfa5f0a227025963b6cb84dd5
   branch1.tex        你这一侧的 branch1；第 3 步之前可以继续改，任何工具都不写死它的内容或哈希
   branch2.tex        第 2 步的产物（27B 的分支）            ← 第 2 步写入
-  final.tex          第 3 步的产物（合并后的最终稿）        ← 第 3 步写入，第 4 步在它上面就地修订
+  final.tex          第 3 步的产物（合并后的最终稿）        ← 第 3 步写入，第 4 步按交叉审查修改，第 5 步在它上面就地修订
   1-model-merge/     融合 notebook（e15）+ 说明 + 单元测试
   2-branch2/         branch2.py（第 2 步总控）+ nt27b（只用标准库）
   3-combine/         合并说明 MERGE_PROMPT.md、合并检查 merge_check.py、留存率脚本
-  4-final-review/    coop v0.4.3（只用标准库）
-  check_all.sh       一次跑四套测试
+  4-cross-review/    交叉审查合并结果：给其他模型的 prompt、打包脚本、处理意见的 prompt
+  5-final-review/    coop v0.4.3（只用标准库）
+  check_all.sh       一次跑全部测试
 ```
 
 `baseline.tex` 只有这一份：nt27b 和留存率脚本都从这里读，并按上面的 SHA-256 校验，不符就停下；nt27b 包里不再有 `data/nt.tex` 副本。
 
-## 四步
+## 五步
 
 | 步骤 | 在哪跑 | 输入 | 输出 | 交给下一步 |
 |---|---|---|---|---|
 | 1. 模型融合 | Colab CPU 高 RAM | Hugging Face 上的各来源（StartLux 发布后才能完成） | 你的 27B：BF16 仓库 `output_repo` 和 FP8 仓库 `output_repo-FP8` | 仓名和 commit（`uploaded.json` / `fp8_uploaded.json`）填进第 2 步的 `MODEL` / `MODEL_REVISION` |
 | 2. 生成 branch2 | Mac 准备、RunPod（vLLM）跑模型、Mac 审阅 | `baseline.tex`、第 1 步的模型 | `branch2.tex` | 放在本文件夹，第 3 步直接读 |
 | 3. 合并与留存率 | Mac，前沿模型（agent 模式） | `baseline.tex`（共同祖先）、届时最新的 `branch1.tex`、`branch2.tex` | `final.tex`、`3-combine/merge-log.md`、`3-combine/retention.md/.csv` | `final.tex` |
-| 4. 最终统一审查 | Mac | `final.tex` | 就地修订的 `final.tex`（每次写入前 git 备份）、审查报告 | — |
+| 4. 交叉审查合并 | 其他模型（网页版粘贴即可）+ 合并模型（agent 模式）处理意见 | 4 份稿子 + `merge-log.md` | 审查意见 `4-cross-review/reviews/`、按意见修改后的 `final.tex` | `final.tex` |
+| 5. 最终统一审查 | Mac | `final.tex` | 就地修订的 `final.tex`（每次写入前 git 备份）、审查报告 | — |
 
 ### 1. 模型融合（`1-model-merge/`）
 
@@ -70,10 +72,33 @@ python3 branch2.py next                          # 整理 → 润色（先勾选
    - 比较前先把各来源的 label 按最终稿统一，正确改名的引用不会被误算成改写。
    - 结果在 `retention.md` 和 `retention.csv`。用当前 branch1 代替最终稿试算：Muse Wonder 共 50 处，保留 43（86.0%），撤回 0，改写 7（14.0%）。
 
-### 4. 最终统一审查（`4-final-review/`）
+### 4. 交叉审查合并（`4-cross-review/`）
+
+第 3 步的合并是一个模型做的。进入第 5 步之前，请一到两个**其他**模型对照四份稿子检查合并本身：
+- 有没有丢掉某一边的修改；
+- 冲突处有没有处理坏，有没有回归（丢了 branch1 已修好的数学问题）；
+- 引用改名对不对；
+- 合并模型自己写的数学修改对不对，日志有没有漏记。
 
 ```bash
-cd 4-final-review
+cd 4-cross-review
+python3 make_packet.py      # 生成 cross-review-full.md（prompt + 4 份全文 + 日志）和 cross-review-compact*.md（只含有风险的单元）
+```
+
+- 把 `cross-review-full.md` 粘贴或上传给审查模型就行。
+  - 它约有 84 万 token，只有上下文约 100 万 token 的模型放得下；
+  - 小一些的模型用精简版 `cross-review-compact*.md`；
+  - 也可以自己粘贴 `CROSS_REVIEW_PROMPT.md` 加 4 份稿子。
+- 审查模型最好与做合并的不同家，开新的对话。
+- 回复存成 `reviews/<审查者>.md`，再把 `APPLY_REVIEW_PROMPT.md` 交给第 3 步的合并模型：它逐条核对、决定采纳与否、修改 `final.tex`、补记日志，并重跑 `verify` 和 `audit`。
+- 最后重算留存率。
+
+详见 `4-cross-review/README.md`。
+
+### 5. 最终统一审查（`5-final-review/`）
+
+```bash
+cd 5-final-review
 python3 -m coop --workspace .coop-final init
 python3 -m coop --workspace .coop-final doctor
 python3 -m coop --workspace .coop-final models gemini --fetch     # 核对 Argon 的 slug
@@ -94,7 +119,7 @@ v0.4.3 另外有三项：
   - `edit.roster` 按日期段排班；
   - `edit.fallbacks` 是候补名单，可选 `auto_fallback` 自动换人。
 
-分批的理由、调用量估算、临时额度和以上配置的用法见 `4-final-review/README.md` 开头。
+分批的理由、调用量估算、临时额度和以上配置的用法见 `5-final-review/README.md` 开头。
 
 ## 测试
 
@@ -102,7 +127,7 @@ v0.4.3 另外有三项：
 bash check_all.sh
 ```
 
-四套测试：coop 142 项（原 96 + 新 46），nt27b 97 项（原 86 + 新 11），合并与留存率 23 项（原 7 + 新 16），融合 notebook 23 项（需要 numpy、torch、safetensors；没有时这一套跳过）。结果见 `CHANGES.md`。
+五套测试：coop 142 项（原 96 + 新 46），nt27b 97 项（原 86 + 新 11），合并与留存率 23 项（原 7 + 新 16），交叉审查打包 4 项，融合 notebook 23 项（需要 numpy、torch、safetensors；没有时这一套跳过）。结果见 `CHANGES.md`。
 
 ## 需要你验证
 
