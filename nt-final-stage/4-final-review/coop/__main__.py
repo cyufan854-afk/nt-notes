@@ -46,6 +46,9 @@ def main():
                                   '例如某家额度用完时 --use analysts.0=grok；可重复；记在报告里')
     edit_resume.add_argument('--arbiter', choices=['cli', 'manual'],
                              help='切换仲裁方式：cli 自动调用 roles.arbiter（agy 上的 Argon）；manual 网页人工中转（agy 额度不够时的后备）')
+    edit_ledger = edit.add_parser('ledger', help='跨单元决定台账：列出某个源文件的条目，或手工添加一条')
+    edit_ledger.add_argument('source')
+    edit_ledger.add_argument('--add', help='添加一条（例如全书统一的记号或写法）')
     edit_status = edit.add_parser('status')
     edit_status.add_argument('id', nargs='?')
     edit.add_parser('report').add_argument('id')
@@ -138,6 +141,8 @@ def main():
                 result = editloop.execute(store, args.id, args.add_calls_per_unit, args.accept_external, args.arbiter, args.use)
             elif act == 'status':
                 result = editloop.status(store, args.id)
+            elif act == 'ledger':
+                result = editloop.ledger(store, args.source, args.add)
             elif act == 'web':
                 if args.web_action == 'export':
                     result = editloop.web_export(store, args.id, args.batch_units, args.batch_chars)

@@ -49,6 +49,7 @@ REF_RE = re.compile(r'\\(?:ref|eqref|cref|Cref|autoref|pageref)\*?\{([^}]+)\}')
 EDIT_OPEN = re.compile(r'^<<<COOP_EDIT(?:[ \t]+([^>\s]+))?>>>[ \t]*$')
 OLD_MARK, NEW_MARK, END_MARK = '<<<COOP_OLD>>>', '<<<COOP_NEW>>>', '<<<COOP_EDIT_END>>>'
 UNIT_BEGIN, UNIT_END = '<<<UNIT_TEXT_BEGIN>>>', '<<<UNIT_TEXT_END>>>'
+LEDGER_OPEN, LEDGER_CLOSE = '<<<COOP_LEDGER>>>', '<<<COOP_LEDGER_END>>>'
 FATAL_HINTS = ('rate_limit', 'authentication', 'quota', '额度', '未设置环境变量', '调用已取消', '; model:', 'model: ',
                'billing', '; cli_version:')
 ARBITER_MODES = ('cli', 'manual')
@@ -60,6 +61,13 @@ class EditError(ValueError):
 
 class ExternalChange(RuntimeError):
     """The source file no longer matches coop's own backup."""
+
+
+class ProviderFailure(RuntimeError):
+    """A provider's call failed (quota, authentication, …); the message starts with the provider's name."""
+    def __init__(self, provider, message):
+        super().__init__(message)
+        self.provider = provider
 
 
 class EnvironmentProblem(RuntimeError):
@@ -87,6 +95,14 @@ def edit_defaults():
         'context_chars': 40000,
         'history_chars': 30000,
         'max_unit_chars': 40000,
+        # Small-case checks: the planner may attach one standard-library script that enumerates the unit's computable
+        # claims over a small range; it runs in the isolated container and its real output goes to the analysts and the
+        # reviewer. It can only find counterexamples, never prove anything. No Docker: skipped (or 'pause').
+        'checks': {'planner': True, 'on_unavailable': 'skip'},
+        # Cross-unit decision ledger: conventions an applied patch settles for the whole book (notation, fixed wording),
+        # proposed in the merge / arbitration body, recorded once the reviewer approved and the patch was written, and
+        # shown read-only to every later unit of the same source file (across sessions).
+        'ledger': {'enabled': True, 'chars': 6000},
         # Units the automatic loop cannot settle (analysts still disagree after the
         # exchange, the reviewer rejects the patch, or the unit oscillates) get an arbitration
         # round that still goes through the precheck and the same independent reviewer.
@@ -131,8 +147,18 @@ def edit_config(cfg):
     user = cfg.get('edit', {}) or {}
     if not isinstance(user, dict):
         raise ValueError('edit 配置必须是对象')
-    e.update({k: v for k, v in user.items() if k not in ('roles', 'web')})
+    e.update({k: v for k, v in user.items() if k not in ('roles', 'web', 'checks', 'ledger')})
     e['roles'] = {**e['roles'], **(user.get('roles') or {})}
+    for key in ('checks', 'ledger'):
+        if user.get(key) is not None and not isinstance(user.get(key), dict):
+            raise ValueError(f'edit.{key} 必须是对象')
+        e[key] = {**e[key], **(user.get(key) or {})}
+    if type(e['checks']['planner']) is not bool or e['checks']['on_unavailable'] not in ('skip', 'pause'):
+        raise ValueError('edit.checks：planner 是布尔值，on_unavailable 只能是 skip 或 pause')
+    if type(e['ledger']['enabled']) is not bool or type(e['ledger']['chars']) is not int or e['ledger']['chars'] <= 0:
+        raise ValueError('edit.ledger：enabled 是布尔值，chars 是正整数')
+    for key in ('roster', 'fallbacks', 'auto_fallback'):
+        e.pop(key, None)   # scheduling: read live from the workspace config at every run, never frozen
     if type(e['max_rounds']) is not int or not 1 <= e['max_rounds'] <= 5:
         raise ValueError('edit.max_rounds 必须在 1 到 5 之间')
     e['web'] = web_config(user.get('web'), e['max_rounds'])
@@ -491,6 +517,10 @@ def validate_edits(output):
     parse_edits(output['body'])
 
 
+def _validate_check(output):
+    protocol.check_script(output)
+
+
 def scope_filter(edits, registry, scope):
     if scope == 'all':
         return list(edits), []
@@ -515,7 +545,7 @@ def _frame(kind):
     meta = {'kind': kind, 'issues': [], 'done': True}
     if kind == 'plan':
         meta = {'kind': 'plan', 'issues': [{'id': 'P1', 'severity': 'blocking', 'category': 'math_error',
-                                            'location': 'proof, second sentence'}], 'done': False}
+                                            'location': 'proof, second sentence'}], 'done': False, 'check': False}
     elif kind == 'analysis':
         meta['check'] = False
     elif kind == 'review':
@@ -580,6 +610,43 @@ def _brief(output, limit):
     return f'问题：{_issues_line(output)}\n' + _clip(output['body'], limit)
 
 
+CHECK_TASK = (
+    '小规模计算检查：如果单元里有能在小范围内穷举验证的命题或计算（同余、整除、恒等式、具体数值例子、对小 n 成立的结论等），'
+    '设 check=true，并在正文附且只附一个 ```python coop-check 代码块：只用标准库；写明检查范围（例如 n ≤ 500）；'
+    '逐个打印被检查的命题、范围、是否发现反例和第一个反例。调度器会在无网络的容器里实际运行它，输出交给分析者和审查。'
+    '它只能发现反例，不能代替证明；不要声称已运行。单元里没有可计算的内容就设 check=false。\n')
+LEDGER_TASK = (
+    '跨单元决定台账：如果本单元的修改确立了全书应该统一遵守的记号、术语或固定写法，在正文最后用两行标记 '
+    + LEDGER_OPEN + ' 与 ' + LEDGER_CLOSE + ' 包住，逐条列出（每条一行，最多 5 条，用中文说明，必要时附英文原文；不要写修改块）。'
+    '只有审查批准并写入后才会记入台账，之后的单元都会看到。没有这样的决定就不写。\n')
+
+
+def parse_ledger(body):
+    """Entries of the <<<COOP_LEDGER>>> block of a merge / arbitration body (at most 5, each at most 300 characters)."""
+    lines = body.split('\n')
+    out, inside = [], False
+    for line in lines:
+        mark = line.strip()
+        if mark == LEDGER_OPEN:
+            inside = True
+            continue
+        if mark == LEDGER_CLOSE:
+            inside = False
+            continue
+        if inside:
+            text = re.sub(r'^(?:[-*•]|\d+[.、)])\s*', '', mark).strip()
+            if text:
+                out.append(text[:300])
+    return out[:5]
+
+
+def _check_brief(run):
+    if not run or run.get('status') in (None, 'not_requested'):
+        return ''
+    text = (run.get('stdout') or run.get('reason') or '').strip()
+    return f'{run.get("status")}：' + _clip(text, 800)
+
+
 def _arb_tag(rec):
     return '（仲裁）' if rec.get('via') == 'cli' else '（网页仲裁）'
 
@@ -594,6 +661,8 @@ def history_text(records, e, for_reviewer=False):
             p.append('仲裁者方案与理由：' + _brief(rec.get('arbitration'), 3000))
         elif not for_reviewer:
             p.append('规划清单：' + _brief(rec.get('plan'), 2500))
+        if _check_brief(rec.get('plan_execution')):
+            p.append('规划者小规模计算检查（真实输出）：' + _check_brief(rec['plan_execution']))
             for i, name in enumerate('AB'):
                 final = (rec.get('exchange') or rec.get('analyses') or [None, None])[i]
                 p.append(f'分析者 {name} 最终方案：' + _brief(final, 2500))
@@ -635,6 +704,9 @@ def ensure_tables(store):
         CREATE TABLE IF NOT EXISTS edit_applies(
           session TEXT, unit TEXT, round INTEGER, state TEXT, before TEXT, after TEXT,
           after_unit TEXT, commit_id TEXT DEFAULT '', PRIMARY KEY(session, unit, round));
+        CREATE TABLE IF NOT EXISTS edit_ledger(
+          source TEXT, session TEXT, unit TEXT, round INTEGER, idx INTEGER, text TEXT, created REAL,
+          PRIMARY KEY(source, session, unit, round, idx));
         CREATE TABLE IF NOT EXISTS edit_web(
           session TEXT, unit TEXT, round INTEGER, state TEXT, reason TEXT, batch INTEGER DEFAULT 0,
           answer TEXT DEFAULT '', raw TEXT DEFAULT '', created REAL, imported REAL DEFAULT 0,
@@ -691,11 +763,43 @@ class Session:
         # Sessions created before web arbitration existed keep their frozen behaviour.
         self.e.setdefault('web', {**edit_defaults()['web'], 'enabled': False})
         self.e['web'].setdefault('mode', 'manual')   # v0.4.1 sessions: the manual web relay they were created with
+        self.e.setdefault('checks', {'planner': False, 'on_unavailable': 'skip'})   # sessions from before v0.4.3: off
+        self.e.setdefault('ledger', {'enabled': False, 'chars': 6000})
         self.baseline = json.loads(self.row['baseline'])
         self.source = Path(self.row['source'])
         self.folder = store.root / sid
         self.repo = self.folder / 'backup'
         self.build = self.folder / 'build'
+
+    def reload(self):
+        """Re-read the session row (after a role change), keeping this object and its lock."""
+        fresh = Session(self.store, self.sid)
+        self.row, self.cfg, self.e = fresh.row, fresh.cfg, fresh.e
+
+    # -- ledger ---------------------------------------------------------
+    def ledger_add(self, unit, rnd, entries):
+        with self.store.db() as db:
+            for i, text in enumerate(entries):
+                db.execute('INSERT OR IGNORE INTO edit_ledger VALUES(?,?,?,?,?,?,?)',
+                           (str(self.source), self.sid, unit, rnd, i, text, time.time()))
+
+    def ledger_text(self, exclude_unit=None):
+        """Entries for this source file (every session), newest first, within edit.ledger.chars."""
+        if not self.e['ledger']['enabled']:
+            return ''
+        with self.store.db() as db:
+            rows = db.execute('SELECT unit, text FROM edit_ledger WHERE source=? ORDER BY created DESC, idx',
+                              (str(self.source),)).fetchall()
+        out, size = [], 0
+        for unit, text in rows:
+            if unit == exclude_unit:
+                continue
+            line = f'- [{unit}] {text}'
+            if size + len(line) > self.e['ledger']['chars']:
+                break
+            out.append(line)
+            size += len(line) + 1
+        return '\n'.join(out)
 
     # -- backup ---------------------------------------------------------
     @staticmethod
@@ -906,7 +1010,7 @@ class Session:
         return roles['analysts'][slot[1]] if isinstance(slot, tuple) else roles[slot]
 
     def ask(self, job, key, slot, kind, prompt, role_key):
-        validate = validate_edits if kind in EDIT_KINDS else None
+        validate = validate_edits if kind in EDIT_KINDS else (_validate_check if kind == 'plan' else None)
         provider = self.provider(slot)
         try:
             return self.store.call(job, self.cfg, key, provider, kind, prompt, role_key, issue_filter, validate)
@@ -914,7 +1018,7 @@ class Session:
             if type(exc) is not RuntimeError:
                 raise
             # Name the provider, so that a pause for quota says whose quota ran out (see `edit resume --use`).
-            raise RuntimeError(f'{provider}：{exc}') from None
+            raise ProviderFailure(provider, f'{provider}：{exc}') from None
         except ValueError as exc:
             message = str(exc)
             if message.startswith(('提示超过', 'prompt 必须', '输入与记忆')):
@@ -944,7 +1048,11 @@ def _prompt_base(S, uid, start, past):
     def base(kind, slot_name='', for_reviewer=False):
         if 'c' not in cache:
             cache['c'] = build_context(S.source_text(), start, S.e)
-        return (_head(S.e, kind, slot_name) + _context_blocks(cache['c']) + _unit_block(uid, start) +
+        if 'l' not in cache:
+            cache['l'] = S.ledger_text(exclude_unit=uid)
+        ledger = _section('跨单元决定台账（只读：前面单元已定下、全书应保持一致的记号与写法；与之冲突可作为 notation_conflict 提出）',
+                          cache['l']) if cache['l'] else ''
+        return (_head(S.e, kind, slot_name) + _context_blocks(cache['c']) + ledger + _unit_block(uid, start) +
                 _section('历史', history_text(past, S.e, for_reviewer)))
     return base
 
@@ -999,6 +1107,22 @@ def _review_and_apply(S, job, uid, r, st, start, pre, prompt, record, notes):
     return accepted, accepted and reviewer_vote, False
 
 
+def _planner_check(S, job, r, plan, notes):
+    """Run the planner's small-case script (if any) in the isolated container; without Docker it is skipped, or the unit
+    pauses when edit.checks.on_unavailable is 'pause'."""
+    if not S.e['checks']['planner']:
+        return {'status': 'not_requested'}
+    script = protocol.check_script(plan)
+    if script is None:
+        return {'status': 'not_requested'}
+    try:
+        return S.store.execution(job, f'edit-r{r}-plan', script, S.cfg)
+    except ExecutionUnavailable as exc:
+        if S.e['checks']['on_unavailable'] == 'pause':
+            raise
+        return {'status': 'unavailable', 'reason': str(exc)}   # shown in the round's record, not as a note per unit
+
+
 def _normal_round(S, u, r, st):
     """plan -> blind analyses -> exchange -> merge -> precheck -> review -> apply -> confirm."""
     e, uid, job = S.e, u['unit'], u['job']
@@ -1010,13 +1134,17 @@ def _normal_round(S, u, r, st):
     plan = S.ask(job, f'edit-r{r}-plan', 'planner', 'plan',
                  lambda: base('plan') + '\n你的任务：审读可编辑单元，冻结本轮问题清单（id 用 P1、P2…）。'
                  '第 1 轮列出你认为存在的问题；之后各轮根据历史说明哪些已解决、哪些遗留，并据审查意见和预检失败原因更新清单。'
-                 '本步骤不写修改块；没有 blocking 问题时 done=true。\n' + _frame('plan'), 'planner')
+                 '本步骤不写修改块；没有 blocking 问题时 done=true。\n'
+                 + (CHECK_TASK if S.e['checks']['planner'] else '') + _frame('plan'), 'planner')
     planner_done = vote(plan, '规划', notes)
+    plan_run = _planner_check(S, job, r, plan, notes)
+    checked = plan_run.get('status') != 'not_requested'
+    check_view = (_section('规划者的小规模计算检查（调度器在无网络容器中实际运行的输出）', dumps(plan_run)) if checked else '')
     names = NAMES
 
     def analysis(i):
         return S.ask(job, f'edit-r{r}-analysis{i}', ('analysts', i), 'analysis',
-                     lambda: base('analysis', ' ' + names[i]) + _section('本轮规划', _brief(plan, 8000)) +
+                     lambda: base('analysis', ' ' + names[i]) + _section('本轮规划', _brief(plan, 8000)) + check_view +
                      f'\n你的任务（盲答）：你看不到另一位分析者本轮的意见。逐条判断清单中的问题是否成立（不成立要给理由），'
                      f'然后给出你的完整修改方案。清单外的新问题 id 用 {names[i]}1、{names[i]}2…；每个修改块标注对应问题 id。'
                      '如需计算验证，可设 check=true 并附且只附一个 ```python coop-check 代码块（只用标准库，调度器在无网络容器中执行，不要声称已运行）。'
@@ -1032,7 +1160,7 @@ def _normal_round(S, u, r, st):
             return S.ask(job, f'edit-r{r}-exchange{i}', ('analysts', i), 'exchange',
                          lambda: base('exchange', ' ' + names[i]) + _section('本轮规划', _brief(plan, 8000)) +
                          _section('你的盲答', blind[i]['body']) + _section(f'分析者 {names[1 - i]} 的盲答', blind[1 - i]['body']) +
-                         _section('调度器计算记录（真实输出）', dumps([runs[0], runs[1]])) +
+                         _section('调度器计算记录（真实输出）', dumps([runs[0], runs[1]] + ([plan_run] if checked else []))) +
                          '\n你的任务（交换意见）：逐点回应对方。同意的直接采纳；不同意的给出数学理由，争取说服对方；对方有道理就修改你的方案。'
                          '最后写出你完整的最终方案（全部修改块重新写出，不是增量）。\n' + EDIT_FORMAT + _frame('exchange'),
                          f'exchange{i}')
@@ -1052,7 +1180,7 @@ def _normal_round(S, u, r, st):
                       '\n你的任务（合并）：把两位分析者的最终方案合并成一份补丁；修改重叠时选择或融合，并逐条写明理由——'
                       '审查者只看得到你的理由和补丁，看不到分析者的讨论。若你认为仍有 blocking 问题而两方都没有修改，'
                       '要么自己写修改块，要么说明理由并设 done=false。每个修改块标注问题 id（清单或分析者的 id；新问题用 M1…）。\n'
-                      + EDIT_FORMAT + _frame('merge'), 'merge')
+                      + (LEDGER_TASK if e['ledger']['enabled'] else '') + EDIT_FORMAT + _frame('merge'), 'merge')
         patch = parse_edits(merge['body'])
         planner_done = vote(merge, '规划（合并）', notes)
 
@@ -1064,7 +1192,7 @@ def _normal_round(S, u, r, st):
         registry.update(_issues_of(out))
     pre = S.checkpoint(uid, r, 'precheck', lambda: S.precheck(start, patch, registry))
     record = {'round': r, 'plan': plan, 'analyses': blind, 'exchange': exchange, 'merge': merge,
-              'executions': runs, 'patch_proposed': patch, 'patch_kept': pre['kept'], 'precheck': pre,
+              'executions': runs, 'plan_execution': plan_run, 'patch_proposed': patch, 'patch_kept': pre['kept'], 'precheck': pre,
               'review': None, 'commit': '', 'confirm': [None, None], 'notes': notes, 'triggers': triggers}
 
     if not pre['ok']:
@@ -1080,9 +1208,11 @@ def _normal_round(S, u, r, st):
         _section('待审补丁', patch_view) +
         _section('合并说明（规划者）', merge['body'] if merge else '（两位分析者都没有提出修改，规划者也无遗留 blocking 问题）') +
         _section('调度器预检记录（真实）', precheck_view) +
-        _section('调度器计算记录（真实）', dumps(runs)) +
+        _section('调度器计算记录（真实）', dumps(runs + ([plan_run] if checked else []))) +
         '\n你的任务（独立审查）：你看不到分析者的讨论。' + REVIEW_TASK + _frame('review'),
         record, notes)
+    if record.get('commit') and merge is not None:
+        S.ledger_add(uid, r, parse_ledger(merge['body']))
     if not accepted:
         triggers.append('补丁被审查打回')
     if oscillation:
@@ -1156,6 +1286,8 @@ def _web_round(S, u, r, st, answer):
         '\n你的任务（独立审查）：上一轮自动循环没有收敛，本轮补丁来自另一位模型的仲裁。你看不到分析者的讨论；'
         '不要因为仲裁者更强或语气自信就放行。' + REVIEW_TASK + _frame('review'),
         record, notes)
+    if record.get('commit'):
+        S.ledger_add(uid, r, parse_ledger(answer['body']))
     if not accepted:
         triggers.append('仲裁补丁被审查打回')
     if oscillation:
@@ -1209,8 +1341,10 @@ def _arbiter_prompt(S, u, reason, file_text):
         '修改块标注的问题 id 若既不在你的 issues 里、也不是历史中的 blocking 问题，会被调度器丢弃。'
         'done=true 表示按你的补丁处理后此单元不再有 blocking 问题。\n'
         '4. 不执行代码，不要写 python coop-check 脚本；需要计算就在说明里推演。\n\n'
-        + EDIT_FORMAT + _frame('arbitration') +
-        _web_shared(file_text, e) + _web_packet(S, u, reason, file_text) +
+        + (LEDGER_TASK if e['ledger']['enabled'] else '') + EDIT_FORMAT + _frame('arbitration') +
+        _web_shared(file_text, e) +
+        (_section('跨单元决定台账（只读）', S.ledger_text(exclude_unit=uid)) if S.ledger_text(exclude_unit=uid) else '') +
+        _web_packet(S, u, reason, file_text) +
         f'\n\n===== 单元 {uid} 到此结束 =====\n只输出一个 COOP 帧（kind 为 arbitration），帧外不要写任何文字。\n')
 
 
@@ -1404,14 +1538,16 @@ VENDORS = {'claude': 'Anthropic', 'codex': 'OpenAI', 'antigravity': 'Google', 'g
 
 
 def vendor(spec):
-    """The company behind a provider (None for demo / command providers, which are not checked)."""
+    """The company behind a provider (None for demo / command providers, which are not checked). A spec may name it."""
+    if isinstance(spec.get('vendor'), str) and spec['vendor'].strip():
+        return spec['vendor'].strip().lower()
     kind = spec.get('kind')
     if kind == 'api':
         from urllib.parse import urlsplit
         host = urlsplit(spec.get('url', '')).hostname or ''
         parts = host.split('.')
         return parts[-2] if len(parts) >= 2 else host
-    return VENDORS.get(kind)
+    return VENDORS.get(kind, '').lower() or None
 
 
 def _role_get(roles, slot):
@@ -1436,7 +1572,7 @@ def check_roles(cfg, roles):
         raise ValueError('仲裁不能与审查同一家：审查要独立地看仲裁的补丁')
 
 
-def use_providers(store, sid, uses):
+def use_providers(store, sid, uses, reason='手动 --use', state=None):
     """`edit resume --use ROLE=PROVIDER`: hand a role to another provider from now on, e.g. while one subscription's
     quota is exhausted (a Grok trial, Kimi credits). Finished calls are kept as they are (they are cached); only calls not
     made yet go to the new provider. Every change is recorded in the session and the report."""
@@ -1466,12 +1602,17 @@ def use_providers(store, sid, uses):
         if old != name:
             changed.append({'role': slot, 'from': old, 'to': name})
     check_roles(cfg, roles)
+    if state:
+        cfg['edit'].update(state)          # roster / fallback bookkeeping, saved with the change
     if not changed:
+        if state:
+            with store.db() as db:
+                db.execute('UPDATE edit_sessions SET config=? WHERE id=?', (dumps(cfg), sid))
         return []
     finished = sum(1 for u in S.units() if u['selected'] and u['state'] in FINAL)
     cfg['edit']['roles'] = roles
     cfg['edit'].setdefault('role_changes', []).append({'at': time.strftime('%Y-%m-%d %H:%M'), 'changes': changed,
-                                                      'units_finished_before': finished})
+                                                      'units_finished_before': finished, 'reason': reason})
     with store.db() as db:
         db.execute('UPDATE edit_sessions SET config=? WHERE id=?', (dumps(cfg), sid))
     return changed
@@ -1501,6 +1642,153 @@ def set_arbiter_mode(store, sid, mode):
     return mode
 
 
+# ---------------------------------------------------------------- scheduling (read live from the workspace config)
+#
+#   "edit": {
+#     "roster": [{"role": "analysts.0", "provider": "grok", "from": "2026-11-05", "to": "2026-11-11"}],
+#     "fallbacks": {"analysts.0": ["grok", "kimi"], "reviewer": []},
+#     "auto_fallback": false
+#   }
+# roster: during [from, to] (dates inclusive) the role is held by that provider; outside it the provider it replaced
+# comes back. fallbacks: when a provider's quota runs out, `edit status` names the next candidate of each role it holds;
+# with auto_fallback true the scheduler hands the role over itself and goes on. Each run starts with the original
+# line-up again (fallbacks are undone first). Every change goes through check_roles and is recorded in the report.
+
+def live_edit(store):
+    path = store.root / 'config.json'
+    if not path.exists():
+        return {}
+    edit = json.loads(path.read_text(encoding='utf-8')).get('edit') or {}
+    roster = edit.get('roster') or []
+    if not isinstance(roster, list):
+        raise ValueError('edit.roster 必须是数组')
+    for item in roster:
+        if (not isinstance(item, dict) or item.get('role') not in ROLE_SLOTS or not isinstance(item.get('provider'), str)
+                or not all(isinstance(item.get(k), str) and re.fullmatch(r'\d{4}-\d{2}-\d{2}', item[k]) for k in ('from', 'to'))
+                or item['from'] > item['to']):
+            raise ValueError('edit.roster 每项要有 role（' + ' / '.join(ROLE_SLOTS) + '）、provider、from、to（YYYY-MM-DD，from ≤ to）：' + str(item))
+    fallbacks = edit.get('fallbacks') or {}
+    if not isinstance(fallbacks, dict) or any(k not in ROLE_SLOTS or not isinstance(v, list) for k, v in fallbacks.items()):
+        raise ValueError('edit.fallbacks 是 {岗位: [provider, …]}')
+    if type(edit.get('auto_fallback', False)) is not bool:
+        raise ValueError('edit.auto_fallback 必须是布尔值')
+    return {'roster': roster, 'fallbacks': fallbacks, 'auto_fallback': edit.get('auto_fallback', False)}
+
+
+def roster_targets(roster, today):
+    """{role: provider} of the roster entries active on `today` (YYYY-MM-DD); a later entry wins."""
+    active = {}
+    for item in roster:
+        if item['from'] <= today <= item['to']:
+            active[item['role']] = item['provider']
+    return active
+
+
+def apply_roster(S, today=None):
+    """Bring the roles in line with today's roster; return the changes."""
+    live = live_edit(S.store)
+    active = roster_targets(live.get('roster', []), today or time.strftime('%Y-%m-%d'))
+    held = dict(S.e.get('roster_state') or {})
+    uses, state = [], dict(held)
+    for role, provider in active.items():
+        current = _role_get(S.e['roles'], role)
+        if current != provider:
+            state.setdefault(role, current)
+            uses.append(f'{role}={provider}')
+    for role, original in held.items():
+        if role not in active:
+            uses.append(f'{role}={original}')
+            state.pop(role)
+    if not uses and state == held:
+        return []
+    changed = use_providers(S.store, S.sid, uses, reason='排班表', state={'roster_state': state})
+    S.reload()
+    return changed
+
+
+def restore_fallbacks(S):
+    """A new run starts with the original line-up: undo the automatic hand-overs of the previous run."""
+    held = dict(S.e.get('fallback_state') or {})
+    if not held:
+        return []
+    changed = use_providers(S.store, S.sid, [f'{r}={p}' for r, p in held.items()], reason='新的一次运行，换回原班',
+                            state={'fallback_state': {}, 'fallback_tried': {}})
+    S.reload()
+    return changed
+
+
+def fallback_options(S, provider):
+    """[(role, candidate)]: for each role the exhausted provider holds, the next listed candidate that keeps the roles
+    independent and has not been tried in this run."""
+    live = live_edit(S.store)
+    tried = S.e.get('fallback_tried') or {}
+    workspace = {}
+    path = S.store.root / 'config.json'
+    if path.exists():
+        workspace = json.loads(path.read_text(encoding='utf-8')).get('providers', {})
+    out = []
+    for role in ROLE_SLOTS:
+        if _role_get(S.e['roles'], role) != provider:
+            continue
+        for cand in live.get('fallbacks', {}).get(role, []):
+            if cand == provider or cand in tried.get(role, []):
+                continue
+            providers = {**workspace, **S.cfg['providers']}
+            if cand not in providers:
+                continue
+            roles = json.loads(json.dumps(S.e['roles']))
+            if role.startswith('analysts.'):
+                roles['analysts'][int(role[-1])] = cand
+            else:
+                roles[role] = cand
+            try:
+                check_roles({**S.cfg, 'providers': providers}, roles)
+                from .access import preflight
+                preflight({'providers': providers}, [cand])      # e.g. an agy slug that is not listed: skip it
+            except ValueError:
+                continue
+            out.append((role, cand))
+            break
+    return out
+
+
+def auto_fallback(S, provider):
+    """With edit.auto_fallback: hand every role of the exhausted provider to its next candidate. True when done."""
+    if not live_edit(S.store).get('auto_fallback'):
+        return False
+    options = fallback_options(S, provider)
+    if not options:
+        return False
+    state = dict(S.e.get('fallback_state') or {})
+    tried = {k: list(v) for k, v in (S.e.get('fallback_tried') or {}).items()}
+    for role, cand in options:
+        state.setdefault(role, provider)
+        tried.setdefault(role, []).append(cand)
+    try:
+        use_providers(S.store, S.sid, [f'{r}={c}' for r, c in options], reason=f'候补：{provider} 额度用完（自动）',
+                      state={'fallback_state': state, 'fallback_tried': tried})
+    except ValueError:
+        return False
+    S.reload()
+    return True
+
+
+def ledger(store, source, add=None):
+    """List the decision ledger of a source file (all sessions), or add an entry of your own."""
+    ensure_tables(store)
+    src = str(Path(source).expanduser().resolve())
+    if add is not None:
+        text = ' '.join(str(add).split())
+        if not text:
+            raise ValueError('台账条目不能为空')
+        with store.db() as db:
+            n = db.execute('SELECT COUNT(*) FROM edit_ledger WHERE source=? AND session="user"', (src,)).fetchone()[0]
+            db.execute('INSERT INTO edit_ledger VALUES(?,?,?,?,?,?,?)', (src, 'user', 'user', 0, n, text[:300], time.time()))
+    with store.db() as db:
+        rows = db.execute('SELECT unit, text, session FROM edit_ledger WHERE source=? ORDER BY created, idx', (src,)).fetchall()
+    return {'source': src, 'entries': [{'unit': r[0], 'text': r[1], 'session': r[2]} for r in rows]}
+
+
 def execute(store, sid, add_calls=0, accept_external=False, arbiter_mode=None, uses=()):
     if add_calls < 0:
         raise ValueError('add-calls-per-unit 不能为负数')
@@ -1510,6 +1798,8 @@ def execute(store, sid, add_calls=0, accept_external=False, arbiter_mode=None, u
     if arbiter_mode is not None and arbiter_mode != S.e['web'].get('mode'):
         set_arbiter_mode(store, sid, arbiter_mode)
         S = Session(store, sid)
+    restore_fallbacks(S)
+    apply_roster(S)
     if uses:
         use_providers(store, sid, uses)
         S = Session(store, sid)
@@ -1550,7 +1840,28 @@ def execute(store, sid, add_calls=0, accept_external=False, arbiter_mode=None, u
                     error = '用户中断；可 resume 恢复'
                     break
                 except Exception as exc:  # provider/format/budget errors pause only this unit
+                    # edit.auto_fallback: hand the exhausted provider's roles to the next candidates and run the unit
+                    # again right away (its finished calls come from the cache).
+                    while (isinstance(exc, ProviderFailure) and 'rate_limit' in str(exc) and auto_fallback(S, exc.provider)):
+                        try:
+                            state, why = run_unit(S, u)
+                        except Exception as again:
+                            exc = again
+                            continue
+                        S.set_unit(u['unit'], state=state, outcome=state, error=why)
+                        with store.db() as db:
+                            db.execute('UPDATE jobs SET state=? WHERE id=?', (JOB_STATE.get(state, 'needs_review'), u['job']))
+                        exc = None
+                        break
+                    if exc is None:
+                        continue
+                    if isinstance(exc, UnitLost):
+                        S.set_unit(u['unit'], state='needs_review', outcome='lost', error=str(exc))
+                        continue
                     S.set_unit(u['unit'], state='paused', error=str(exc) or type(exc).__name__)
+                    if isinstance(exc, (ExternalChange, EnvironmentProblem)):
+                        error = str(exc)
+                        break
                     if isinstance(exc, ExecutionUnavailable):
                         continue
                     if any(h in str(exc) for h in FATAL_HINTS):
@@ -1589,8 +1900,14 @@ def status(store, sid=None):
               'edited': [u['unit'] for u in units if u['state'] == 'done_edited'],
               'backup': str(S.repo), 'report': str(S.folder / 'report.md'), 'roles': S.e['roles']}
     if S.row['state'] == 'paused' and 'rate_limit' in (S.row['error'] or ''):
-        result['next'] = (f'额度用完（见 error 开头的 provider）。等额度恢复后 coop edit resume {sid}；或临时换人：'
-                          f'coop edit resume {sid} --use 岗位=provider（岗位：{" / ".join(ROLE_SLOTS)}），额度恢复后再换回来')
+        exhausted = (S.row['error'] or '').split('：', 1)[0]
+        try:
+            options = fallback_options(S, exhausted)
+        except ValueError:
+            options = []
+        swap = ' '.join(f'--use {r}={c}' for r, c in options) or '--use 岗位=provider'
+        result['next'] = (f'{exhausted} 额度用完。等额度恢复后 coop edit resume {sid}；或临时换人：coop edit resume {sid} {swap}'
+                          f'（岗位：{" / ".join(ROLE_SLOTS)}；候补名单写在 config.json 的 edit.fallbacks），额度恢复后再换回来')
     waiting = [u for u in units if u['state'] == 'awaiting_web']
     if waiting:
         open_ = S.web_open()
@@ -1629,7 +1946,7 @@ def write_report(S):
               f'交换意见后方案仍不同、补丁被审查打回或来回修改、且该轮没有收敛的单元，从第 {w["after_rounds"]} 轮起交给仲裁'
               f'（每单元最多 {w["max_per_unit"]} 次，不计入上面的轮数）；仲裁补丁同样经过预检和独立审查。'
               if w['enabled'] else '仲裁：关闭。'),
-             *([('岗位变更：' + '；'.join(f'{c["at"]}（此前已结束 {c["units_finished_before"]} 个单元）'
+             *([('岗位变更：' + '；'.join(f'{c["at"]}（{c.get("reason", "手动 --use")}；此前已结束 {c["units_finished_before"]} 个单元）'
                                            + '，'.join(f'{ROLE_SLOTS[x["role"]]} {x["from"]} → {x["to"]}' for x in c['changes'])
                                            for c in e['role_changes']) + '。换人之前已完成的调用保持原样。')]
                if e.get('role_changes') else []),
@@ -1658,6 +1975,13 @@ def write_report(S):
             recs = S.records(u['unit'])
             left = _open_blockers(recs[-1]) if recs else []
             lines.append(f'- **{u["unit"]}**：{u["error"] or u["state"]}' + (f'；未解决：{"; ".join(left)}' if left else ''))
+    with S.store.db() as db:
+        ledger = db.execute('SELECT unit, text, session FROM edit_ledger WHERE source=? ORDER BY created, idx',
+                            (str(S.source),)).fetchall()
+    if ledger:
+        lines.append('## 跨单元决定台账（本源文件，所有会话）')
+        lines.append('\n'.join(f'- [{u_}] {t}' + ('' if sess == S.sid else f'（{"手工添加" if sess == "user" else "会话 " + sess}）')
+                               for u_, t, sess in ledger))
     quiet = [u['unit'] for u in units if u['state'] == 'done_unchanged' and u['rounds'] <= 1 and not any(
         r.get('notes') or (r.get('precheck') or {}).get('dropped') for r in S.records(u['unit']))]
     if quiet:
@@ -1674,6 +1998,8 @@ def write_report(S):
                    '结束投票：' + ', '.join(f'{k}={v}' for k, v in (rec.get('votes') or {}).items()),
                    '预检：' + ('通过' if pre.get('ok') else '未通过 — ' + pre.get('reason', '')),
                    '审查：' + str(rec.get('verdict', '—')),
+                   *([('计算检查：' + str((rec.get('plan_execution') or {}).get('status')))]
+                     if (rec.get('plan_execution') or {}).get('status') not in (None, 'not_requested') else []),
                    '写入：' + (rec['commit'][:10] if rec.get('commit') else '否')]
             lines.append('；'.join(row))
             if rec.get('triggers') and not (votes and all(votes.values())):

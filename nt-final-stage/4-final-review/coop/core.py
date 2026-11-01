@@ -72,6 +72,12 @@ def validate_config(c):
     for name, spec in c['providers'].items():
         if 'timeout' in spec and (type(spec['timeout']) is not int or spec['timeout'] <= 0):
             raise ValueError('provider timeout 必须为正整数')
+        if spec.get('kind') == 'cli':
+            from .access import validate_cli_spec
+            try:
+                validate_cli_spec(spec)
+            except ValueError as exc:
+                raise ValueError(f'provider {name}：{exc}') from None
     executor.validate({**executor.defaults(), **c.get('execution', {})})
     roles = c['roles']
     if not isinstance(roles['analysts'], list) or len(roles['analysts']) != 2:

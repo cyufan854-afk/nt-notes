@@ -13,10 +13,12 @@ import urllib.error
 from urllib.parse import urlsplit, urlunsplit
 try:
     from .access import (environment_for, parse_kimi, classify_error, parse_antigravity, antigravity_argv,
-                         antigravity_stdin, antigravity_billing, default_executable, argv_prompt_limit, grok_argv, parse_grok)
+                         antigravity_stdin, antigravity_billing, default_executable, argv_prompt_limit, grok_argv, parse_grok,
+                         cli_argv, parse_cli)
 except ImportError:  # Direct execution in the isolated transport worker.
     from access import (environment_for, parse_kimi, classify_error, parse_antigravity, antigravity_argv,
-                        antigravity_stdin, antigravity_billing, default_executable, argv_prompt_limit, grok_argv, parse_grok)
+                        antigravity_stdin, antigravity_billing, default_executable, argv_prompt_limit, grok_argv, parse_grok,
+                        cli_argv, parse_cli)
 
 
 def _invoke(spec, prompt, stage, folder, timeout):
@@ -133,6 +135,15 @@ def _invoke(spec, prompt, stage, folder, timeout):
         stdin = ''
         cwd = folder / 'grok-workspace'
         cwd.mkdir(exist_ok=True)
+    elif kind == 'cli':
+        # A CLI described by its config (generic template): empty workspace, prompt on stdin / as an argument / in a file.
+        cwd = folder / 'cli-workspace'
+        cwd.mkdir(exist_ok=True)
+        prompt_file = folder / 'cli-prompt.txt'
+        if spec.get('input') == 'file':
+            prompt_file.write_text(prompt, encoding='utf-8')
+        argv = cli_argv(spec, executable, prompt, timeout, cwd, prompt_file)
+        stdin = prompt if spec.get('input', 'stdin') == 'stdin' else ''
     elif kind == 'command':
         argv = spec['argv']
     else:
@@ -178,6 +189,12 @@ def _invoke(spec, prompt, stage, folder, timeout):
     raw = path.read_text(encoding='utf-8')
     if kind == 'kimi':
         raw = parse_kimi(raw)
+    if kind == 'cli':
+        result = parse_cli(raw, spec)
+        if not result['ok']:
+            error = classify_error(result['error'])
+            raise RuntimeError(f'{spec.get("vendor", "cli")} 返回错误; {error["category"]}: {error["hint"]}; {result["error"][:300]}; 查看 {folder / "stdout.log"}')
+        raw = result['response']
     if kind == 'grok':
         result = parse_grok(raw)
         if not result['ok']:

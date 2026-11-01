@@ -17,6 +17,7 @@ CATALOG = {
     'antigravity': {'entry': 'Antigravity CLI（agy）/ Google AI Pro 订阅', 'login_argv': [], 'model_picker': 'agy models（或 models NAME --fetch）', 'install_url': 'https://antigravity.google/docs/cli', 'auth_url': 'https://antigravity.google/docs/cli/headless'},
     'kimi': {'entry': 'Kimi Code CLI / Kimi Code login', 'login_argv': ['login'], 'model_picker': 'kimi → /model', 'install_url': 'https://www.kimi.com/code/docs/en/kimi-code-cli/guides/getting-started.html', 'auth_url': 'https://www.kimi.com/code/docs/en/kimi-code-cli/reference/kimi-command.html'},
     'grok': {'entry': 'Grok CLI（grok）/ SuperGrok 订阅（含试用）', 'login_argv': ['login'], 'model_picker': 'grok --help（-m 指定模型）', 'install_url': 'https://docs.x.ai/build/cli', 'auth_url': 'https://docs.x.ai/build/cli/headless-scripting'},
+    'cli': {'entry': '配置描述的命令行程序（通用模板，新模型不用改代码）', 'login_argv': [], 'model_picker': '见该程序自己的说明'},
     'api': {'entry': 'OpenAI-compatible Chat Completions API', 'auth_url': 'https://api-docs.deepseek.com/', 'model_picker': 'models NAME --fetch (requires API key)'},
 }
 # Subscription mode removes only known provider routing/credential overrides.
@@ -41,8 +42,9 @@ def default_executable(kind):
 def environment_for(spec, source=None):
     env = dict(os.environ if source is None else source)
     if spec.get('auth_mode', 'native') == 'subscription':
+        prefixes = tuple(PREFIXES.get(spec['kind'], ())) + tuple(spec.get('strip_env') or ())
         for key in list(env):
-            if any(key.startswith(p) for p in PREFIXES.get(spec['kind'], ())):
+            if any(key.startswith(p) for p in prefixes):
                 del env[key]
     return env
 
@@ -395,6 +397,114 @@ def parse_grok(raw):
     return {'ok': True, 'response': response, 'error': ''}
 
 
+# ---------------------------------------------------------------- generic CLI provider (kind "cli")
+#
+# A new subscription CLI is described in config.json instead of code, e.g.
+#   "acme": {"kind": "cli", "vendor": "Acme", "executable": "/usr/local/bin/acme", "auth_mode": "subscription",
+#            "argv": ["{exe}", "run", "--headless", "--json"], "input": "stdin",
+#            "model": "acme-pro", "model_args": ["--model", "{model}"], "timeout_args": ["--timeout", "{timeout}"],
+#            "output": {"format": "jsonl", "event_key": "type", "event_value": "result", "path": ["result", "text"],
+#                       "ok_path": "status", "ok_values": ["success"], "error_path": "error"},
+#            "strip_env": ["ACME_API_KEY"], "login_argv": ["login"]}
+# input: stdin (the prompt on stdin) / argv ({prompt} in argv) / file ({prompt_file} in argv). The call runs in an empty
+# workspace directory ({workspace}). output.format: text (stdout as is) / json (one object) / jsonl (events; the last one
+# whose event_key equals event_value). "vendor" names the company for the independence checks of the roles.
+
+CLI_PLACEHOLDERS = ('{exe}', '{model}', '{timeout}', '{workspace}', '{prompt_file}')
+
+
+def validate_cli_spec(spec):
+    if not isinstance(spec.get('executable'), str) or not spec['executable'].strip():
+        raise ValueError('cli provider 需要 executable')
+    for key in ('argv', 'model_args', 'timeout_args', 'login_argv'):
+        value = spec.get(key, [] if key != 'argv' else None)
+        if not isinstance(value, list) or not all(isinstance(x, str) for x in value) or (key == 'argv' and not value):
+            raise ValueError(f'cli provider 的 {key} 必须是字符串数组' + ('（不能为空）' if key == 'argv' else ''))
+    mode = spec.get('input', 'stdin')
+    if mode not in ('stdin', 'argv', 'file'):
+        raise ValueError('cli provider 的 input 只能是 stdin / argv / file')
+    joined = ' '.join(spec['argv'])
+    if mode == 'argv' and '{prompt}' not in joined:
+        raise ValueError('input=argv 时 argv 里要有 {prompt}')
+    if mode == 'file' and '{prompt_file}' not in joined:
+        raise ValueError('input=file 时 argv 里要有 {prompt_file}')
+    out = spec.get('output') or {'format': 'text'}
+    if not isinstance(out, dict) or out.get('format', 'text') not in ('text', 'json', 'jsonl'):
+        raise ValueError('cli provider 的 output.format 只能是 text / json / jsonl')
+    if out.get('format', 'text') != 'text' and not out.get('path'):
+        raise ValueError('json / jsonl 输出要写 output.path（回答文本所在的字段，可用点号分层，也可给几个候选）')
+    if not isinstance(spec.get('vendor'), str) or not spec['vendor'].strip():
+        raise ValueError('cli provider 要写 vendor（哪家公司），岗位独立性检查要用')
+    return spec
+
+
+def cli_argv(spec, executable, prompt, timeout, workspace, prompt_file):
+    validate_cli_spec(spec)
+    values = {'{exe}': executable, '{model}': spec.get('model') or '', '{timeout}': str(int(timeout)),
+              '{workspace}': str(workspace), '{prompt_file}': str(prompt_file)}
+
+    def fill(item):
+        for key, value in values.items():
+            item = item.replace(key, value)
+        return item.replace('{prompt}', prompt) if spec.get('input') == 'argv' else item
+    argv = [fill(a) for a in spec['argv']]
+    if spec.get('model'):
+        argv += [fill(a) for a in spec.get('model_args', [])]
+    argv += [fill(a) for a in spec.get('timeout_args', [])]
+    if spec.get('input') == 'argv':
+        limit = argv_prompt_limit(spec, 120000)
+        if len(prompt.encode()) > limit:
+            raise ValueError(f'提示作为命令行参数传入：{len(prompt.encode())} 字节，超过上限 {limit}；改用 stdin / file 或写 max_prompt_bytes')
+    return argv
+
+
+def _path(obj, path):
+    for part in str(path).split('.'):
+        if isinstance(obj, dict):
+            obj = obj.get(part)
+        elif isinstance(obj, list) and part.lstrip('-').isdigit() and -len(obj) <= int(part) < len(obj):
+            obj = obj[int(part)]
+        else:
+            return None
+    return obj
+
+
+def parse_cli(raw, spec):
+    """{'ok', 'response', 'error'} from a generic CLI's stdout, as its spec's output section describes."""
+    out = spec.get('output') or {'format': 'text'}
+    fmt = out.get('format', 'text')
+    if fmt == 'text':
+        text = raw.strip()
+        return {'ok': bool(text), 'response': text or None, 'error': '' if text else '输出为空'}
+    objs = []
+    for line in ([raw] if fmt == 'json' else []) + raw.splitlines()[::-1 if fmt == 'json' else 1]:
+        try:
+            value = json.loads(line)
+        except ValueError:
+            continue
+        if isinstance(value, dict):
+            objs.append(value)
+            if fmt == 'json':
+                break
+    if fmt == 'jsonl' and out.get('event_key'):
+        objs = [o for o in objs if str(_path(o, out['event_key'])) == str(out.get('event_value'))]
+    if not objs:
+        raise ValueError('cli 输出里没有符合 output 描述的 JSON（检查 output.format / event_key）')
+    obj = objs[-1] if fmt == 'jsonl' else objs[0]
+    paths = out['path'] if isinstance(out['path'], list) else [out['path']]
+    response = next((t for t in (_text_of(_path(obj, p)) for p in paths) if isinstance(t, str) and t.strip()), None)
+    error = _path(obj, out['error_path']) if out.get('error_path') else None
+    if isinstance(error, dict):
+        error = error.get('message') or json.dumps(error, ensure_ascii=False)
+    ok = not error
+    if out.get('ok_path'):
+        value = _path(obj, out['ok_path'])
+        ok = ok and str(value).lower() in [str(x).lower() for x in out.get('ok_values', ['success', 'ok', 'true'])]
+    if ok and response:
+        return {'ok': True, 'response': response, 'error': ''}
+    return {'ok': False, 'response': None, 'error': str(error or ('没有回答文本' if ok else '状态不是成功：' + str(_path(obj, out.get('ok_path', ''))))) }
+
+
 def classify_error(message):
     s = str(message).lower()
     rules = [
@@ -426,8 +536,10 @@ def inspect_provider(name, spec):
         result['demo'] = True
     else:
         binary = spec.get('executable', default_executable(kind)) if kind != 'command' else spec['argv'][0]
+        if kind == 'cli':
+            binary = spec.get('executable')
         result['executable'] = shutil.which(binary)
-        if kind in CATALOG and result['executable']:
+        if kind in CATALOG and kind != 'cli' and result['executable']:
             try:
                 # --version is a local check, not a model request.
                 with tempfile.TemporaryFile() as capture:
@@ -476,7 +588,7 @@ def configure(path, name, model=None, executable=None, auth_mode=None, reset_mod
             raise ValueError('API 必须指定模型')
         spec['model'] = None
     if executable is not None:
-        if spec['kind'] not in ('codex', 'claude', 'gemini', 'kimi', 'antigravity', 'grok'):
+        if spec['kind'] not in ('codex', 'claude', 'gemini', 'kimi', 'antigravity', 'grok', 'cli'):
             raise ValueError('executable 只适用于官方 CLI')
         if not Path(executable).expanduser().is_absolute():
             raise ValueError('executable 必须是绝对路径')
@@ -509,7 +621,7 @@ def login(name, spec):
     binary = shutil.which(spec.get('executable', default_executable(kind)))
     if not binary:
         raise ValueError('找不到程序，安装地址：' + CATALOG[kind]['install_url'])
-    argv = [binary, *CATALOG[kind]['login_argv']]
+    argv = [binary, *(spec.get('login_argv', []) if kind == 'cli' else CATALOG[kind]['login_argv'])]
     print('正在启动官方登录入口。' + ('agy 没有 login 子命令：第一次交互运行时按提示用订阅所在的 Google 账户登录，完成后退出 agy。'
                                     if kind == 'antigravity' else 'Gemini 请选 Sign in with Google，完成后 /quit 返回。'), file=sys.stderr)
     # Preserve native TTY for browser/device-code login. No credential interception.
