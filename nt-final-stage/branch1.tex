@@ -1163,6 +1163,25 @@ Put $k=\varphi(n)$. Since $a$ and every $r_i$ are coprime to $n$,
     This is a reduced residue system by Definition~\ref{def:3.2.4}.
 
 \end{proof}
+\begin{altproof}[Alternative proof of Theorem~\ref{thm:3.2.8}] Write $k=\varphi(n)$. By Definition~\ref{def:3.2.4}, the
+	given reduced residue system consists of the elements coprime to $n$
+	in some complete residue system. Label the remaining elements of that complete residue system
+	$r_{k+1},\ldots,r_n$, so that $\gcd(r_i,n)=1$ exactly when $1\le i\le k$. For every $1 \le i \le n$, the common
+	divisors of $ar_i$ and $n$ are exactly the common divisors of $r_i$
+	and $n$: if $e\mid ar_i$ and $e\mid n$, then $\gcd(a, e)=1$ because
+	$e\mid n$ and $\gcd(a, n)=1$, so B{\'e}zout's identity (Theorem~\ref{thm:2.2.5})
+	gives integers $u,v$ with
+	$ua+ve=1$, and multiplying by $r_i$ yields $r_i=u(ar_i)+v(er_i)$, so
+	$e\mid r_i$; the converse is immediate. Hence $\gcd(ar_i, n) =
+		\gcd(r_i, n)$ for all $1 \le i \le n$, so this value equals $1$
+	exactly for $1 \le i \le k$. Since $\gcd(a, n)=1$, the set $\{a
+		r_1, a r_2, \ldots, a r_n\}$ is also a complete residue system
+	(Theorem~\ref{thm:3.2.5} with $h = 0$), and $\{a r_1, a r_2, \ldots, a r_k\}$ is
+	precisely
+	its subset of integers coprime to $n$, which is a reduced residue
+	system by Definition~\ref{def:3.2.4}.
+
+\end{altproof}
 \subsection{The Fermat--Euler and Wilson Theorems}
 
 \begin{theorem}[Fermat--Euler theorem]\label{thm:3.3.1} If $a \in \mathbb{Z}$
