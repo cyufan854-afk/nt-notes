@@ -280,6 +280,8 @@
 
 **训练 notebook：线性注意力内核真的能导入才算装好**：RunPod 冒烟测试发现 `flash-linear-attention` 0.6.0 在 torch 2.8 自带的 Triton 3.4 上导入失败（`triton.experimental.gluon.language` 没有 `extra`），transformers 悄悄退回纯 torch 实现，只有 320 token/s。第 2 节装完后在子进程里试导入 `fla.ops.gated_delta_rule`，失败就改装 0.5.2（同样的函数签名，在 Triton 3.4 + transformers 5.22 上能导入）；第 5 节装好底座后打印线性注意力内核是否启用。
 
+接着在 H200 上又碰到 fla 0.5.2 的保护：Hopper 显卡 + Triton 3.4–3.7.0 时 fla 的一个反向内核（`chunk_bwd_dqkwg`）会算错（fla #640），fla 直接报错拒绝运行。装 `tilelang` 后这个内核改用 TileLang 实现；在 H200 上逐项对照 transformers 的 fp32 参考实现（4096 token、48 头）：输出和 q、k、v、g、beta 的梯度相对误差都在 0.43%–0.52%，余弦相似度约 0.99999；整模型前两步的损失与纯 torch 的冒烟测试一致，显存峰值从 100 GiB 降到 88 GiB，速度约 540 token/s（纯 torch 约 320）。第 2 节现在自动处理：Hopper 上检测到这种组合就装 tilelang，tilelang 用不了（缺 nvcc）就卸掉 fla 用纯 torch。
+
 ## 三、测试结果
 
 在本环境运行（Python 3.13.18；notebook 测试用 torch 2.15.0、numpy 2.5.4、safetensors 0.8.0；本机没有 latexmk / pdflatex，也没有可用的 Docker）：
