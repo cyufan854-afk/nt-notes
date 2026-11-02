@@ -45,6 +45,27 @@ e15 第一次运行到 N₂ 时会**停下来**：SenseNova 需要 `trust_remote
 
 跑过之后请看 `DRIVE_DIR/aux_delta/<指纹>/aux_delta_report.json` 里 DELLA 组各成员的增量范数：DarwinRSI 的（对 Qwen3.5-27B 取）如果比其他成员大好几倍，说明它的训练底座可能不是 Qwen3.5-27B，告诉我。
 
+## StartLux 检查点轨迹 LoRA（2026-11-02）
+
+StartLux-V1.0-27B-Preview 迟迟不发布，它的位置（权重 4，系数 0.4）改由一个 LoRA 占用：在 StartLux 内部检查点 `taiyi-lab/Qwen3.6-27B-SFT-v10-tau-style-v4-ckpt340` 产生的 Agent 轨迹上，以它的训练底座 `Qwen/Qwen3.6-27B` 为底训练，再像原计划的 StartLux 一样把增量移到 3.8 上（task arithmetic）。
+
+**两个 notebook 的分工**
+
+| notebook | 运行时 | 做什么 |
+|---|---|---|
+| `StartLux_trace_LoRA.ipynb`（新） | Colab GPU：A100 80GB / H100 用 BF16 底座；40GB 自动改 4-bit（QLoRA） | 锁定底座 commit；按评分筛选轨迹（默认只用严格通过的）；用底座的 chat template 渲染完整对话，只在助手回合（思考、工具调用、回答，以及每个回合的结束标记）上算损失；LoRA 加在解码层的注意力、线性注意力、MLP 上；分块算损失（不展开 24 万词表的完整 logits）；断点存 Drive、可续跑；训练前后各算一次留出集损失；导出 adapter + `trace_lora_manifest.json`，最后打印 `TRACE_LORA_DIR = "…"` |
+| `Qwen38_pi_AuxMix_e15_FP8.ipynb`（补丁） | CPU 高 RAM | 新的辅料格式 `lora`：读 adapter，每个被改的矩阵按 float32 算 scale·(B @ A)，乘 0.4 加进 D。不先合并成 BF16 模型：小增量会被舍入成噪声，也省得上传 55GB |
+
+**顺序**
+
+1. 现在这一轮等待阶段照常跑（D → C → S 的基线 → N → N₂）。新 notebook 里 `STARTLUX_REQUIRED` 默认 `False`、`StartLuxLoRA` 在等 `TRACE_LORA_DIR`，已经算好的 D 照常沿用。
+2. 把轨迹传到 Drive，在训练 notebook 第 1 节改 `DATA_FILES`；先设 `SMOKE_TEST = True` 跑 2 步确认能通，再改回 `False` 正式训练。
+3. 训练 notebook 打印的 `TRACE_LORA_DIR = "…"` 填进融合 notebook 第 1 节，在 CPU 高 RAM 运行时上从头运行：DavidAU 和 StartLuxLoRA 一起补加到已有的 D 上，然后搜索、分量筛选、上传。
+
+**它在成品里的分量**：系数 0.4 之外还要乘整个 D 的 λ（0.025–0.2），最终只有训出增量的约 1%–8% 进入成品，与原计划的 StartLux 相同。
+
+**局限**：学到的是这个检查点在这些任务上的行为，不是它的完整后训练；跨一代（3.6 → 3.8）移植会损失一部分效果；只用通过的轨迹时样本少。真实 27B、Qwen3.6 的线性注意力层和 GPU 训练都没有在这里运行过：整条流程（筛选、渲染、只训助手回合、分块损失、训练、续跑、导出、被融合 notebook 读回并与 PEFT 的合并结果逐元素一致）只在 CPU 上用极小的 Llama 测过。
+
 ## 测试
 
 ```bash
@@ -52,9 +73,16 @@ cd 1-model-merge
 python3 -m unittest discover -s tests -v
 ```
 
-需要 numpy、torch、safetensors（notebook 自己的依赖），不下载任何东西。测试直接从 notebook 取出内嵌模块的源码，用随机小张量覆盖新增的纯计算部分，共 30 项（2026-11-02 补丁加了 7 项：`vocabulary_difference` 的 6 种情形和设置默认值；这 7 项和版式检查不需要 torch）。真实的 SenseNova 权重、远程代码和 transformers 5.18 没有运行过，要在 Colab 上由审读、前向闸门和结构核对把关。
+需要 numpy、torch、safetensors（notebook 自己的依赖），不下载任何东西。测试直接从两个 notebook 取出内嵌模块的源码，共 48 项：
+- `test_tm2.py` 30 项：e15 新增部分，以及 2026-11-02 补丁的 `vocabulary_difference` 和设置默认值；
+- `test_lora_source.py` 10 项：融合 notebook 的 `lora` 来源（缩放、张量名配对、对到 S 的矩阵时避开 MTP / 视觉 / 输出头、按 float32 算 scale·B·A、改过的 adapter 和形状不符时拒绝、等待与就绪、补加到已有 D 上的结果、报告）；
+- `test_trace_lora.py` 9 项：训练 notebook 的模块。纯计算部分 8 项；端到端 1 项要 transformers 和 peft，在 CPU 上用极小的 Llama 走完“筛选 → 渲染 → 只训助手回合 → 分块损失（与完整损失一致）→ 训练（损失下降）→ 分两次会话续跑（与一次跑完结果一致）→ 导出 → 用融合 notebook 的读取器读回（与 PEFT 合并后的权重逐元素一致）”。真实的 SenseNova 权重、远程代码和 transformers 5.18 没有运行过，要在 Colab 上由审读、前向闸门和结构核对把关。
 
 ## 需要你在 Colab 上验证
+
+**训练 notebook（`StartLux_trace_LoRA.ipynb`）**：第 2 节的 transformers 版本、线性注意力快速内核是否装上；第 4 节报告里的条数、各评分的分布、示例渲染中 `[[ ]]` 圈出的是不是助手的回答（含思考和工具调用）；第 5 节的模型类、LoRA 层数、解码器核对是否 `ok`、显存；第 6 节前几步的 token/s、损失是否下降、训完后留出集损失是否低于底座。
+
+**融合 notebook（e15）**：
 
 1. 第一次运行到 N₂ 停下后，读 `donor_metadata/` 里的远程代码，确认没有联网、写文件之类的动作；同时看 `config.json`：层数、循环区间（[4, 28) 两遍）、hidden 4096、FFN 12288、16/4 头、词表 248320、`layer_types` 的 3:1 模式，与模型卡是否一致。
 2. 前向闸门的输出：4 条短提示的答案、与原生前向的余弦、观察到的执行顺序（应是 `0-3,4-27,4-27,28-31`）。如果远程代码把循环块拆成了几个解码层列表，闸门会报“找不到唯一的语言模型解码层列表”：按报错里列出的路径，填 `tm_extra2["layers_modules"]`。

@@ -10,7 +10,7 @@ nt-final-stage/
   branch1.tex        你这一侧的 branch1；第 3 步之前可以继续改，任何工具都不写死它的内容或哈希
   branch2.tex        第 2 步的产物（27B 的分支）            ← 第 2 步写入
   final.tex          第 3 步的产物（合并后的最终稿）        ← 第 3 步写入，第 4 步按交叉审查修改，第 5 步在它上面就地修订
-  1-model-merge/     融合 notebook（e15）+ 说明 + 单元测试
+  1-model-merge/     融合 notebook（e15）+ StartLux 轨迹 LoRA 训练 notebook（GPU）+ 说明 + 单元测试
   2-branch2/         branch2.py（第 2 步总控）+ nt27b（只用标准库）
   3-combine/         合并说明 MERGE_PROMPT.md、合并检查 merge_check.py、留存率脚本
   4-cross-review/    交叉审查合并结果：给其他模型的 prompt、打包脚本、处理意见的 prompt
@@ -24,7 +24,7 @@ nt-final-stage/
 
 | 步骤 | 在哪跑 | 输入 | 输出 | 交给下一步 |
 |---|---|---|---|---|
-| 1. 模型融合 | Colab CPU 高 RAM | Hugging Face 上的各来源（StartLux 发布后才能完成） | 你的 27B：BF16 仓库 `output_repo` 和 FP8 仓库 `output_repo-FP8` | 仓名和 commit（`uploaded.json` / `fp8_uploaded.json`）填进第 2 步的 `MODEL` / `MODEL_REVISION` |
+| 1. 模型融合 | Colab CPU 高 RAM；训练 StartLux 轨迹 LoRA 时用 Colab GPU | Hugging Face 上的各来源；StartLux 检查点的轨迹（`StartLux_trace_LoRA.ipynb` 训练出的 adapter 代替 StartLux） | 你的 27B：BF16 仓库 `output_repo` 和 FP8 仓库 `output_repo-FP8` | 仓名和 commit（`uploaded.json` / `fp8_uploaded.json`）填进第 2 步的 `MODEL` / `MODEL_REVISION` |
 | 2. 生成 branch2 | Mac 准备、RunPod（vLLM）跑模型、Mac 审阅 | `baseline.tex`、第 1 步的模型 | `branch2.tex` | 放在本文件夹，第 3 步直接读 |
 | 3. 合并与留存率 | Mac，前沿模型（agent 模式） | `baseline.tex`（共同祖先）、届时最新的 `branch1.tex`、`branch2.tex` | `final.tex`、`3-combine/merge-log.md`、`3-combine/retention.md/.csv` | `final.tex` |
 | 4. 交叉审查合并 | 其他模型（网页版粘贴即可）+ 合并模型（agent 模式）处理意见 | 4 份稿子 + `merge-log.md` | 审查意见 `4-cross-review/reviews/`、按意见修改后的 `final.tex` | `final.tex` |
@@ -127,7 +127,7 @@ v0.4.3 另外有三项：
 bash check_all.sh
 ```
 
-五套测试：coop 142 项（原 96 + 新 46），nt27b 97 项（原 86 + 新 11），合并与留存率 23 项（原 7 + 新 16），交叉审查打包 4 项，融合 notebook 30 项（需要 numpy、torch、safetensors；没有时这一套跳过）。结果见 `CHANGES.md`。
+五套测试：coop 142 项（原 96 + 新 46），nt27b 97 项（原 86 + 新 11），合并与留存率 23 项（原 7 + 新 16），交叉审查打包 4 项，融合 notebook 48 项（需要 numpy、torch、safetensors，端到端训练测试另需 transformers 和 peft；没有时跳过）。结果见 `CHANGES.md`。
 
 ## 需要你验证
 
@@ -159,6 +159,7 @@ bash check_all.sh
 11. 前向闸门：4 条短提示、与原生前向的余弦、观察到的执行顺序 `0-3,4-27,4-27,28-31`；`k_proj` 搬没搬、为什么；tokenizer 是否与 B 相同。这几项都在 `DRIVE_DIR/tm_delta2/` 的记录里。
 12. 第一段激活打印的估计用时是否在 6–13 小时的量级。
 13. 其余见 `1-model-merge/README.md` 的“需要你在 Colab 上验证”。
+13a. 训练 notebook `StartLux_trace_LoRA.ipynb`：先 `SMOKE_TEST = True` 跑 2 步；看数据报告（条数、评分分布、示例渲染里计损失的部分）、解码器核对是否 ok、token/s 与估计时长、训完后留出集损失是否低于底座。
 
 **RunPod（nt27b）**
 
