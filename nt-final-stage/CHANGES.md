@@ -252,12 +252,14 @@
 
 ### 追加（2026-11-02）：用 StartLux 检查点的轨迹训练 LoRA，代替 StartLux
 
-**为什么**：StartLux-V1.0-27B-Preview 还在备案、没有公开发布；它的内部检查点 `taiyi-lab/Qwen3.6-27B-SFT-v10-tau-style-v4-ckpt340` 的权重读不到，但有这个检查点产生的轨迹。决定在 Qwen3.6-27B 上用这些轨迹训练 LoRA，再移到 3.8 上（task arithmetic），占用 StartLux 的位置。
+**为什么**：StartLux-V1.0-27B-Preview 还在备案、没有公开发布，权重读不到；但公开的 MCP-Universe 评测日志里有 StartLux 27B 的 748 次运行（日志模型名 `eval_27b_mcpunivse_260622`，六领域历史评分与官网公布的 Preview 成绩逐项一致）。决定在 Qwen3.6-27B 上用这些轨迹训练 LoRA，再移到 3.8 上（task arithmetic），占用 StartLux 的位置。
 
 **做了什么**：
 - 新 notebook `1-model-merge/StartLux_trace_LoRA.ipynb`（Colab GPU）：锁定底座 commit；读轨迹并按评分筛选；用底座的 chat template 渲染完整对话，只在助手回合上算损失；LoRA 加在解码层的线性层上（不碰视觉、MTP、嵌入、输出头）；BF16 或 4-bit 底座；分块损失；断点存 Drive、可续跑；冒烟测试模式；留出集损失前后对照；导出 adapter 和清单，并检查张量名都是融合 notebook 收的。
 - 融合 notebook 补丁：新的辅料格式 `lora`（`qmerge_pipeline.LoraSource`），逐矩阵用 float32 算 scale·(B @ A) 加进 D，不先合并成 BF16 模型；新辅料 `StartLuxLoRA`（权重 4，等待 `TRACE_LORA_DIR`）；`STARTLUX_REQUIRED` 默认改为 `False`。`AUX_DELTA_VERSION` 不变，已算好的 D 照常沿用，正式融合时补加。
-- 新增 19 项测试（`test_lora_source.py` 10 项、`test_trace_lora.py` 9 项），融合 notebook 一套共 48 项。端到端测试在 CPU 上用极小的 Llama 走完训练、续跑、导出和读回。
+- 新脚本 `1-model-merge/convert_mcp_universe.py`：把原始日志转成训练用的轨迹 JSONL（746/748 次运行，通过的 289 次全在；工具返回用模型实际看到的文字；按领域补工具定义）。转好的 `startlux_mcp_universe_runs.jsonl`（SHA-256 `31833058…21c1`）另外发给你，传到 Drive 即可。
+- 训练 notebook 默认改为 4-bit 底座、长度上限按显存自动定（80GB 卡上 32k，可用约 241 次通过的运行）。
+- 新增 23 项测试（`test_lora_source.py` 10 项、`test_trace_lora.py` 9 项、`test_convert_mcp_universe.py` 4 项），融合 notebook 一套共 52 项。端到端测试在 CPU 上用极小的 Llama 走完训练、续跑、导出和读回。
 - `1-model-merge/README.md` 新增一节，写明分工、顺序、分量和局限。
 
 **没验证的**：真实 27B、Qwen3.6 的线性注意力层、GPU 上的训练速度和显存。第一次请先用 `SMOKE_TEST = True` 跑 2 步。
@@ -290,7 +292,7 @@ OK
 | coop（`5-final-review`） | 96 | 46 | 142 通过 | 3 项：2 项真实 latexmk 编译（本机没有 latexmk；你的 Mac 上会跑），1 项 Docker 隔离集成测试（需显式开启） |
 | nt27b（`2-branch2`） | 86 | 11 | 97 通过 | 1 项：实际 pdflatex 编译（本机没有 pdflatex） |
 | 合并与留存率（`3-combine`） | 7 | 16 | 23 通过 | — |
-| 融合 notebook（`1-model-merge`） | — | 48 | 48 通过 | — |
+| 融合 notebook（`1-model-merge`） | — | 52 | 52 通过 | — |
 | 交叉审查打包（`4-cross-review`） | — | 4 | 4 通过 | — |
 
 原有测试文件一行没删、一行没改；只在 `2-branch2/tests/test_gpu_runner.py`、`3-combine/test_retention.py`、`test_run_retention.py`、`test_merge_check.py` 里追加了测试。详细的逐项输出见 `5-final-review/docs/test-results.txt`，或用 `-v` 重跑。

@@ -24,7 +24,7 @@ nt-final-stage/
 
 | 步骤 | 在哪跑 | 输入 | 输出 | 交给下一步 |
 |---|---|---|---|---|
-| 1. 模型融合 | Colab CPU 高 RAM；训练 StartLux 轨迹 LoRA 时用 Colab GPU | Hugging Face 上的各来源；StartLux 检查点的轨迹（`StartLux_trace_LoRA.ipynb` 训练出的 adapter 代替 StartLux） | 你的 27B：BF16 仓库 `output_repo` 和 FP8 仓库 `output_repo-FP8` | 仓名和 commit（`uploaded.json` / `fp8_uploaded.json`）填进第 2 步的 `MODEL` / `MODEL_REVISION` |
+| 1. 模型融合 | Colab CPU 高 RAM；训练 StartLux 轨迹 LoRA 时用 Colab GPU | Hugging Face 上的各来源；StartLux 27B 的 MCP-Universe 轨迹（`convert_mcp_universe.py` 转换，`StartLux_trace_LoRA.ipynb` 训练出的 adapter 代替 StartLux） | 你的 27B：BF16 仓库 `output_repo` 和 FP8 仓库 `output_repo-FP8` | 仓名和 commit（`uploaded.json` / `fp8_uploaded.json`）填进第 2 步的 `MODEL` / `MODEL_REVISION` |
 | 2. 生成 branch2 | Mac 准备、RunPod（vLLM）跑模型、Mac 审阅 | `baseline.tex`、第 1 步的模型 | `branch2.tex` | 放在本文件夹，第 3 步直接读 |
 | 3. 合并与留存率 | Mac，前沿模型（agent 模式） | `baseline.tex`（共同祖先）、届时最新的 `branch1.tex`、`branch2.tex` | `final.tex`、`3-combine/merge-log.md`、`3-combine/retention.md/.csv` | `final.tex` |
 | 4. 交叉审查合并 | 其他模型（网页版粘贴即可）+ 合并模型（agent 模式）处理意见 | 4 份稿子 + `merge-log.md` | 审查意见 `4-cross-review/reviews/`、按意见修改后的 `final.tex` | `final.tex` |
@@ -127,7 +127,7 @@ v0.4.3 另外有三项：
 bash check_all.sh
 ```
 
-五套测试：coop 142 项（原 96 + 新 46），nt27b 97 项（原 86 + 新 11），合并与留存率 23 项（原 7 + 新 16），交叉审查打包 4 项，融合 notebook 48 项（需要 numpy、torch、safetensors，端到端训练测试另需 transformers 和 peft；没有时跳过）。结果见 `CHANGES.md`。
+五套测试：coop 142 项（原 96 + 新 46），nt27b 97 项（原 86 + 新 11），合并与留存率 23 项（原 7 + 新 16），交叉审查打包 4 项，融合 notebook 52 项（需要 numpy、torch、safetensors，端到端训练测试另需 transformers 和 peft；没有时跳过）。结果见 `CHANGES.md`。
 
 ## 需要你验证
 

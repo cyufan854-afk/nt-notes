@@ -47,7 +47,11 @@ e15 第一次运行到 N₂ 时会**停下来**：SenseNova 需要 `trust_remote
 
 ## StartLux 检查点轨迹 LoRA（2026-11-02）
 
-StartLux-V1.0-27B-Preview 迟迟不发布，它的位置（权重 4，系数 0.4）改由一个 LoRA 占用：在 StartLux 内部检查点 `taiyi-lab/Qwen3.6-27B-SFT-v10-tau-style-v4-ckpt340` 产生的 Agent 轨迹上，以它的训练底座 `Qwen/Qwen3.6-27B` 为底训练，再像原计划的 StartLux 一样把增量移到 3.8 上（task arithmetic）。
+StartLux-V1.0-27B-Preview 迟迟不发布，它的位置（权重 4，系数 0.4）改由一个 LoRA 占用：在 StartLux 27B 的 Agent 轨迹上，以它的训练底座 `Qwen/Qwen3.6-27B` 为底训练，再像原计划的 StartLux 一样把增量移到 3.8 上（task arithmetic）。
+
+**数据**：公开的 MCP-Universe 评测日志（ModelScope `j772190144/MCP-universe_log_for_6_models` @ `38153ee3`，Apache-2.0）里 StartLux 的子目录。日志模型名 `eval_27b_mcpunivse_260622`；6 个领域 231 道题、748 次运行，按“同领域同轮次取较晚一次”的口径 272/693（39.25%），六个领域的通过数与 StartLux 官网公布的 Preview 成绩逐项一致。日志没有权重哈希，不能证明权重与正式 Preview 完全相同。
+
+**转换**（`convert_mcp_universe.py`，只用标准库）：每次运行重建一段标准多轮对话。每一步的思考、正文、工具调用取自那次调用的 API 响应；工具返回取自下一次调用的请求历史，即模型实际看到的文字（网页搜索和浏览器自动化里，框架先让模型改写原始返回再放进上下文，用的是改写后的版本）；框架每步插入的“还剩 N 步”提示默认去掉，这样每一步的思考都按 Qwen 的格式保留。工具定义没有记在日志里，按领域汇总实际出现过的调用补出最简定义。748 次里转换成功 746 次（跳过的 2 次都是失败运行，某一步的工具调用在下一次请求里没有返回），通过的 289 次全在。按 32k 上限约保留 241 次（4-bit 底座），按 16k 约 161 次。
 
 **两个 notebook 的分工**
 
@@ -73,9 +77,10 @@ cd 1-model-merge
 python3 -m unittest discover -s tests -v
 ```
 
-需要 numpy、torch、safetensors（notebook 自己的依赖），不下载任何东西。测试直接从两个 notebook 取出内嵌模块的源码，共 48 项：
+需要 numpy、torch、safetensors（notebook 自己的依赖），不下载任何东西。测试直接从两个 notebook 取出内嵌模块的源码，共 52 项：
 - `test_tm2.py` 30 项：e15 新增部分，以及 2026-11-02 补丁的 `vocabulary_difference` 和设置默认值；
 - `test_lora_source.py` 10 项：融合 notebook 的 `lora` 来源（缩放、张量名配对、对到 S 的矩阵时避开 MTP / 视觉 / 输出头、按 float32 算 scale·B·A、改过的 adapter 和形状不符时拒绝、等待与就绪、补加到已有 D 上的结果、报告）；
+- `test_convert_mcp_universe.py` 4 项：转换脚本（响应与“模型实际看到的工具返回”的拼接、提示去留、对不上时拒绝、多段 JSON、按领域补工具定义），只用标准库；
 - `test_trace_lora.py` 9 项：训练 notebook 的模块。纯计算部分 8 项；端到端 1 项要 transformers 和 peft，在 CPU 上用极小的 Llama 走完“筛选 → 渲染 → 只训助手回合 → 分块损失（与完整损失一致）→ 训练（损失下降）→ 分两次会话续跑（与一次跑完结果一致）→ 导出 → 用融合 notebook 的读取器读回（与 PEFT 合并后的权重逐元素一致）”。真实的 SenseNova 权重、远程代码和 transformers 5.18 没有运行过，要在 Colab 上由审读、前向闸门和结构核对把关。
 
 ## 需要你在 Colab 上验证
