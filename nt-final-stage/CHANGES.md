@@ -278,6 +278,8 @@
 
 **训练 notebook：大显存卡用 BF16，开训前试显存**：`PRECISION` 默认改为 `auto`，显存 ≥ 120 GiB（H200、B200）时用 BF16 底座、每条到 32k token（增量相对真实 BF16 权重，融合时加回去最准，也省掉 4-bit 反量化），80–96GB 卡仍是 4-bit 到 32k，40GB 卡 4-bit 到 12k；长度上限的自动值移进模块（`max_tokens_for`）。第 6 节开训前先拿训练集里最长的一条做一次前向 + 反向（不更新参数、不留梯度），打印显存峰值，放不下就马上报错并说明改哪一项；训练时每步也打印显存峰值。新增 1 项测试，融合 notebook 一套共 58 项。
 
+**训练 notebook：线性注意力内核真的能导入才算装好**：RunPod 冒烟测试发现 `flash-linear-attention` 0.6.0 在 torch 2.8 自带的 Triton 3.4 上导入失败（`triton.experimental.gluon.language` 没有 `extra`），transformers 悄悄退回纯 torch 实现，只有 320 token/s。第 2 节装完后在子进程里试导入 `fla.ops.gated_delta_rule`，失败就改装 0.5.2（同样的函数签名，在 Triton 3.4 + transformers 5.22 上能导入）；第 5 节装好底座后打印线性注意力内核是否启用。
+
 ## 三、测试结果
 
 在本环境运行（Python 3.13.18；notebook 测试用 torch 2.15.0、numpy 2.5.4、safetensors 0.8.0；本机没有 latexmk / pdflatex，也没有可用的 Docker）：
