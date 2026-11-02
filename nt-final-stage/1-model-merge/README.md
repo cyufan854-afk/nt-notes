@@ -77,12 +77,12 @@ cd 1-model-merge
 python3 -m unittest discover -s tests -v
 ```
 
-需要 numpy、torch、safetensors（notebook 自己的依赖），不下载任何东西。测试直接从两个 notebook 取出内嵌模块的源码，共 55 项：
+需要 numpy、torch、safetensors（notebook 自己的依赖），不下载任何东西。测试直接从两个 notebook 取出内嵌模块的源码，共 57 项：
 - `test_tm2.py` 30 项：e15 新增部分，以及 2026-11-02 补丁的 `vocabulary_difference` 和设置默认值；
 - `test_lora_source.py` 10 项：融合 notebook 的 `lora` 来源（缩放、张量名配对、对到 S 的矩阵时避开 MTP / 视觉 / 输出头、按 float32 算 scale·B·A、改过的 adapter 和形状不符时拒绝、等待与就绪、补加到已有 D 上的结果、报告）；
 - `test_range_retry.py` 3 项：读 Hugging Face 时 499 / 5xx / 408 重试、重试用尽后报错、整份文件的回答仍立即拒绝（要 requests 和 huggingface_hub）；
 - `test_convert_mcp_universe.py` 4 项：转换脚本（响应与“模型实际看到的工具返回”的拼接、提示去留、对不上时拒绝、多段 JSON、按领域补工具定义），只用标准库；
-- `test_trace_lora.py` 9 项：训练 notebook 的模块。纯计算部分 8 项；端到端 1 项要 transformers 和 peft，在 CPU 上用极小的 Llama 走完“筛选 → 渲染 → 只训助手回合 → 分块损失（与完整损失一致）→ 训练（损失下降）→ 分两次会话续跑（与一次跑完结果一致）→ 导出 → 用融合 notebook 的读取器读回（与 PEFT 合并后的权重逐元素一致）”。真实的 SenseNova 权重、远程代码和 transformers 5.18 没有运行过，要在 Colab 上由审读、前向闸门和结构核对把关。
+- `test_trace_lora.py` 11 项：训练 notebook 的模块。纯计算部分 9 项（含自动找到上传的 zip 并解压）；4-bit 下输出头为 float32、解码器输出 bf16 时的分块损失 1 项；端到端 1 项要 transformers 和 peft，在 CPU 上用极小的 Llama 走完“筛选 → 渲染 → 只训助手回合 → 分块损失（与完整损失一致）→ 训练（损失下降）→ 分两次会话续跑（与一次跑完结果一致）→ 导出 → 用融合 notebook 的读取器读回（与 PEFT 合并后的权重逐元素一致）”。真实的 SenseNova 权重、远程代码和 transformers 5.18 没有运行过，要在 Colab 上由审读、前向闸门和结构核对把关。
 
 ## 需要你在 Colab 上验证
 

@@ -274,6 +274,8 @@
 - `row_change_report` 默认 `False`（只是调 lambda_grid 的参考，不影响结果）。
 - 新增 3 项测试（`tests/test_range_retry.py`），融合 notebook 一套共 55 项。
 
+**训练 notebook 上 GPU 前的三处修补**：4-bit 准备步骤把输出头转成 float32 而解码器输出 bf16，分块损失先统一类型（否则直接报错）；`flash-linear-attention`、`causal-conv1d` 安装加时间上限，现场编译超时就跳过；数据还没放到 `DATA_FILES` 时，自动在上传位置（`/workspace` 等）找 `startlux_mcp_universe_runs.jsonl` 或装着它的 zip 并解压过去。新增 2 项测试，融合 notebook 一套共 57 项。
+
 ## 三、测试结果
 
 在本环境运行（Python 3.13.18；notebook 测试用 torch 2.15.0、numpy 2.5.4、safetensors 0.8.0；本机没有 latexmk / pdflatex，也没有可用的 Docker）：
@@ -302,7 +304,7 @@ OK
 | coop（`5-final-review`） | 96 | 46 | 142 通过 | 3 项：2 项真实 latexmk 编译（本机没有 latexmk；你的 Mac 上会跑），1 项 Docker 隔离集成测试（需显式开启） |
 | nt27b（`2-branch2`） | 86 | 11 | 97 通过 | 1 项：实际 pdflatex 编译（本机没有 pdflatex） |
 | 合并与留存率（`3-combine`） | 7 | 16 | 23 通过 | — |
-| 融合 notebook（`1-model-merge`） | — | 55 | 55 通过 | — |
+| 融合 notebook（`1-model-merge`） | — | 57 | 57 通过 | — |
 | 交叉审查打包（`4-cross-review`） | — | 4 | 4 通过 | — |
 
 原有测试文件一行没删、一行没改；只在 `2-branch2/tests/test_gpu_runner.py`、`3-combine/test_retention.py`、`test_run_retention.py`、`test_merge_check.py` 里追加了测试。详细的逐项输出见 `5-final-review/docs/test-results.txt`，或用 `-v` 重跑。

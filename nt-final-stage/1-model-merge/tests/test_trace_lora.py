@@ -187,6 +187,19 @@ class PureParts(unittest.TestCase):
         self.assertEqual(self.t.precision_for(40), '4bit')
         self.assertIsNone(self.t.precision_for(24))
 
+    def test_uploaded_zip_is_found_and_extracted(self):
+        import zipfile
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            (tmp / 'up').mkdir()
+            with zipfile.ZipFile(tmp / 'up' / 'whatever.zip', 'w') as z:
+                z.writestr('startlux_mcp_universe_runs.jsonl', '{"a": 1}\n')
+            got = self.t.extract_uploaded('startlux_mcp_universe_runs.jsonl', [tmp / 'missing', tmp / 'up'], tmp / 'work' / 'startlux_traces')
+            self.assertEqual(got, tmp / 'work' / 'startlux_traces' / 'startlux_mcp_universe_runs.jsonl')
+            self.assertEqual(got.read_text(), '{"a": 1}\n')
+            self.assertEqual(self.t.extract_uploaded('startlux_mcp_universe_runs.jsonl', [], got.parent), got)   # already there
+            self.assertIsNone(self.t.extract_uploaded('nothing.jsonl', [tmp / 'up'], tmp / 'x'))
+
     def test_adapter_key_check(self):
         ok = ['base_model.model.model.language_model.layers.0.mlp.down_proj.lora_A.weight',
               'base_model.model.model.language_model.layers.0.mlp.down_proj.lora_B.weight']
@@ -227,6 +240,18 @@ class EndToEnd(unittest.TestCase):
         targets = self.t.lora_targets(model)
         torch.manual_seed(lora_seed)
         return self.t.add_lora(model, targets, rank=4, alpha=8), targets
+
+    def test_loss_with_a_float32_head_and_bfloat16_hidden_states(self):
+        # what the 4-bit preparation leaves: the head upcast to float32, the decoder handing over bfloat16
+        torch.manual_seed(0)
+        head = torch.nn.Linear(16, 50, bias=False)
+        hidden = torch.randn(1, 12, 16).to(torch.bfloat16)
+        labels = torch.randint(0, 50, (1, 12))
+        labels[0, :4] = -100
+        loss, n = self.t.chunked_loss(hidden, head, labels, chunk=3)
+        full = torch.nn.functional.cross_entropy(head(hidden.float())[0, :-1], labels[0, 1:], ignore_index=-100, reduction='sum')
+        self.assertEqual(n, 8)
+        self.assertTrue(torch.allclose(loss, full, rtol=1e-5), (loss, full))
 
     def test_train_resume_export_and_read_back(self):
         t = self.t
