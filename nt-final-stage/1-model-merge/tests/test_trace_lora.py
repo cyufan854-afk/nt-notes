@@ -183,9 +183,16 @@ class PureParts(unittest.TestCase):
         plan = self.t.step_plan(10, 4, 2, seed=0)
         self.assertEqual([len(g) for g in plan], [4, 4, 2, 4, 4, 2])
         self.assertEqual(sorted(sum(plan[:3], [])), list(range(10)))
-        self.assertEqual(self.t.precision_for(80), 'bf16')
-        self.assertEqual(self.t.precision_for(40), '4bit')
+        self.assertEqual(self.t.precision_for(140.4), 'bf16')            # H200 (nvidia-smi: 143771 MiB)
+        self.assertEqual(self.t.precision_for(93.0), '4bit')             # H100 NVL
+        self.assertEqual(self.t.precision_for(79.6), '4bit')             # H100 / A100 80GB
+        self.assertEqual(self.t.precision_for(39.5), '4bit')
         self.assertIsNone(self.t.precision_for(24))
+        self.assertEqual(self.t.precision_for(79.6, 'bf16'), 'bf16')
+        self.assertEqual(self.t.max_tokens_for(140.4, 'bf16'), 32768)
+        self.assertEqual(self.t.max_tokens_for(79.6, '4bit'), 32768)
+        self.assertEqual(self.t.max_tokens_for(79.6, 'bf16'), 16384)
+        self.assertEqual(self.t.max_tokens_for(39.5, '4bit'), 12288)
 
     def test_uploaded_zip_is_found_and_extracted(self):
         import zipfile
@@ -252,6 +259,20 @@ class EndToEnd(unittest.TestCase):
         full = torch.nn.functional.cross_entropy(head(hidden.float())[0, :-1], labels[0, 1:], ignore_index=-100, reduction='sum')
         self.assertEqual(n, 8)
         self.assertTrue(torch.allclose(loss, full, rtol=1e-5), (loss, full))
+
+    def test_memory_probe_leaves_no_gradients(self):
+        model, _ = self.fresh()
+        decoder, head = self.t.decoder_and_head(model)
+        longest = max(self.examples, key=lambda e: len(e['input_ids']))
+        before = self.t.trainable_state(model)
+        probe = self.t.memory_probe(model, decoder, head, longest, torch.device('cpu'), chunk=16)
+        self.assertEqual(probe['tokens'], len(longest['input_ids']))
+        self.assertEqual(probe['labelled'], sum(1 for t in longest['labels'][1:] if t != -100))
+        self.assertIsNone(probe['peak_gib'])
+        self.assertTrue(all(p.grad is None for p in model.parameters()))
+        self.assertFalse(model.training)
+        after = self.t.trainable_state(model)
+        self.assertTrue(all(torch.equal(before[k], after[k]) for k in before))
 
     def test_train_resume_export_and_read_back(self):
         t = self.t
