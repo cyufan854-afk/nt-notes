@@ -586,5 +586,78 @@ class NotebookLayout(unittest.TestCase):
             self.assertEqual(meta[name], digest, name)
 
 
+
+def pipeline_function(name):
+    """One top-level function of qmerge_pipeline, compiled on its own (so it must not need torch)."""
+    import ast
+    tree = ast.parse(embedded_sources()['qmerge_pipeline'])
+    node = next(n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == name)
+    scope = {}
+    exec(compile(ast.Module(body=[node], type_ignores=[]), 'qmerge_pipeline', 'exec'), scope)
+    return scope[name]
+
+
+class VocabularyDifference(unittest.TestCase):
+    """A - R between a source and its own training base (2026-11-02 patch): added tokens on one side only are allowed,
+    since their rows carry no delta; a different core vocabulary, different merges or a token at another ID are not."""
+
+    def setUp(self):
+        self.diff = pipeline_function('vocabulary_difference')
+        core = {'a': 0, 'b': 1, 'ab': 2}
+        self.base = {'type': 'BPE', 'core': core, 'merges': [('a', 'b')],
+                     'tokens': {**core, '<|im_start|>': 3, '<|im_end|>': 4}}
+
+    def variant(self, **changes):
+        out = {'type': self.base['type'], 'core': dict(self.base['core']), 'merges': list(self.base['merges']),
+               'tokens': dict(self.base['tokens'])}
+        out.update(changes)
+        return out
+
+    def test_identical_vocabularies_have_nothing_to_report(self):
+        d = self.diff(self.variant(), self.base)
+        self.assertEqual((d['conflicts'], d['only_source'], d['only_reference']), ([], [], []))
+        self.assertEqual((d['examples_source'], d['examples_reference']), ('', ''))
+
+    def test_added_tokens_on_one_side_are_listed_not_conflicts(self):
+        source = self.variant(tokens={**self.base['tokens'], '<think>': 5, '</think>': 6})
+        d = self.diff(source, self.base)
+        self.assertEqual(d['conflicts'], [])
+        self.assertEqual(d['only_source'], ['<think>', '</think>'])
+        self.assertEqual(d['only_reference'], [])
+        self.assertIn("'<think>'=5", d['examples_source'])
+        d = self.diff(self.base, source)
+        self.assertEqual(d['conflicts'], [])
+        self.assertEqual(d['only_reference'], ['<think>', '</think>'])
+
+    def test_token_at_another_id_is_a_conflict(self):
+        d = self.diff(self.variant(tokens={**self.base['tokens'], '<|im_end|>': 7}), self.base)
+        self.assertTrue(any('ID 不同' in c for c in d['conflicts']), d['conflicts'])
+
+    def test_id_holding_another_token_is_a_conflict(self):
+        tokens = dict(self.base['tokens'])
+        del tokens['<|im_end|>']
+        tokens['<|endoftext|>'] = 4
+        d = self.diff(self.variant(tokens=tokens), self.base)
+        self.assertTrue(any('不同的 token' in c for c in d['conflicts']), d['conflicts'])
+        self.assertEqual((d['only_source'], d['only_reference']), (['<|endoftext|>'], ['<|im_end|>']))
+
+    def test_core_vocabulary_merges_and_type_must_match(self):
+        self.assertTrue(self.diff(self.variant(core={'a': 0, 'b': 1, 'ba': 2}), self.base)['conflicts'])
+        self.assertTrue(self.diff(self.variant(merges=[('b', 'a')]), self.base)['conflicts'])
+        self.assertTrue(self.diff(self.variant(type='Unigram'), self.base)['conflicts'])
+
+    def test_setup_inputs_uses_it_for_every_reference_pair(self):
+        src = embedded_sources()['qmerge_pipeline']
+        self.assertIn('diff=vocabulary_difference(node.tokenizer,ref.tokenizer)', src)
+        self.assertNotIn('vocabulary(node)!=vocabulary(ref)', src)
+
+
+class SettingsDefaults(unittest.TestCase):
+    def test_tokenizer_pipeline_difference_is_allowed_by_default(self):
+        nb = json.loads(NOTEBOOK.read_text(encoding='utf-8'))
+        cell = next(''.join(c['source']) for c in nb['cells'] if 'SETTINGS = {' in ''.join(c['source']))
+        self.assertIn('"allow_tokenizer_pipeline_differences": True,', cell)
+
+
 if __name__ == '__main__':
     unittest.main()

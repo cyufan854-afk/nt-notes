@@ -33,6 +33,18 @@ e15 第一次运行到 N₂ 时会**停下来**：SenseNova 需要 `trust_remote
 - **ν₁、ν₂ 怎么评**：依次线搜索：先在获胜配方上评 ν（3 次），再在“获胜配方 + 选中的 ν·N”上评 ν₂（3 次），共 6 次。3×3 联合网格要 9 次；每次评分约 1–2 小时，依次评少 3–6 小时（约 0.5–0.9 单元）。N 和 N₂ 都只改每张矩阵的 128 行、幅度很小，而且多半是不同的行，二者的相互作用是二阶的。ν₂ 必须 > 0（取 NLL 最低的可行值）。
 - **耗时**：N₂ 约 10–21 小时（激活 6–13 小时，OT 与融合 4–8 小时），约 1.5–3.2 单元；ν₂ 线搜索另加 3–6 小时。合计由 9–19 单元变为约 11–23 单元。
 
+## 2026-11-02 补丁（第一次在 Colab 上运行时遇到的两处输入核对）
+
+只改了 `qmerge_pipeline` 的输入核对和第 1 节的一个默认值；`BOOTSTRAP_VERSION` 不变。D、C、S 的基线和 N 的缓存身份都不含 `qmerge_pipeline` 的代码哈希，已经算好的不受影响。
+
+1. **来源与它自己的训练底座比词表**（`reference_repo`，例如 Darwin-27B-RSI 对 Qwen3.5-27B、StartLux 对 Qwen3.6-27B）：
+   - 原来要求连附加 token 也完全相同，Darwin-27B-RSI 因此被拦下：`DellaMix/DarwinRSI：来源与其训练底座的核心词表、merges 或 token ID 不同`。
+   - 现在（新函数 `vocabulary_difference`）要求：核心词表、merges 和 BPE 类型相同；没有哪个 token 在两边 ID 不同；没有哪个 ID 在两边是不同的 token。不满足时报错，并列出差在哪。
+   - 只在一边有的附加 token 不再拦下，会打印个数和例子。这些 token 的嵌入行和输出头行本来就不进入 A − R：每个来源的行支持只覆盖 S 里同 ID 的 token，A − R 只用两边都支持的行，其余行的增量为 0（`ensure_aux_delta` 里的 `support` 掩码，没有改动）。
+2. **`allow_tokenizer_pipeline_differences` 默认改为 `True`**：pi（S）的 `tokenizer.json` 用的是老版 Qwen 的切分正则（没有 `\p{M}`），B、Final 和多数来源是新版。词表、merges 和每个 token 的 ID 完全一致，只有带附加符号的文字（印地语、带短元音符号的阿拉伯文、分解写法的重音）切法不同；英文、中文、代码、LaTeX 的切分和解码都相同（已在 Colab 上用两份 tokenizer 实测）。成品沿用 S 的 tokenizer。换了 S 或它的 commit 时，先改回 `False`，看报错里的差别再决定。
+
+跑过之后请看 `DRIVE_DIR/aux_delta/<指纹>/aux_delta_report.json` 里 DELLA 组各成员的增量范数：DarwinRSI 的（对 Qwen3.5-27B 取）如果比其他成员大好几倍，说明它的训练底座可能不是 Qwen3.5-27B，告诉我。
+
 ## 测试
 
 ```bash
@@ -40,7 +52,7 @@ cd 1-model-merge
 python3 -m unittest discover -s tests -v
 ```
 
-需要 numpy、torch、safetensors（notebook 自己的依赖），不下载任何东西。测试直接从 notebook 取出内嵌模块的源码，用随机小张量覆盖新增的纯计算部分，共 23 项。真实的 SenseNova 权重、远程代码和 transformers 5.18 没有运行过，要在 Colab 上由审读、前向闸门和结构核对把关。
+需要 numpy、torch、safetensors（notebook 自己的依赖），不下载任何东西。测试直接从 notebook 取出内嵌模块的源码，用随机小张量覆盖新增的纯计算部分，共 30 项（2026-11-02 补丁加了 7 项：`vocabulary_difference` 的 6 种情形和设置默认值；这 7 项和版式检查不需要 torch）。真实的 SenseNova 权重、远程代码和 transformers 5.18 没有运行过，要在 Colab 上由审读、前向闸门和结构核对把关。
 
 ## 需要你在 Colab 上验证
 

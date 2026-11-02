@@ -237,6 +237,19 @@
 - 四个套件照常通过（notebook 的测试不读 branch1）；
 - 用改后的 branch1 代替最终稿试算留存率：5 处修改后仍是 50 处、保留 43、撤回 0、改写 7；统一标题后变为保留 42（84.0%）、改写 8（16.0%）。多出的一处“改写”是 Muse Wonder 新增的 thm:1.2.1 备选证明，它的标题加了 via。
 
+### 追加（2026-11-02）：融合 notebook 补丁（Colab 上第一次运行时的两处输入核对）
+
+**为什么**：在 Colab 上跑等待阶段时先后停在两处：
+1. pi 与底座的 tokenizer 写法不同（`pre_tokenizer`、`decoder`）；
+2. `DellaMix/DarwinRSI：来源与其训练底座的核心词表、merges 或 token ID 不同`。
+
+**做了什么**（`1-model-merge/Qwen38_pi_AuxMix_e15_FP8.ipynb`，只改 `qmerge_pipeline` 和第 1 节一个默认值，`BOOTSTRAP_VERSION` 不变）：
+- 新函数 `vocabulary_difference`：来源对自己的训练底座取 A − R 时，要求核心词表、merges、BPE 类型相同，且没有 token 在两边 ID 不同、没有 ID 在两边是不同的 token；只在一边有的附加 token 打印出来，不再拦下。这些 token 的嵌入行和输出头行本来就不进入 A − R（行支持掩码求交，代码未改）。
+- `allow_tokenizer_pipeline_differences` 默认 `True`，注释写明核对结果：pi 用老版 Qwen 切分正则（没有 `\p{M}`），与 B 只在带附加符号的文字上切法不同，词表和 ID 完全一致；英文、中文、代码、LaTeX 不受影响。
+- 元数据里 `qmerge_pipeline` 的指纹更新，其余 10 个模块的指纹不变；D、C、S 基线和 N 的缓存身份不含 `qmerge_pipeline` 的哈希。
+- 新增 7 项测试（`vocabulary_difference` 的 6 种情形、设置默认值），融合 notebook 共 30 项。
+- `1-model-merge/README.md` 新增“2026-11-02 补丁”一节。
+
 ## 三、测试结果
 
 在本环境运行（Python 3.13.18；notebook 测试用 torch 2.15.0、numpy 2.5.4、safetensors 0.8.0；本机没有 latexmk / pdflatex，也没有可用的 Docker）：
@@ -265,7 +278,7 @@ OK
 | coop（`5-final-review`） | 96 | 46 | 142 通过 | 3 项：2 项真实 latexmk 编译（本机没有 latexmk；你的 Mac 上会跑），1 项 Docker 隔离集成测试（需显式开启） |
 | nt27b（`2-branch2`） | 86 | 11 | 97 通过 | 1 项：实际 pdflatex 编译（本机没有 pdflatex） |
 | 合并与留存率（`3-combine`） | 7 | 16 | 23 通过 | — |
-| 融合 notebook（`1-model-merge`） | — | 23 | 23 通过 | — |
+| 融合 notebook（`1-model-merge`） | — | 30 | 30 通过 | — |
 | 交叉审查打包（`4-cross-review`） | — | 4 | 4 通过 | — |
 
 原有测试文件一行没删、一行没改；只在 `2-branch2/tests/test_gpu_runner.py`、`3-combine/test_retention.py`、`test_run_retention.py`、`test_merge_check.py` 里追加了测试。详细的逐项输出见 `5-final-review/docs/test-results.txt`，或用 `-v` 重跑。
