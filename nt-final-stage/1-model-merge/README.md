@@ -57,7 +57,7 @@ StartLux-V1.0-27B-Preview 迟迟不发布，它的位置（权重 4，系数 0.4
 
 | notebook | 运行时 | 做什么 |
 |---|---|---|
-| `StartLux_trace_LoRA.ipynb`（新） | Colab GPU：A100 80GB / H100 用 BF16 底座；40GB 自动改 4-bit（QLoRA） | 锁定底座 commit；按评分筛选轨迹（默认只用严格通过的）；用底座的 chat template 渲染完整对话，只在助手回合（思考、工具调用、回答，以及每个回合的结束标记）上算损失；LoRA 加在解码层的注意力、线性注意力、MLP 上；分块算损失（不展开 24 万词表的完整 logits）；断点存 Drive、可续跑；训练前后各算一次留出集损失；导出 adapter + `trace_lora_manifest.json`，最后打印 `TRACE_LORA_DIR = "…"` |
+| `StartLux_trace_LoRA.ipynb`（新） | 一张 80GB 显卡（H100、A100/A800 80GB、H800）。RunPod、Vast.ai、AutoDL 或 Colab 都可以：不在 Colab 上时文件放在 `WORK_DIR`，可填 `EXPORT_REPO` 把 adapter 传到私有仓库再放进 Drive；国内平台可设 `HF_ENDPOINT` 镜像。默认 4-bit 底座，80GB 卡上每条到 32k token | 锁定底座 commit；按评分筛选轨迹（默认只用严格通过的）；用底座的 chat template 渲染完整对话，只在助手回合（思考、工具调用、回答，以及每个回合的结束标记）上算损失；LoRA 加在解码层的注意力、线性注意力、MLP 上；分块算损失（不展开 24 万词表的完整 logits）；断点存 Drive、可续跑；训练前后各算一次留出集损失；导出 adapter + `trace_lora_manifest.json`，最后打印 `TRACE_LORA_DIR = "…"` |
 | `Qwen38_pi_AuxMix_e15_FP8.ipynb`（补丁） | CPU 高 RAM | 新的辅料格式 `lora`：读 adapter，每个被改的矩阵按 float32 算 scale·(B @ A)，乘 0.4 加进 D。不先合并成 BF16 模型：小增量会被舍入成噪声，也省得上传 55GB |
 
 **顺序**

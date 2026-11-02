@@ -259,6 +259,7 @@
 - 融合 notebook 补丁：新的辅料格式 `lora`（`qmerge_pipeline.LoraSource`），逐矩阵用 float32 算 scale·(B @ A) 加进 D，不先合并成 BF16 模型；新辅料 `StartLuxLoRA`（权重 4，等待 `TRACE_LORA_DIR`）；`STARTLUX_REQUIRED` 默认改为 `False`。`AUX_DELTA_VERSION` 不变，已算好的 D 照常沿用，正式融合时补加。
 - 新脚本 `1-model-merge/convert_mcp_universe.py`：把原始日志转成训练用的轨迹 JSONL（746/748 次运行，通过的 289 次全在；工具返回用模型实际看到的文字；按领域补工具定义）。转好的 `startlux_mcp_universe_runs.jsonl`（SHA-256 `31833058…21c1`）另外发给你，传到 Drive 即可。
 - 训练 notebook 默认改为 4-bit 底座、长度上限按显存自动定（80GB 卡上 32k，可用约 241 次通过的运行）。
+- 训练 notebook 不再限于 Colab：任何能开 Jupyter 的 Linux GPU 机器都能跑（RunPod、Vast.ai、AutoDL 等），文件放在 `WORK_DIR`；`HF_ENDPOINT` 可设镜像；`EXPORT_REPO` 训完把 adapter 传到私有仓库，并打印在 Colab 里放进 Drive 的两行代码。40GB 卡上长度上限自动降到 12k。
 - 新增 23 项测试（`test_lora_source.py` 10 项、`test_trace_lora.py` 9 项、`test_convert_mcp_universe.py` 4 项），融合 notebook 一套共 52 项。端到端测试在 CPU 上用极小的 Llama 走完训练、续跑、导出和读回。
 - `1-model-merge/README.md` 新增一节，写明分工、顺序、分量和局限。
 
