@@ -265,6 +265,15 @@
 
 **没验证的**：真实 27B、Qwen3.6 的线性注意力层、GPU 上的训练速度和显存。第一次请先用 `SMOKE_TEST = True` 跑 2 步。
 
+### 追加（2026-11-02）：读 Hugging Face 时的临时错误重试；逐行改动报告默认关
+
+**为什么**：等待阶段跑 N 的前向闸门时，Hugging Face 的 CDN 对一次分段读取返回了 HTTP 499（边缘节点中途断开），读取代码只把 5xx 和 429 当作临时错误，499 被当成“服务器不支持分段读取”直接放弃，N 的闸门整段失败（约 40 分钟）。另外，逐行改动报告在等待阶段要从 Drive 读一遍 D 和 C（约 100GB），曾卡死整个运行时。
+
+**做了什么**（融合 notebook）：
+- `qmerge_legacy.Engine._range`：HTTP 408 / 425 / 499 和 5xx 都按临时错误重试；重试次数 3 → 6，等待 1、2、4、8、16、30 秒。返回 200（整份文件）等仍立即报错。这个模块的代码不进入任何缓存身份，已算好的 D、C、基线、反向自检都照常沿用。
+- `row_change_report` 默认 `False`（只是调 lambda_grid 的参考，不影响结果）。
+- 新增 3 项测试（`tests/test_range_retry.py`），融合 notebook 一套共 55 项。
+
 ## 三、测试结果
 
 在本环境运行（Python 3.13.18；notebook 测试用 torch 2.15.0、numpy 2.5.4、safetensors 0.8.0；本机没有 latexmk / pdflatex，也没有可用的 Docker）：
@@ -293,7 +302,7 @@ OK
 | coop（`5-final-review`） | 96 | 46 | 142 通过 | 3 项：2 项真实 latexmk 编译（本机没有 latexmk；你的 Mac 上会跑），1 项 Docker 隔离集成测试（需显式开启） |
 | nt27b（`2-branch2`） | 86 | 11 | 97 通过 | 1 项：实际 pdflatex 编译（本机没有 pdflatex） |
 | 合并与留存率（`3-combine`） | 7 | 16 | 23 通过 | — |
-| 融合 notebook（`1-model-merge`） | — | 52 | 52 通过 | — |
+| 融合 notebook（`1-model-merge`） | — | 55 | 55 通过 | — |
 | 交叉审查打包（`4-cross-review`） | — | 4 | 4 通过 | — |
 
 原有测试文件一行没删、一行没改；只在 `2-branch2/tests/test_gpu_runner.py`、`3-combine/test_retention.py`、`test_run_retention.py`、`test_merge_check.py` 里追加了测试。详细的逐项输出见 `5-final-review/docs/test-results.txt`，或用 `-v` 重跑。
