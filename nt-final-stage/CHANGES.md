@@ -282,6 +282,8 @@
 
 接着在 H200 上又碰到 fla 0.5.2 的保护：Hopper 显卡 + Triton 3.4–3.7.0 时 fla 的一个反向内核（`chunk_bwd_dqkwg`）会算错（fla #640），fla 直接报错拒绝运行。装 `tilelang` 后这个内核改用 TileLang 实现；在 H200 上逐项对照 transformers 的 fp32 参考实现（4096 token、48 头）：输出和 q、k、v、g、beta 的梯度相对误差都在 0.43%–0.52%，余弦相似度约 0.99999；整模型前两步的损失与纯 torch 的冒烟测试一致，显存峰值从 100 GiB 降到 88 GiB，速度约 540 token/s（纯 torch 约 320）。第 2 节现在自动处理：Hopper 上检测到这种组合就装 tilelang，tilelang 用不了（缺 nvcc）就卸掉 fla 用纯 torch。
 
+**第一次正式训练（H200，BF16，32k）**：250 条通过的轨迹（训练 238、留出 12），2 轮 60 步，约 65 分钟，后段约 1800 token/s，显存峰值 91 GiB。训练损失第 1 轮平均 0.312、第 2 轮 0.285；留出集损失 0.342 → 0.287（降 16%），与第 2 轮训练损失相当，没有过拟合的迹象。上传时 Hub 拒收了 PEFT 自动生成的 README.md（它的 `base_model` 是本地下载路径）。导出现在把 `adapter_config.json` 里的 `base_model_name_or_path` 写成 Hub 上的仓库名，并删掉 PEFT 的占位 README；端到端测试多查这两项。
+
 ## 三、测试结果
 
 在本环境运行（Python 3.13.18；notebook 测试用 torch 2.15.0、numpy 2.5.4、safetensors 0.8.0；本机没有 latexmk / pdflatex，也没有可用的 Docker）：

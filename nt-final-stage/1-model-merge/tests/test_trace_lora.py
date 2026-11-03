@@ -315,6 +315,8 @@ class EndToEnd(unittest.TestCase):
             # export, then read it back with the fusion notebook's reader
             manifest = t.export_adapter(model, tmp / 'adapter', {'base_repo': 'tiny', 'base_revision': 'r'})
             self.assertEqual(manifest['adapter_sha256'], t.sha_file(tmp / 'adapter' / 'adapter_model.safetensors'))
+            self.assertEqual(json.loads((tmp / 'adapter' / 'adapter_config.json').read_text())['base_model_name_or_path'], 'tiny')
+            self.assertFalse((tmp / 'adapter' / 'README.md').exists())      # the hub refused PEFT's card with a local path
             sys.path.insert(0, str(HERE))
             from test_tm2 import load
             pl = load()['qmerge_pipeline']
