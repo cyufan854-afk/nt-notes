@@ -284,6 +284,14 @@
 
 **第一次正式训练（H200，BF16，32k）**：250 条通过的轨迹（训练 238、留出 12），2 轮 60 步，约 65 分钟，后段约 1800 token/s，显存峰值 91 GiB。训练损失第 1 轮平均 0.312、第 2 轮 0.285；留出集损失 0.342 → 0.287（降 16%），与第 2 轮训练损失相当，没有过拟合的迹象。上传时 Hub 拒收了 PEFT 自动生成的 README.md（它的 `base_model` 是本地下载路径）。导出现在把 `adapter_config.json` 里的 `base_model_name_or_path` 写成 Hub 上的仓库名，并删掉 PEFT 的占位 README；端到端测试多查这两项。
 
+### 追加（2026-11-04）：选型目标改成对比目标，选型在 A100 上做（融合 notebook e16 + 对比对 notebook）
+
+**为什么**：e15 在 Colab CPU 上评完前几个候选后，逐类、逐题看搜索目标（不开思考时数据集参考答案的 NLL）：六类题在 S 上的 NLL 都随融合强度单调下降，48 题全部同向，最优点落在网格边缘。这个目标量的主要是格式，不是推理，所以搜索和分量筛选都会被它带偏。讨论后定下：保留分量筛选，换目标，尽量都在 Colab GPU 上做。
+
+**新 notebook `1-model-merge/Qwen38_pi_ContrastPairs.ipynb`**（A100，vLLM，pi 按 FP8 加载）：MATH（数论、代数，3–5 级，整数答案）约占一半，另有 CRUXEval、BBH、C-Eval 理工科、MMLU-Pro；600 道题各采样 4 次（开思考，最长 8192 token），每题取一条做对、一条做错、长度相差不超过 2 倍的推理作为一对（被截断或读不出答案的不用）；另 200 道留出题各 2 次，记下 pi 的正确率。`STAGE="veto"` 时加载融合 notebook 交来的候选，用同样的种子在留出题上生成，按偏好顺序采用第一个正确率不比 pi 低 5 个百分点以上的。
+
+**融合 notebook e16**：目标 = 各对 NLL(对的) − NLL(错的) 的平均（越低越好）；护栏：对的推理的平均 NLL ≤ S 的 1.05 倍，任何一类比 S 差超过 0.01 不算数。全局搜索、ν / ν₂ 线搜索、分量筛选（问题单位是一对推理，按 20 万 token 预算选约 30–40 对）都用它；分量筛选的方案改为宽松、步长 0.5、步长 1。GPU 上 float32 + TF32、SDPA，最后的 logits 和损失梯度都分段算，隐状态放不下显存时放 CPU 内存。上传前把选中的候选（和全局搜索的 F）存到 `DRIVE_DIR/veto/`，交给对比对 notebook 把关，通过的才上传。没有对比对时停下，不退回旧目标。只改了评分和选型的 4 个模块；算 D、C、N、N₂ 的 7 个模块与 e15 逐字节相同，Drive 上的这些结果继续用。新增 `tests/test_contrast_pairs.py` 11 项、`tests/test_e16.py` 17 项，融合 notebook 一套共 86 项。真实 27B、A100 和 vLLM 都没有在这里运行过。
+
 ## 三、测试结果
 
 在本环境运行（Python 3.13.18；notebook 测试用 torch 2.15.0、numpy 2.5.4、safetensors 0.8.0；本机没有 latexmk / pdflatex，也没有可用的 Docker）：
@@ -312,7 +320,7 @@ OK
 | coop（`5-final-review`） | 96 | 46 | 142 通过 | 3 项：2 项真实 latexmk 编译（本机没有 latexmk；你的 Mac 上会跑），1 项 Docker 隔离集成测试（需显式开启） |
 | nt27b（`2-branch2`） | 86 | 11 | 97 通过 | 1 项：实际 pdflatex 编译（本机没有 pdflatex） |
 | 合并与留存率（`3-combine`） | 7 | 16 | 23 通过 | — |
-| 融合 notebook（`1-model-merge`） | — | 58 | 58 通过 | — |
+| 融合 notebook（`1-model-merge`） | — | 86 | 86 通过 | — |
 | 交叉审查打包（`4-cross-review`） | — | 4 | 4 通过 | — |
 
 原有测试文件一行没删、一行没改；只在 `2-branch2/tests/test_gpu_runner.py`、`3-combine/test_retention.py`、`test_run_retention.py`、`test_merge_check.py` 里追加了测试。详细的逐项输出见 `5-final-review/docs/test-results.txt`，或用 `-v` 重跑。
@@ -322,6 +330,7 @@ OK
 见 `README.md` 末尾“需要你验证”。要点：
 - agy 的实际参数和事件格式、Argon 的 slug（默认配置写的 `gemini-4-argon` 是猜的）、报错文本；
 - SenseNova 的远程代码与 config 是否与模型卡一致、前向闸门、实际用时；
+- e16：A100 上 vLLM 采样与把关、对比目标的逐层评分（显存、用时）、分量筛选的隐状态放哪；
 - vLLM 能否加载 FP8 仓库。
 
 这些路径都用假程序、小模型或合成数据测过，但没有在真实的 agy、真实的 SenseNova 权重和真实的 GPU 上运行过。

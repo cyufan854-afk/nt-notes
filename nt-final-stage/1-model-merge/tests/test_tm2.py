@@ -1,4 +1,4 @@
-"""Unit tests for the e15 additions (qmerge_tm2 and the nu2 term in qmerge_pipeline), on random small tensors.
+"""Unit tests for the e15 additions (kept for e16) (qmerge_tm2 and the nu2 term in qmerge_pipeline), on random small tensors.
 
 The module sources are taken from the notebook itself, so the tests check exactly the embedded code.
 Needs numpy, torch and safetensors (the notebook's own dependencies); nothing is downloaded and no model is loaded.
@@ -15,7 +15,7 @@ import types
 import unittest
 
 HERE = Path(__file__).resolve().parent
-NOTEBOOK = next(HERE.parent.glob('Qwen38_pi_AuxMix_e15*.ipynb'))
+NOTEBOOK = next(HERE.parent.glob('Qwen38_pi_AuxMix_e16*.ipynb'))
 MODULES = ('qmerge_core', 'qmerge_runtime', 'qmerge_components', 'qmerge_gguf', 'qmerge_della', 'qmerge_tm', 'qmerge_tm2',
            'qmerge_pipeline')
 
@@ -556,7 +556,7 @@ class SettingsCell(Base):
         o2 = self.tm2.options(found)
         self.assertEqual(o2['repo'], 'sensenova/SenseNova-Loop-9B-Preview')
         self.assertEqual(o2['act_repo'], self.tm.options(found)['act_repo'])
-        self.assertEqual(o2['code_sha256'], '')            # first run stops for the code review
+        self.assertEqual(o2['code_sha256'], '57bb0b949a4cd90eba005bc71cb211012118febb4ddde8d18b73d0615dba1c24')   # reviewed 2026-11-03
         self.assertTrue(all(x > 0 for x in o2['nu_grid']))
         self.assertTrue(o2['require_all_donors'])
 
@@ -568,21 +568,26 @@ class NotebookLayout(unittest.TestCase):
         order = [re.search(r"load_embedded_module\('(\w+)'", s).group(1) for s in sources if re.search(r"load_embedded_module\('(\w+)'", s)]
         self.assertLess(order.index('qmerge_tm'), order.index('qmerge_tm2'))
         self.assertLess(order.index('qmerge_tm2'), order.index('qmerge_pipeline'))
-        self.assertTrue(any('BOOTSTRAP_VERSION = "qwen38-auxmix-2026-10-31.e15"' in s for s in sources))
+        self.assertTrue(any('BOOTSTRAP_VERSION = "qwen38-auxmix-2026-11-04.e16"' in s for s in sources))
         meta = nb['metadata']['qwen38_efficientthink']
-        self.assertTrue(meta['revision'].endswith('e15'))
+        self.assertTrue(meta['revision'].endswith('e16'))
         import hashlib
         src = embedded_sources()
         for name, digest in meta['module_sha256'].items():
             self.assertEqual(hashlib.sha256(src[name].encode()).hexdigest(), digest, name)
 
-    def test_unchanged_modules_keep_their_e14_fingerprints(self):
-        e14 = {'qmerge_core': '45cfcb5b175df4b1bf593ba889e3f98a4e1838bd4e6297b59357cb23b58b886a',
-               'qmerge_runtime': '656874a80b5573f6c0d74bb92bcfbf8b3b5633c4538d0dfe1a7a72f4c36078e8',
-               'qmerge_components': '79ce5523116424293bd37061210406fbb5bd589dc3672e2103a5636d58fdea5b',
-               'qmerge_tm': 'b22359670a0523b567944af6cd1833eb00ed8aff74e919547b0c7f0182bfa850'}
+    def test_modules_behind_the_prepared_caches_keep_their_e15_fingerprints(self):
+        # e16 changes only core / runtime / components / pipeline (the scoring and selection); the modules that built D, C,
+        # N and N2 on Drive are byte for byte those of e15.
+        e15 = {'qmerge_legacy': 'f5002d9b03a0c090a00a5d7c20b5571d5b8a77d944201dbad4ce94a102c2ad8a',
+               'qmerge_gguf': 'c86cf01ee775f01471fcd745a45043461ead57440112a315a12d476e6fece012',
+               'qmerge_della': '1870595ac95198e46f2b408652c564c7cb4ca07e6988c7617a4b49df0ba66957',
+               'qmerge_tm': 'b22359670a0523b567944af6cd1833eb00ed8aff74e919547b0c7f0182bfa850',
+               'qmerge_tm2': 'c79a5ddd2a76c6ac7380da9dc714f60b426ce2686351b371a7f49a7efbc037f4',
+               'qmerge_evaldata': 'e2038608644f4abf3653b4fdea1aaf2a86da3aff387c7e5fe0aeeac79273f225',
+               'qmerge_fp8': '3b3bbe54d4ce7726f5211421233b6a738669fe236c09ec172b285d1e600bb8a8'}
         meta = json.loads(NOTEBOOK.read_text(encoding='utf-8'))['metadata']['qwen38_efficientthink']['module_sha256']
-        for name, digest in e14.items():
+        for name, digest in e15.items():
             self.assertEqual(meta[name], digest, name)
 
 

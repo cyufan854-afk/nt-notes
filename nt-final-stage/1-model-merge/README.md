@@ -1,12 +1,17 @@
-# 第 1 步：模型融合（Colab CPU 高 RAM）
+# 第 1 步：模型融合（D、C、N、N₂ 在 Colab CPU 上算好；e16 的选型在 Colab A100 上做）
 
-`Qwen38_pi_AuxMix_e15_FP8.ipynb`：在 e14 上加入第二个跨架构供体 N₂ = `sensenova/SenseNova-Loop-9B-Preview`，其余不变。所有说明（配置、耗时、缓存、续跑）都在 notebook 第 0、1、7 节；本文件只讲和别的步骤怎么衔接，以及这次改了什么。
+`Qwen38_pi_AuxMix_e16_FP8.ipynb`：在 e15 上把选型目标换成**对比目标**，选型改在 A100 上做，上传前加一道生成把关。配方、来源和 D、C、N、N₂ 一点没变，Drive 上算好的都继续用。配套的 `Qwen38_pi_ContrastPairs.ipynb` 负责采样和把关。所有说明（配置、耗时、缓存、续跑）都在融合 notebook 第 0、1 节；本文件只讲两个 notebook 怎么衔接、和别的步骤怎么衔接，以及这次改了什么。
 
-## 怎么跑
+## 怎么跑（e16）
 
-和以前一样：只改第 1 节那一格，然后在 CPU 高 RAM 运行时上从头运行全部单元格，notebook 自己判断做到了哪一步，断开后从头再运行即可续跑。
+都在 Colab A100（40GB 即可）上，按这个顺序：
 
-e15 第一次运行到 N₂ 时会**停下来**：SenseNova 需要 `trust_remote_code`，notebook 把锁定 commit 的远程代码下载到 `DRIVE_DIR/tm_delta2/donor_metadata/…/`，打印每个文件的哈希，列出网络、子进程、文件删除、动态执行之类的行。读完代码确认没问题后，把打印出来的值填进第 1 节 `SETTINGS["tm_extra2"]["code_sha256"]`，再从头运行。等待阶段这一步出错只打印原因，不影响已经算好的 D、C、S 基线和 N。
+1. `Qwen38_pi_ContrastPairs.ipynb`，第 1 节 `STAGE = "pairs"`，从头运行。pi 开思考解 800 道题（600 道各 4 次、200 道留出题各 2 次），写出对比对，最后打印 `CONTRAST_PAIRS_FILE = "…"`。
+2. 融合 notebook：把那一行填进第 1 节（`TRACE_LORA_DIR` 和 `tm_extra2["code_sha256"]` 已按 e15 里填的预填，核对一下是否一字不差），从头运行。全局搜索、ν、ν₂、分量筛选都按对比目标做；最后把选中的候选（分量筛选改了 F 时再加上 F）存到 `DRIVE_DIR/veto/`，返回 `waiting_for_veto`。
+3. 对比对 notebook，`STAGE = "veto"`，从头运行：候选在 200 道留出题上开思考生成，写出 `DRIVE_DIR/veto/result.json`。
+4. 融合 notebook 再从头运行：通过的候选从 Drive 上的副本上传（搜索和分量筛选不会重做），然后照常做 FP8。
+
+断开后从头运行都会接着做。e15 以前在 CPU 上评过的搜索候选用的是旧目标，不再使用。
 
 ## 产物怎么交给第 2 步
 
@@ -17,7 +22,21 @@ e15 第一次运行到 N₂ 时会**停下来**：SenseNova 需要 `trust_remote
 
 `2-branch2/gpu/run_gpu.sh` 收到 Hub 仓名和 40 位 commit 时，会把 commit 作为 `--revision` 交给 vLLM，下载的正是这一版；commit 同时进入回答缓存的身份。仓库是私有的，RunPod 上要设 `HF_TOKEN`。FP8 是 128×128 分块 e4m3（`quant_method: fp8`），vLLM 在 H100 上原生支持；A100 要先用冒烟样本试。详见 `2-branch2/README.md`。
 
-## 这次（e15）改了什么
+## 这次（e16）改了什么
+
+**为什么**：e15 的目标是“不开思考时，数据集参考答案的 NLL”。在 Colab 上评完前几个候选后逐类、逐题看：六类题的 NLL 都随融合强度单调下降（例如逻辑类 2.98 → 0.75、代码类 1.44 → 0.31），48 题全部同向，最优点落在网格边缘。它量的主要是“像不像参考答案的格式”，不是推理。
+
+**新目标**：S（pi）自己开思考解题，每题取一条做对、一条做错的推理（长度相差不超过 2 倍，被截断或答案读不出的不用）。候选在这些推理上算 **NLL(对的) − NLL(错的)** 的平均，越低越好：两条都出自 S，格式和文风抵消，剩下的是推理对不对。护栏：对的推理本身的平均 NLL 不能比 S 高 5% 以上（`tau`）；任何一类比 S 差超过 0.01 的候选不算数。这是 teacher forcing（在 S 的推理上打分，不是候选自己生成），候选离 S 越远越不准，所以上传前再用生成把关：200 道留出题、开思考，正确率比 pi 低 5 个百分点以上的不上传。
+
+**改了哪些模块**（只有评分和选型的四个；其余 7 个与 e15 逐字节相同，测试里核对指纹）：
+- `qmerge_core`：对比对文件的格式检查；对比对直接用存下的 token id 打分，不重新切词。不改 `VERSION`。
+- `qmerge_runtime`：最后的 logits 每次只算 2048 个位置（长推理不会一次占用“长度 × 24 万词表”的显存）；隐状态放不下显存时放 CPU 内存、轮到时再搬上去。
+- `qmerge_components`：损失对最后隐状态的梯度也分段算；梯度这一步的隐状态可以放在另一个目录（本地盘），换了会话、隐状态不在了就从前向重来；GPU 上一段的输入放 CPU 内存；不再需要的隐状态文件提前删掉。
+- `qmerge_pipeline`：问题的单位是“一对推理”（目标、类别均值、bootstrap、两折交叉拟合、变体评分都按对算）；护栏进入搜索、ν / ν₂ 线搜索、分量筛选所有的可行性判断；搜索用的对超过 90 万 token 时、分量筛选用的对超过 20 万 token 时，按类轮流整对选一部分；分量筛选的方案改为宽松、步长 0.5、步长 1；GPU 上用 float32 + TF32、SDPA 注意力；生成把关的交接（`veto/request.json`、`veto/result.json`）。`objective = "contrast"` 时没有对比对就停下，不会退回旧目标。
+
+**缓存**：D、C、N、N₂ 的缓存身份不含这四个模块的代码哈希（由 `AUX_DELTA_VERSION`、各自的版本和输入决定），继续有效；`inputs.json` 的输入绑定也不变。S 的基线、反向自检、搜索候选、分量筛选的缓存身份含 `qmerge_core` / `qmerge_runtime` 的代码哈希和评分选项，会在 A100 上按新目标重新算。
+
+## e15 改了什么
 
 - 新模块 `qmerge_tm2`（新单元格，排在 `qmerge_tm` 之后）、新配置块 `tm_extra2`、新缓存目录 `DRIVE_DIR/tm_delta2`；公式多一项 ν₂·N₂。
 - `qmerge_pipeline` 为接上 ν₂ 而改（配方字段、候选张量、缓存身份、ν₂ 线搜索、分量筛选的“每个供体都有贡献”、模型卡、上传的报告）。
@@ -77,9 +96,11 @@ cd 1-model-merge
 python3 -m unittest discover -s tests -v
 ```
 
-需要 numpy、torch、safetensors（notebook 自己的依赖），不下载任何东西。测试直接从两个 notebook 取出内嵌模块的源码，共 58 项：
-- `test_tm2.py` 30 项：e15 新增部分，以及 2026-11-02 补丁的 `vocabulary_difference` 和设置默认值；
-- `test_lora_source.py` 10 项：融合 notebook 的 `lora` 来源（缩放、张量名配对、对到 S 的矩阵时避开 MTP / 视觉 / 输出头、按 float32 算 scale·B·A、改过的 adapter 和形状不符时拒绝、等待与就绪、补加到已有 D 上的结果、报告）；
+需要 numpy、torch、safetensors（notebook 自己的依赖），不下载任何东西。测试直接从 notebook 取出内嵌模块的源码，共 86 项：
+- `test_e16.py` 17 项：对比对的格式检查和 token id 打分；按对算目标、类别均值和护栏；按 token 预算整对选子集；`contrast_setup` 与长推理的运行选项；没有对比对时停下；在极小的 Llama 上，分段 logits 与整段的 NLL 一致、分段算的损失梯度与整段一致、逐层评分器的结果与直接前向一致；梯度这一步把隐状态放在另一个目录时结果不变、隐状态丢了会从前向重来；分量筛选整条流程按对跑通（用线性模型代替真实前向：有害分量被去掉、有益分量保留，护栏生效，每个变体都在整对上评分）；生成把关的交接（等待、不重复构造、采用备选、全部否决、选型变了重新请求）；
+- `test_contrast_pairs.py` 11 项：对比对 notebook 的模块（抽题、答案提取与判分、配对、把关规则；vLLM 部分要 GPU，没有跑）；
+- `test_tm2.py` 30 项：e15 新增部分，以及 2026-11-02 补丁的 `vocabulary_difference` 和设置默认值；e16 里改为核对“算 D、C、N、N₂ 的 7 个模块与 e15 逐字节相同”；
+- `test_lora_source.py` 9 项：融合 notebook 的 `lora` 来源（缩放、张量名配对、对到 S 的矩阵时避开 MTP / 视觉 / 输出头、按 float32 算 scale·B·A、改过的 adapter 和形状不符时拒绝、等待与就绪、补加到已有 D 上的结果、报告）；
 - `test_range_retry.py` 3 项：读 Hugging Face 时 499 / 5xx / 408 重试、重试用尽后报错、整份文件的回答仍立即拒绝（要 requests 和 huggingface_hub）；
 - `test_convert_mcp_universe.py` 4 项：转换脚本（响应与“模型实际看到的工具返回”的拼接、提示去留、对不上时拒绝、多段 JSON、按领域补工具定义），只用标准库；
 - `test_trace_lora.py` 12 项：训练 notebook 的模块。纯计算部分 9 项（含自动找到上传的 zip 并解压、按显存选精度和长度上限）；4-bit 下输出头为 float32、解码器输出 bf16 时的分块损失 1 项；显存试探不留梯度、不改参数 1 项；端到端 1 项要 transformers 和 peft，在 CPU 上用极小的 Llama 走完“筛选 → 渲染 → 只训助手回合 → 分块损失（与完整损失一致）→ 训练（损失下降）→ 分两次会话续跑（与一次跑完结果一致）→ 导出 → 用融合 notebook 的读取器读回（与 PEFT 合并后的权重逐元素一致）”。真实的 SenseNova 权重、远程代码和 transformers 5.18 没有运行过，要在 Colab 上由审读、前向闸门和结构核对把关。
@@ -88,7 +109,16 @@ python3 -m unittest discover -s tests -v
 
 **训练 notebook（`StartLux_trace_LoRA.ipynb`）**：第 2 节的 transformers 版本、线性注意力快速内核是否装上；第 4 节报告里的条数、各评分的分布、示例渲染中 `[[ ]]` 圈出的是不是助手的回答（含思考和工具调用）；第 5 节的模型类、LoRA 层数、解码器核对是否 `ok`、显存；第 6 节前几步的 token/s、损失是否下降、训完后留出集损失是否低于底座。
 
-**融合 notebook（e15）**：
+**对比对 notebook（`Qwen38_pi_ContrastPairs.ipynb`）**：第 2 节 vLLM 是否装上；第 5 节 pi 是否按 FP8 加载、上下文长度；第 6 节第一批的吞吐（token/s）、被截断（到 8192 token）的比例、读不出答案的比例；最后的报告里各类的对数、pi 的正确率。
+
+**融合 notebook（e16）**：
+1. 第 2 节在 GPU 运行时上装的 transformers 版本；第 5 节开头打印的运行时（GPU、显存、内存）和“D、C、N、N₂ 沿用”的几行（不应重算任何一项）。
+2. 搜索开始时打印的对数、token 数，以及“隐状态放在 CPU 内存”这一行有没有出现；S 自己的对比目标和对的推理 NLL；第一个候选的实际用时（预计 15–25 分钟）。显存不足（OOM）就把报错发回来。
+3. 每个候选打印的对比目标、比 S 的提升、对的推理 NLL 与上限：看提升是不是还随融合强度单调变大（如果是，说明对比目标仍被某种系统性差别主导，告诉我）。
+4. 分量筛选：用了多少对、隐状态放在本地盘还是 Drive、梯度自检是否通过、三个方案的交叉拟合结果。
+5. 生成把关：两个 notebook 之间的交接是否顺利；`veto/result.json` 里候选与 pi 在各类上的正确率。
+
+**融合 notebook（e15，已完成）**：
 
 1. 第一次运行到 N₂ 停下后，读 `donor_metadata/` 里的远程代码，确认没有联网、写文件之类的动作；同时看 `config.json`：层数、循环区间（[4, 28) 两遍）、hidden 4096、FFN 12288、16/4 头、词表 248320、`layer_types` 的 3:1 模式，与模型卡是否一致。
 2. 前向闸门的输出：4 条短提示的答案、与原生前向的余弦、观察到的执行顺序（应是 `0-3,4-27,4-27,28-31`）。如果远程代码把循环块拆成了几个解码层列表，闸门会报“找不到唯一的语言模型解码层列表”：按报错里列出的路径，填 `tm_extra2["layers_modules"]`。

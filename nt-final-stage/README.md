@@ -10,7 +10,7 @@ nt-final-stage/
   branch1.tex        你这一侧的 branch1；第 3 步之前可以继续改，任何工具都不写死它的内容或哈希
   branch2.tex        第 2 步的产物（27B 的分支）            ← 第 2 步写入
   final.tex          第 3 步的产物（合并后的最终稿）        ← 第 3 步写入，第 4 步按交叉审查修改，第 5 步在它上面就地修订
-  1-model-merge/     融合 notebook（e15）+ StartLux 轨迹 LoRA 训练 notebook（GPU）+ 说明 + 单元测试
+  1-model-merge/     融合 notebook（e16）+ 对比对 notebook（A100）+ StartLux 轨迹 LoRA 训练 notebook（GPU）+ 说明 + 单元测试
   2-branch2/         branch2.py（第 2 步总控）+ nt27b（只用标准库）
   3-combine/         合并说明 MERGE_PROMPT.md、合并检查 merge_check.py、留存率脚本
   4-cross-review/    交叉审查合并结果：给其他模型的 prompt、打包脚本、处理意见的 prompt
@@ -32,7 +32,7 @@ nt-final-stage/
 
 ### 1. 模型融合（`1-model-merge/`）
 
-打开 `Qwen38_pi_AuxMix_e15_FP8.ipynb`，只改第 1 节那一格，在 Colab CPU 高 RAM 运行时上从头运行全部单元格；断开后从头再运行即可续跑。e15 新增第二个跨架构供体 N₂（SenseNova-Loop-9B-Preview）：第一次运行到它时会停下，让你先审读它的远程代码并把摘要填进 `SETTINGS["tm_extra2"]["code_sha256"]`。详见 `1-model-merge/README.md` 和 notebook 第 0、1 节。
+D、C、N、N₂ 已在 Colab CPU 高 RAM 上算好（e15）。e16 的选型在 Colab A100 上做：先用 `Qwen38_pi_ContrastPairs.ipynb`（`STAGE="pairs"`）让 pi 开思考采样，得到对比对；把它打印的 `CONTRAST_PAIRS_FILE` 填进 `Qwen38_pi_AuxMix_e16_FP8.ipynb` 第 1 节，从头运行（搜索、ν、ν₂、分量筛选，都按“对的推理减错的推理”的 NLL）；候选存到 Drive 后，再用对比对 notebook（`STAGE="veto"`）在留出题上开思考生成把关；最后回到融合 notebook 从头运行，通过的候选上传。每一步断开后从头再运行即可续跑。详见 `1-model-merge/README.md` 和 notebook 第 0、1 节。
 
 ### 2. 生成 branch2（`2-branch2/`）
 

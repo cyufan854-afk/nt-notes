@@ -193,7 +193,7 @@ class SettingsCellLora(unittest.TestCase):
         nb = json.loads(NOTEBOOK.read_text(encoding='utf-8'))
         cell = next(''.join(c['source']) for c in nb['cells'] if 'SETTINGS = {' in ''.join(c['source']))
         self.assertIn('STARTLUX_REQUIRED = False', cell)
-        self.assertIn('TRACE_LORA_DIR = ""', cell)
+        self.assertRegex(cell, r'TRACE_LORA_DIR = "[^"]*"')
         self.assertIn('TRACE_LORA_REQUIRED = True', cell)
         self.assertRegex(cell, r'\{"tag": "StartLuxLoRA", "format": "lora", "path": TRACE_LORA_DIR, "weight": 4, '
                                r'"required": TRACE_LORA_REQUIRED, "late": True\}')
