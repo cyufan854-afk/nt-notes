@@ -224,3 +224,75 @@ class Pairs(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class VetoCell(unittest.TestCase):
+    """Section 7 of the notebook, run with stand-ins for vLLM: candidates in order, the first that passes is taken, and
+    one model per process (a second one waits for a restarted session)."""
+    def run_cell(self, root, request, accuracy):
+        c = load()
+        nb = json.loads(NOTEBOOK.read_text(encoding='utf-8'))
+        code = next(''.join(x['source']) for x in nb['cells'] if ''.join(x['source']).startswith('if STAGE == "veto":'))
+        loaded = []
+        heldout = [problem(f'h{i}', split='heldout') for i in range(4)]
+
+        def run_samples(llm, problems, split, n, out_dir, tag):
+            return {p['pid']: {'samples': [{'correct': i < accuracy[llm] * 4, 'finish_reason': 'stop', 'pred': 'x'}]}
+                    for i, p in enumerate(problems)}
+
+        def make_llm(path, *args):
+            name = loaded_name[-1]
+            loaded.append(name)
+            return name
+        loaded_name = []
+        fake_cp = type(sys)('fake_cp')
+        fake_cp.make_llm = make_llm
+        fake_cp.accuracy = c.accuracy
+        fake_cp.veto = c.veto
+        fake_cp.atomic_json = c.atomic_json
+
+        def copytree(src, dst):
+            loaded_name.append(Path(src).name[4:])
+            Path(dst).mkdir(parents=True, exist_ok=True)
+        env = {'STAGE': 'veto', 'DRIVE_DIR': str(root), 'WORK': root / 'work', 'PROBLEMS': heldout, 'json': json, 'Path': Path,
+               'shutil': type(sys)('fake_shutil'), 'cp': fake_cp, 'run_samples': run_samples, 'SAMPLES_HELDOUT': 2,
+               'MAX_MODEL_LEN': 100, 'VLLM': {'gpu_memory_utilization': 0.9, 'quantization': 'fp8', 'max_num_seqs': 4}, 'SEED': 0,
+               'VERSIONS': {}, 'VETO_MAX_DROP': 0.05}
+        env['shutil'].copytree = copytree
+        env['shutil'].rmtree = lambda *a, **k: None
+        (root / 'veto').mkdir(parents=True, exist_ok=True)
+        (root / 'veto' / 'request.json').write_text(json.dumps(request))
+        subject = c.accuracy(heldout, {p['pid']: {'samples': [{'correct': i < 3, 'finish_reason': 'stop', 'pred': 'x'}]}
+                                       for i, p in enumerate(heldout)})
+        (root / 'work').mkdir(exist_ok=True)
+        (root / 'work' / 'heldout_subject.json').write_text(json.dumps({'accuracy': subject}))
+        exec(compile(code, 'veto-cell', 'exec'), env)
+        result = root / 'veto' / 'result.json'
+        return loaded, (json.loads(result.read_text()) if result.exists() else None)
+
+    def request(self, root):
+        return {'candidates': [{'name': n, 'directory': str(root / ('src-' + n)), 'fingerprint': n * 8} for n in ('selected', 'global')]}
+
+    def test_first_passing_candidate_ends_it(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            loaded, result = self.run_cell(root, self.request(root), {'selected': 0.75, 'global': 0.75})
+            self.assertEqual(loaded, ['selected'])
+            self.assertEqual(result['approved'], 'selected')
+
+    def test_one_model_per_session(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            loaded, result = self.run_cell(root, self.request(root), {'selected': 0.25, 'global': 0.75})
+            self.assertEqual((loaded, result), (['selected'], None))           # stops for a restarted session
+            loaded, result = self.run_cell(root, self.request(root), {'selected': 0.25, 'global': 0.75})
+            self.assertEqual(loaded, ['global'])                               # 'selected' comes from its saved evaluation
+            self.assertEqual(result['approved'], 'global')
+            self.assertEqual([x['name'] for x in result['candidates']], ['selected', 'global'])
+
+    def test_all_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.run_cell(root, self.request(root), {'selected': 0.25, 'global': 0.25})
+            loaded, result = self.run_cell(root, self.request(root), {'selected': 0.25, 'global': 0.25})
+            self.assertIsNone(result['approved'])

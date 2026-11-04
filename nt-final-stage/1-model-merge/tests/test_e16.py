@@ -186,6 +186,10 @@ class Setup(Base):
                 pl.contrast_setup({'contrast_pairs_file': settings['contrast_pairs_file'], 'contrast_options': wrong})
         self.assertIsNone(pl.contrast_setup({'contrast_pairs_file': ''}))
         self.assertIsNone(pl.CONTRAST['tau'])
+        # the old objective ignores a pairs file that is still filled in
+        self.assertIsNone(pl.contrast_setup({'contrast_pairs_file': settings['contrast_pairs_file'], 'objective': 'reference_nll'}))
+        old, _ = pl.resolve_runtime({'proxy_options': self.options(), 'contrast_pairs_file': 'x.jsonl', 'objective': 'reference_nll'})
+        self.assertEqual(old['proxy_options']['max_tokens'], 1024)
 
     def test_runtime_options_for_long_traces(self):
         settings, info = self.pl.resolve_runtime({'proxy_options': self.options(), 'contrast_pairs_file': 'x.jsonl'})
@@ -197,6 +201,17 @@ class Setup(Base):
             self.assertEqual((o['attention'], o['matmul']), ('sdpa', 'tf32'))
         old, _ = self.pl.resolve_runtime({'proxy_options': self.options()})
         self.assertEqual(old['proxy_options']['max_tokens'], 1024)
+
+    def test_contrast_selection_needs_a_gpu(self):
+        rows = pair_rows([('math', 3, 4)] * 4)
+        settings = {'work': str(self.tmp / 'work'), 'run': True, 'objective': 'contrast', 'proxy_options': self.options(),
+                    'contrast_pairs_file': str(self.write_pairs(rows))}
+        _, info = self.pl.resolve_runtime({'proxy_options': self.options()})
+        if info['kind'] != 'cpu':
+            self.skipTest('this machine has a GPU')
+        out = self.pl.run_pipeline(settings, None, None, '')
+        self.assertEqual(out['status'], 'needs_gpu_runtime')
+        self.assertFalse(out['heavy_computation_started'])
 
     def test_no_pairs_no_fallback(self):
         settings = {'work': str(self.tmp / 'work'), 'run': True, 'objective': 'contrast', 'proxy_options': self.options()}
@@ -243,6 +258,28 @@ class TinyModel(Base):
             for window in (5, 10 ** 6):
                 got = self.scorer(path, window).run(weights, [('a', ids, 7), ('b', self.ids(25, 2), 3)], progress=False)
                 self.assertAlmostEqual(got['a']['nll'], whole['nll'], places=5)
+        finally:
+            weights.close()
+
+    def test_ram_memo_serves_a_head_only_rescore(self):
+        model = self.model();path = self.checkpoint(model, 'S')
+        weights = self.rt.CheckpointWeights(path)
+        sc = self.scorer(path, 5);items = [('a', self.ids(30, 8), 6), ('b', self.ids(20, 9), 3)]
+        store = {};calls = []
+        layer = sc._layer
+        def counted(i, call, hidden):
+            calls.append(i)
+            return layer(i, call, hidden)
+        sc._layer = counted
+        try:
+            first = sc.run(weights, items, memo=self.rt.RamLayerMemo(store, {0: 'mid', 1: 'last'}, reserve=0), digests={}, progress=False)
+            self.assertEqual(list(store), ['last']);self.assertEqual(len(calls), 4)
+            again = sc.run(weights, items, memo=self.rt.RamLayerMemo(store, {0: 'mid', 1: 'last'}, reserve=0), digests={}, progress=False)
+            self.assertEqual(len(calls), 4)                                    # no decoder layer ran the second time
+            self.assertEqual(again, first)
+            other = sc.run(weights, items, memo=self.rt.RamLayerMemo(store, {0: 'mid2', 1: 'last2'}, reserve=0), progress=False)
+            self.assertEqual(list(store), ['last2'])                            # only the latest run is kept
+            self.assertEqual(other, first)
         finally:
             weights.close()
 

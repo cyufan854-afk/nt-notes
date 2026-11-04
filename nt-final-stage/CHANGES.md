@@ -290,7 +290,7 @@
 
 **新 notebook `1-model-merge/Qwen38_pi_ContrastPairs.ipynb`**（A100，vLLM，pi 按 FP8 加载）：MATH（数论、代数，3–5 级，整数答案）约占一半，另有 CRUXEval、BBH、C-Eval 理工科、MMLU-Pro；600 道题各采样 4 次（开思考，最长 8192 token），每题取一条做对、一条做错、长度相差不超过 2 倍的推理作为一对（被截断或读不出答案的不用）；另 200 道留出题各 2 次，记下 pi 的正确率。`STAGE="veto"` 时加载融合 notebook 交来的候选，用同样的种子在留出题上生成，按偏好顺序采用第一个正确率不比 pi 低 5 个百分点以上的。
 
-**融合 notebook e16**：目标 = 各对 NLL(对的) − NLL(错的) 的平均（越低越好）；护栏：对的推理的平均 NLL ≤ S 的 1.05 倍，任何一类比 S 差超过 0.01 不算数。全局搜索、ν / ν₂ 线搜索、分量筛选（问题单位是一对推理，按 20 万 token 预算选约 30–40 对）都用它；分量筛选的方案改为宽松、步长 0.5、步长 1。GPU 上 float32 + TF32、SDPA，最后的 logits 和损失梯度都分段算，隐状态放不下显存时放 CPU 内存。上传前把选中的候选（和全局搜索的 F）存到 `DRIVE_DIR/veto/`，交给对比对 notebook 把关，通过的才上传。没有对比对时停下，不退回旧目标。只改了评分和选型的 4 个模块；算 D、C、N、N₂ 的 7 个模块与 e15 逐字节相同，Drive 上的这些结果继续用。新增 `tests/test_contrast_pairs.py` 11 项、`tests/test_e16.py` 17 项，融合 notebook 一套共 86 项。真实 27B、A100 和 vLLM 都没有在这里运行过。
+**融合 notebook e16**：目标 = 各对 NLL(对的) − NLL(错的) 的平均（越低越好）；护栏：对的推理的平均 NLL ≤ S 的 1.05 倍，任何一类比 S 差超过 0.01 不算数。全局搜索、ν / ν₂ 线搜索、分量筛选（问题单位是一对推理，按 20 万 token 预算选约 30–40 对）都用它；分量筛选的方案改为宽松、步长 0.5、步长 1。GPU 上 float32 + TF32、SDPA，最后的 logits 和损失梯度都分段算，隐状态放不下显存时放 CPU 内存。上传前把选中的候选（和全局搜索的 F）存到 `DRIVE_DIR/veto/`，交给对比对 notebook 把关，通过的才上传。没有对比对时停下，不退回旧目标。只改了评分和选型的 4 个模块；算 D、C、N、N₂ 的 7 个模块与 e15 逐字节相同，Drive 上的这些结果继续用。新增 `tests/test_e16.py` 19 项，`tests/test_contrast_pairs.py` 共 14 项（含用假的 vLLM 跑把关那一格），融合 notebook 一套共 91 项。复查后补上：只换输出头的补评用内存里的隐状态（本地盘满时原来的写盘缓存写不进去）；CPU 运行时上不开始；旧目标不理会还填着的对比对路径；把关一次运行只加载一个候选、第一个通过就停。真实 27B、A100 和 vLLM 都没有在这里运行过。
 
 ## 三、测试结果
 
@@ -320,7 +320,7 @@ OK
 | coop（`5-final-review`） | 96 | 46 | 142 通过 | 3 项：2 项真实 latexmk 编译（本机没有 latexmk；你的 Mac 上会跑），1 项 Docker 隔离集成测试（需显式开启） |
 | nt27b（`2-branch2`） | 86 | 11 | 97 通过 | 1 项：实际 pdflatex 编译（本机没有 pdflatex） |
 | 合并与留存率（`3-combine`） | 7 | 16 | 23 通过 | — |
-| 融合 notebook（`1-model-merge`） | — | 86 | 86 通过 | — |
+| 融合 notebook（`1-model-merge`） | — | 91 | 91 通过 | — |
 | 交叉审查打包（`4-cross-review`） | — | 4 | 4 通过 | — |
 
 原有测试文件一行没删、一行没改；只在 `2-branch2/tests/test_gpu_runner.py`、`3-combine/test_retention.py`、`test_run_retention.py`、`test_merge_check.py` 里追加了测试。详细的逐项输出见 `5-final-review/docs/test-results.txt`，或用 `-v` 重跑。
