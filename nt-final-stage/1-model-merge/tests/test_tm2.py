@@ -579,11 +579,11 @@ class NotebookLayout(unittest.TestCase):
     def test_modules_behind_the_prepared_caches_keep_their_e15_fingerprints(self):
         # e16 changes only core / runtime / components / pipeline (the scoring and selection); the modules that built D, C,
         # N and N2 on Drive are byte for byte those of e15.
+        # qmerge_tm / qmerge_tm2 changed in e16 only in checks on reuse (their caches are keyed by version constants, not
+        # by the code: test_e16.TmCacheChecks); the modules below are byte for byte those of e15.
         e15 = {'qmerge_legacy': 'f5002d9b03a0c090a00a5d7c20b5571d5b8a77d944201dbad4ce94a102c2ad8a',
                'qmerge_gguf': 'c86cf01ee775f01471fcd745a45043461ead57440112a315a12d476e6fece012',
                'qmerge_della': '1870595ac95198e46f2b408652c564c7cb4ca07e6988c7617a4b49df0ba66957',
-               'qmerge_tm': 'b22359670a0523b567944af6cd1833eb00ed8aff74e919547b0c7f0182bfa850',
-               'qmerge_tm2': 'c79a5ddd2a76c6ac7380da9dc714f60b426ce2686351b371a7f49a7efbc037f4',
                'qmerge_evaldata': 'e2038608644f4abf3653b4fdea1aaf2a86da3aff387c7e5fe0aeeac79273f225',
                'qmerge_fp8': '3b3bbe54d4ce7726f5211421233b6a738669fe236c09ec172b285d1e600bb8a8'}
         meta = json.loads(NOTEBOOK.read_text(encoding='utf-8'))['metadata']['qwen38_efficientthink']['module_sha256']

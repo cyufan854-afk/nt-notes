@@ -138,7 +138,15 @@ class Answers(unittest.TestCase):
         lit = problem('t', 'code_reasoning', 'literal', "[1, 'a']")
         self.assertTrue(c.grade(lit, "[1,'a']"))
         self.assertFalse(c.grade(lit, "(1, 'a')"))
-        self.assertTrue(c.grade(problem('u', 'code_reasoning', 'literal', "'abc'"), 'abc'))
+        self.assertTrue(c.grade(problem('u', 'code_reasoning', 'literal', "'abc'"), "'abc'"))
+        self.assertIsNone(c.grade(problem('u', 'code_reasoning', 'literal', "'abc'"), 'abc'))     # not a repr(): unparseable
+        self.assertIsNone(c.grade(problem('x', 'code_reasoning', 'literal', '3'), 'this is not Python'))
+        big = problem('big', expected=9007199254740993)
+        self.assertTrue(c.grade(big, '9007199254740993'))                                       # exact, no float rounding
+        self.assertFalse(c.grade(big, '9007199254740992'))
+        self.assertTrue(c.grade(problem('d', expected=12), '12.00'))
+        self.assertFalse(c.grade(problem('e', expected=12), '12.0000001'))
+        self.assertIsNotNone(c.grade(problem('f', expected=1), '1' * 400))                       # no OverflowError
         self.assertFalse(c.grade(problem('v', 'code_reasoning', 'literal', '3'), '3.0'))
         self.assertTrue(c.grade(problem('w', 'logic', 'word', 'True'), 'true.'))
 
@@ -226,73 +234,165 @@ if __name__ == '__main__':
     unittest.main()
 
 
-class VetoCell(unittest.TestCase):
-    """Section 7 of the notebook, run with stand-ins for vLLM: candidates in order, the first that passes is taken, and
-    one model per process (a second one waits for a restarted session)."""
-    def run_cell(self, root, request, accuracy):
-        c = load()
+class CellsBase(unittest.TestCase):
+    """Sections 6 and 7 of the notebook, run with the real cells and a stand-in for vLLM (cp.generate / cp.make_llm)."""
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory();self.root = Path(self.tmp.name)
+        self.c = load()
         nb = json.loads(NOTEBOOK.read_text(encoding='utf-8'))
-        code = next(''.join(x['source']) for x in nb['cells'] if ''.join(x['source']).startswith('if STAGE == "veto":'))
-        loaded = []
-        heldout = [problem(f'h{i}', split='heldout') for i in range(4)]
+        cells = [''.join(x['source']) for x in nb['cells']]
+        self.samples_cell = next(x for x in cells if x.startswith('def load_samples('))
+        self.veto_cell = next(x for x in cells if x.startswith('if STAGE == "veto":'))
+        self.heldout = [problem(f'h{i}', split='heldout') for i in range(4)]
+        self.loaded = [];self.copied = [];self.generated = []
+        self.rate = {}
 
-        def run_samples(llm, problems, split, n, out_dir, tag):
-            return {p['pid']: {'samples': [{'correct': i < accuracy[llm] * 4, 'finish_reason': 'stop', 'pred': 'x'}]}
-                    for i, p in enumerate(problems)}
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def env(self, stage='none', chunk=2, problems=None):
+        c = self.c;test = self
+        fake = type(sys)('fake_cp')
+        fake.__dict__.update({k: v for k, v in c.__dict__.items() if not k.startswith('__')})
+
+        def generate(llm, prompt_ids, n, params, max_tokens, seeds):
+            test.generated.append((llm, len(prompt_ids)))
+            out = []
+            for ids, seed in zip(prompt_ids, seeds):
+                index = int(ids[0])
+                right = index < test.rate[llm] * 4
+                out.append([{'text': '</think><answer>' + ('12' if right else '13') + '</answer>', 'token_ids': [1, 2, 3],
+                             'finish_reason': 'stop'} for _ in range(n)])
+            return out
 
         def make_llm(path, *args):
-            name = loaded_name[-1]
-            loaded.append(name)
-            return name
-        loaded_name = []
-        fake_cp = type(sys)('fake_cp')
-        fake_cp.make_llm = make_llm
-        fake_cp.accuracy = c.accuracy
-        fake_cp.veto = c.veto
-        fake_cp.atomic_json = c.atomic_json
+            test.loaded.append(test.copied[-1])
+            return test.copied[-1]
+        fake.generate, fake.make_llm = generate, make_llm
+        fake_shutil = type(sys)('fake_shutil')
 
         def copytree(src, dst):
-            loaded_name.append(Path(src).name[4:])
-            Path(dst).mkdir(parents=True, exist_ok=True)
-        env = {'STAGE': 'veto', 'DRIVE_DIR': str(root), 'WORK': root / 'work', 'PROBLEMS': heldout, 'json': json, 'Path': Path,
-               'shutil': type(sys)('fake_shutil'), 'cp': fake_cp, 'run_samples': run_samples, 'SAMPLES_HELDOUT': 2,
-               'MAX_MODEL_LEN': 100, 'VLLM': {'gpu_memory_utilization': 0.9, 'quantization': 'fp8', 'max_num_seqs': 4}, 'SEED': 0,
-               'VERSIONS': {}, 'VETO_MAX_DROP': 0.05}
-        env['shutil'].copytree = copytree
-        env['shutil'].rmtree = lambda *a, **k: None
-        (root / 'veto').mkdir(parents=True, exist_ok=True)
-        (root / 'veto' / 'request.json').write_text(json.dumps(request))
-        subject = c.accuracy(heldout, {p['pid']: {'samples': [{'correct': i < 3, 'finish_reason': 'stop', 'pred': 'x'}]}
-                                       for i, p in enumerate(heldout)})
-        (root / 'work').mkdir(exist_ok=True)
-        (root / 'work' / 'heldout_subject.json').write_text(json.dumps({'accuracy': subject}))
-        exec(compile(code, 'veto-cell', 'exec'), env)
-        result = root / 'veto' / 'result.json'
-        return loaded, (json.loads(result.read_text()) if result.exists() else None)
+            test.copied.append(Path(src).name[4:])
+        fake_shutil.copytree = copytree
+        fake_shutil.rmtree = lambda *a, **k: None
+        problems = problems or self.heldout
+        env = {'STAGE': stage, 'DRIVE_DIR': str(self.root), 'WORK': self.root / 'work', 'PROBLEMS': problems, 'json': json,
+               'Path': Path, 'time': __import__('time'), 'shutil': fake_shutil, 'cp': fake, 'SAMPLES_HELDOUT': 2,
+               'MAX_MODEL_LEN': 100, 'VLLM': {'gpu_memory_utilization': 0.9, 'quantization': 'fp8', 'max_num_seqs': 4},
+               'SEED': 0, 'VERSIONS': {}, 'VETO_MAX_DROP': 0.05, 'CHUNK': chunk, 'THINKING': True, 'SAMPLING': {},
+               'MAX_RESPONSE_TOKENS': 64, 'PROMPT_IDS': {p['pid']: [i, 7] for i, p in enumerate(problems)},
+               'RUN_IDENTITY': {'run': 1}}
+        exec(compile(self.samples_cell, 'samples-cell', 'exec'), env)
+        return env
 
-    def request(self, root):
-        return {'candidates': [{'name': n, 'directory': str(root / ('src-' + n)), 'fingerprint': n * 8} for n in ('selected', 'global')]}
+    def subject(self, rate=0.75):
+        self.rate['pi'] = rate
+        env = self.env()
+        env['run_samples']('pi', self.heldout, 'heldout', 2, self.root / 'work' / 'samples', 'heldout')
+        (self.root / 'work' / 'heldout_subject.json').write_text(json.dumps({'quantization': 'fp8'}))
+
+    def run_veto(self, rates):
+        self.rate.update(rates)
+        (self.root / 'veto').mkdir(parents=True, exist_ok=True)
+        request = {'candidates': [{'name': n, 'directory': str(self.root / ('src-' + n)), 'fingerprint': n * 8} for n in ('selected', 'global')]}
+        (self.root / 'veto' / 'request.json').write_text(json.dumps(request))
+        self.loaded.clear()
+        env = self.env('veto')
+        exec(compile(self.veto_cell, 'veto-cell', 'exec'), env)
+        result = self.root / 'veto' / 'result.json'
+        return list(self.loaded), (json.loads(result.read_text()) if result.exists() else None)
+
+
+
+class NotebookCells(CellsBase):
+    def test_resume_by_problem_whatever_the_chunk(self):
+        problems = [problem(f'p{i}', split='heldout') for i in range(6)]
+        self.rate['pi'] = 1.0
+        out = self.root / 's'
+        first = self.env(chunk=2, problems=problems)['run_samples']('pi', problems[:4], 'heldout', 2, out, 'heldout')
+        self.assertEqual(len(first), 4)
+        self.generated.clear()
+        again = self.env(chunk=3, problems=problems)['run_samples']('pi', problems, 'heldout', 2, out, 'heldout')
+        self.assertEqual(sorted(again), [p['pid'] for p in problems])
+        self.assertEqual(self.generated, [('pi', 2)])                      # only the two problems not sampled before
+        self.c.accuracy(problems, again)
 
     def test_first_passing_candidate_ends_it(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            loaded, result = self.run_cell(root, self.request(root), {'selected': 0.75, 'global': 0.75})
-            self.assertEqual(loaded, ['selected'])
-            self.assertEqual(result['approved'], 'selected')
+        self.subject(0.75)
+        loaded, result = self.run_veto({'selected': 0.75, 'global': 0.75})
+        self.assertEqual((loaded, result['approved']), (['selected'], 'selected'))
+        self.assertIn('eval_identity', result)
 
     def test_one_model_per_session(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            loaded, result = self.run_cell(root, self.request(root), {'selected': 0.25, 'global': 0.75})
-            self.assertEqual((loaded, result), (['selected'], None))           # stops for a restarted session
-            loaded, result = self.run_cell(root, self.request(root), {'selected': 0.25, 'global': 0.75})
-            self.assertEqual(loaded, ['global'])                               # 'selected' comes from its saved evaluation
-            self.assertEqual(result['approved'], 'global')
-            self.assertEqual([x['name'] for x in result['candidates']], ['selected', 'global'])
+        self.subject(0.75)
+        loaded, result = self.run_veto({'selected': 0.25, 'global': 0.75})
+        self.assertEqual((loaded, result), (['selected'], None))           # stops for a restarted session
+        loaded, result = self.run_veto({'selected': 0.25, 'global': 0.75})
+        self.assertEqual(loaded, ['global'])                               # 'selected' comes from its saved samples
+        self.assertEqual(result['approved'], 'global')
+        self.assertEqual([x['name'] for x in result['candidates']], ['selected', 'global'])
 
     def test_all_rejected(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            self.run_cell(root, self.request(root), {'selected': 0.25, 'global': 0.25})
-            loaded, result = self.run_cell(root, self.request(root), {'selected': 0.25, 'global': 0.25})
-            self.assertIsNone(result['approved'])
+        self.subject(0.75)
+        self.run_veto({'selected': 0.25, 'global': 0.25})
+        loaded, result = self.run_veto({'selected': 0.25, 'global': 0.25})
+        self.assertIsNone(result['approved'])
+
+    def test_a_changed_evaluation_does_not_reuse_old_samples(self):
+        self.subject(0.75)
+        self.run_veto({'selected': 0.75})
+        (self.root / 'veto' / 'result.json').unlink()
+        self.c.VERSION, saved = self.c.VERSION + '-changed', self.c.VERSION    # e.g. other grading rules
+        try:
+            loaded, result = self.run_veto({'selected': 0.25, 'global': 0.75})
+        finally:
+            self.c.VERSION = saved
+        self.assertEqual(loaded, ['selected'])                              # evaluated again, not taken from the old run
+        self.assertIsNone(result)
+
+    def test_quantization_must_match(self):
+        self.subject(0.75)
+        (self.root / 'work' / 'heldout_subject.json').write_text(json.dumps({'quantization': 'bf16'}))
+        with self.assertRaises(RuntimeError):
+            self.run_veto({'selected': 0.75})
+
+
+class PairsStageHandOff(CellsBase):
+    """Section 6 with STAGE = "pairs" writes pairs.jsonl and pairs.manifest.json; the fusion notebook reads and checks them."""
+    def test_manifest_reaches_the_fusion_notebook(self):
+        pool = [problem(f'p{i}', expected=12) for i in range(4)]
+        problems = pool + self.heldout
+        self.rate['pi'] = 0.5                                             # two of the four samples right: every problem pairs up
+        local = self.root / 'model';local.mkdir()
+        (local / 'tokenizer.json').write_text('{"t": 1}')
+        (local / 'chat_template.jinja').write_text('{{ messages }}')
+        env = self.env(problems=problems)
+        env.update(STAGE='pairs', LLM='pi', SAMPLES_POOL=4, MAX_PAIR_RATIO=2.0, GPU_NAME='fake', LOCAL_MODEL=str(local),
+                   SUBJECT_PIN={'repo': 's/s', 'revision': 'a' * 40, 'subfolder': ''},
+                   PROMPT_IDS={p['pid']: [i % 4, 7] for i, p in enumerate(problems)})
+        # samples k of a problem: right when k < 2 (the stand-in reads the first prompt id; give each sample its own)
+        def generate(llm, prompt_ids, n, params, max_tokens, seeds):
+            return [[{'text': '</think><answer>' + ('12' if k < n // 2 else '13') + '</answer>', 'token_ids': [1, 2, 3 + k],
+                      'finish_reason': 'stop'} for k in range(n)] for _ in prompt_ids]
+        env['cp'].generate = generate
+        exec(compile(self.samples_cell, 'pairs-cell', 'exec'), env)
+        work = self.root / 'work'
+        manifest = json.loads((work / 'pairs.manifest.json').read_text())
+        self.assertEqual(manifest['subject']['revision'], 'a' * 40)
+        self.assertEqual(set(manifest['tokenizer']), {'tokenizer.json', 'chat_template.jinja'})
+        self.assertEqual(manifest['pairs_sha256'], self.c.sha256_file(work / 'pairs.jsonl'))
+        try:
+            import test_tm2
+            if not test_tm2.HAVE_TORCH:
+                return
+            pl = test_tm2.load()['qmerge_pipeline']
+        except ImportError:
+            return
+        saved = pl.CONTRAST.get('tau')
+        try:
+            settings = {'contrast_pairs_file': str(work / 'pairs.jsonl')}
+            rows = pl.contrast_setup(settings)
+            self.assertEqual(len(rows), 8)                                    # four pairs
+            pl.check_pairs_subject({**settings, 'S_repo': 's/s', 'S_revision': 'a' * 40, 'S_subfolder': ''}, local)
+        finally:
+            pl.CONTRAST['tau'] = saved

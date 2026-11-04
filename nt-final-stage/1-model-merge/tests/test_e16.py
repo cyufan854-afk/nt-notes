@@ -51,9 +51,12 @@ class Base(unittest.TestCase):
         self.pl.CONTRAST['tau'] = self.saved_tau
         shutil.rmtree(self.tmp, ignore_errors=True)
 
-    def write_pairs(self, rows, name='pairs.jsonl'):
+    def write_pairs(self, rows, name='pairs.jsonl', subject=None, tokenizer=None):
         path = self.tmp / name
         path.write_text(''.join(json.dumps(r) + '\n' for r in rows), encoding='utf-8')
+        manifest = {'subject': subject or {'repo': 's/s', 'revision': 'a' * 40, 'subfolder': ''}, 'tokenizer': tokenizer or {},
+                    'pairs_sha256': self.core.sha_file(path)}
+        (self.tmp / 'pairs.manifest.json').write_text(json.dumps(manifest), encoding='utf-8')
         return path
 
 
@@ -357,7 +360,14 @@ class Veto(Base):
             (Path(store) / (prefix + fp[:24])).mkdir(parents=True, exist_ok=True)
             return fp
         pl.build_chosen, pl.persist_candidate = build, persist
-        self.context = {'root': self.tmp / 'work'}
+        self.saved_fp = pl.runtime.checkpoint_fingerprint
+        self.tampered = False
+
+        def fingerprint(directory, strict=False):
+            name = Path(directory).name.split('-', 1)[0]
+            return ('tampered' if self.tampered else (name * 64)[:64]), {}
+        pl.runtime.checkpoint_fingerprint = fingerprint
+        self.context = {'root': self.tmp / 'work', 'identity': {'inputs': 'x'}}
         self.record = {'recipe': {'lambda_backbone': 0.1}, 'pruning': {'p': 1}, 'variant': 'step:1', 'tensor_digests': {'t': 'sel'},
                        'checkpoint_fingerprint': None, 'proxy_mean_nll': -0.2, 'subject_proxy_mean_nll': 0.0,
                        'category_nll': {'math': -0.2}, 'global_candidate': {
@@ -366,6 +376,7 @@ class Veto(Base):
 
     def tearDown(self):
         self.pl.build_chosen, self.pl.persist_candidate = self.saved
+        self.pl.runtime.checkpoint_fingerprint = self.saved_fp
         super().tearDown()
 
     def answer(self, approved, request=None):
@@ -402,6 +413,19 @@ class Veto(Base):
         self.assertFalse((self.tmp / 'work' / 'veto' / 'result.json').exists())
         only = {**self.record, 'global_candidate': None}
         self.assertEqual([n for n, _ in pl.veto_candidates(only)], ['selected'])
+
+    def test_other_weights_ask_again(self):
+        pl = self.pl
+        pl.veto_stage(self.context, self.record)
+        self.answer('selected')
+        # same recipe and pruning, other weights (e.g. another max_relative_change): the old answer does not count
+        changed = {**self.record, 'tensor_digests': {'t': 'other'}}
+        self.assertEqual(pl.veto_stage(self.context, changed)['status'], 'waiting_for_veto')
+        self.assertEqual(self.built[-2:], ['step:1', 'global'])
+        self.answer('selected')
+        self.tampered = True                                                    # the copy on Drive is not what was judged
+        with self.assertRaises(ValueError):
+            pl.veto_stage(self.context, changed)
 
 
 class ComponentStageOverPairs(Base):
@@ -486,6 +510,128 @@ class ComponentStageOverPairs(Base):
         report = json.loads((self.tmp / 'component_selection.json').read_text())
         self.assertIn('contrast', report['objective'])
         self.assertIsNotNone(report['subject']['guard'])
+
+
+class HardGuard(Base):
+    """F02: with contrast pairs no candidate that breaks the guard is ever taken, not even for require_all_donors."""
+    def setUp(self):
+        super().setUp()
+        pl = self.pl
+        self.saved_eval = pl.evaluate_trial
+        pl.CONTRAST['tau'] = 0.05
+        self.limit = 0.125                                                      # nu up to this keeps the guard
+
+        def evaluate_trial(context, recipe, rows):
+            nu = float(recipe.get('nu', 0) or 0)
+            guard = 1.0 if nu <= self.limit else 1.2
+            return {'recipe': recipe, 'mean_nll': -0.1 - nu, 'category_nll': {'math': -0.1 - nu}, 'guard': guard}
+        pl.evaluate_trial = evaluate_trial
+        self.subject = {'recipe': pl.baseline_recipe(), 'mean_nll': 0.0, 'category_nll': {'math': 0.0}, 'guard': 1.0}
+        self.base = {'recipe': pl.canonical_recipe({'lambda_backbone': 0.05, 'lambda_head': 0.0, 'kappa': 0.0,
+                                                    'group_scales': [1., 1., 1., 1.], 'high_fraction': .2, 'mu': 0.25}),
+                     'mean_nll': -0.1, 'category_nll': {'math': -0.1}, 'guard': 1.0}
+        self.context = {'settings': {'proxy_max_category_drop': 0.01, 'require_all_donors': True}}
+
+    def tearDown(self):
+        self.pl.evaluate_trial = self.saved_eval
+        super().tearDown()
+
+    def tried(self, values):
+        return [{'nu': v, 'mean_nll': -0.1 - v, 'feasible': v <= self.limit} for v in values]
+
+    def test_smaller_values_are_tried(self):
+        records = [self.subject]
+        good = self.pl.hard_line(self.context, self.base, records, [], self.tried([0.25, 0.5, 1.0]), 'nu', 'ν')
+        self.assertEqual([t['nu'] for t in good], [0.125])
+        self.assertTrue(all(t['feasible'] for t in good))
+
+    def test_nothing_feasible_stops(self):
+        self.limit = 0.01
+        with self.assertRaises(self.pl.NoFeasibleCandidate):
+            self.pl.hard_line(self.context, self.base, [self.subject], [], self.tried([0.25, 0.5, 1.0]), 'nu', 'ν')
+
+    def test_old_objective_unchanged(self):
+        self.pl.CONTRAST['tau'] = None
+        self.assertFalse(self.pl.strict_guard())
+
+
+class TmCacheChecks(Base):
+    """F07 / F08 in the cross-architecture steps (their cached results on Drive stay valid)."""
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.tm = load()['qmerge_tm']
+
+    def test_fuse_cache_needs_the_same_inner_ot(self):
+        tm = self.tm
+        o = dict(tm.DEFAULTS)
+        self.assertTrue(tm.fuse_cache_usable({'sha256': 'x'}, {'m': 'p1'}, o))          # an old record, default settings
+        self.assertFalse(tm.fuse_cache_usable({'sha256': 'x'}, {'m': 'p1'}, {**o, 'eps_delta': 0.02}))
+        self.assertTrue(tm.fuse_cache_usable({'pair_identities': {'m': 'p1'}}, {'m': 'p1'}, o))
+        self.assertFalse(tm.fuse_cache_usable({'pair_identities': {'m': 'p0'}}, {'m': 'p1'}, o))
+        self.assertFalse(tm.fuse_cache_usable(None, {'m': 'p1'}, o))
+
+    def test_underflowed_plan_is_refused(self):
+        import numpy as np
+        tm = self.tm
+        rng = np.random.default_rng(0)
+        base = rng.standard_normal((128, 1))
+        X = np.hstack([base + 1e-3 * rng.standard_normal((128, 1)) for _ in range(2)]).astype(np.float32)
+        Y = np.hstack([base + 1e-3 * rng.standard_normal((128, 1)) for _ in range(2)] + [rng.standard_normal((128, 1))]).astype(np.float32)
+        Xn, Yn = tm.zstd(X), tm.zstd(Y)
+        with self.assertRaises(RuntimeError):
+            tm.inner_ot(Xn, Yn, dict(tm.DEFAULTS))
+        good = tm.inner_ot(tm.zstd(rng.standard_normal((128, 6)).astype(np.float32)),
+                           tm.zstd(rng.standard_normal((128, 5)).astype(np.float32)), dict(tm.DEFAULTS))
+        self.assertLess(good['marginal_residual'], 0.05)
+
+    def test_cache_identities_do_not_hash_the_code(self):
+        # why changing qmerge_tm / qmerge_tm2 keeps N and N2 on Drive valid: their caches are keyed by version constants
+        from test_tm2 import embedded_sources
+        src = embedded_sources()
+        for name in ('qmerge_tm', 'qmerge_tm2'):
+            self.assertNotIn('__file__', src[name])
+        self.assertIn("TM_VERSION = 'tm-cpu-2026-10-26.1'", src['qmerge_tm'])
+        self.assertIn("OT_VERSION = 'tm-ot-2026-10-26.1'", src['qmerge_tm'])
+        self.assertIn("TM2_VERSION = 'tm2-cpu-2026-10-31.1'", src['qmerge_tm2'])
+        self.assertIn("OT2_VERSION = 'tm2-ot-2026-10-31.1'", src['qmerge_tm2'])
+
+
+class DevicesOnGpu(unittest.TestCase):
+    """F01: no CUDA here, so the device flow is checked in the source: the gradient pass meets each gradient with the delta
+    and the decomposition on sc.device, and the backward check brings its gradients to the CPU."""
+    def test_device_flow(self):
+        from test_tm2 import embedded_sources
+        src = embedded_sources()['qmerge_components']
+        self.assertEqual(src.count("parts=read_decomposition(store/f'decomp-{i:03d}.safetensors',device=sc.device)"), 2)
+        self.assertEqual(src.count("deltas={n:(values[n].float()-subject.tensor(sc.mapping[n]).float()).to(sc.device) for n in names}"), 2)
+        self.assertIn("p.grad.detach().float().to('cpu',copy=True)", src)
+        self.assertNotIn("p.grad.detach().float().clone()", src)
+
+
+class PairsManifest(Base):
+    """F05: the traces must be S's own."""
+    def test_subject_and_tokenizer_are_checked(self):
+        pl = self.pl
+        rows = pair_rows([('math', 3, 4)] * 4)
+        meta = self.tmp / 'meta';meta.mkdir()
+        (meta / 'tokenizer.json').write_text('{"v": 1}')
+        path = self.write_pairs(rows, tokenizer={'tokenizer.json': self.core.sha_file(meta / 'tokenizer.json')})
+        settings = {'contrast_pairs_file': str(path)}
+        pl.contrast_setup(settings)
+        here = {**settings, 'S_repo': 's/s', 'S_revision': 'a' * 40, 'S_subfolder': ''}
+        pl.check_pairs_subject(here, meta)
+        with self.assertRaises(ValueError):
+            pl.check_pairs_subject({**here, 'S_revision': 'b' * 40})
+        (meta / 'tokenizer.json').write_text('{"v": 2}')
+        with self.assertRaises(ValueError):
+            pl.check_pairs_subject(here, meta)
+        path.write_text(path.read_text() + '\n')                               # the file no longer matches its manifest
+        with self.assertRaises(ValueError):
+            pl.contrast_setup({'contrast_pairs_file': str(path)})
+        (self.tmp / 'pairs.manifest.json').unlink()
+        with self.assertRaises(ValueError):
+            pl.contrast_setup({'contrast_pairs_file': str(path)})
 
 
 class NotebookE16(unittest.TestCase):
