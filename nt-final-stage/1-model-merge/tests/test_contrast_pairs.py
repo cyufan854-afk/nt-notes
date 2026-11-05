@@ -53,40 +53,54 @@ class Problems(unittest.TestCase):
 
     def test_parsers(self):
         c = self.c
-        m = c.math_item({'problem': 'Find n.', 'level': 'Level 4', 'solution': 'So $\\boxed{1{,}234}$.'}, 'number_theory')
-        self.assertEqual((m['expected'], m['level'], m['group']), (1234, 4, 'number_theory/L4'))
-        self.assertIsNone(c.math_item({'problem': 'x', 'level': 'Level 5', 'solution': '\\boxed{\\frac12}'}, 'algebra'))
-        self.assertIsNone(c.math_item({'problem': 'x', 'level': '?', 'solution': '\\boxed{3}'}, 'algebra'))
-        q = c.mmlu_pro_item({'options': ['a', 'b', 'c', 'd'], 'answer_index': 2, 'answer': 'C', 'question_id': 7,
-                             'question': 'Q?', 'category': 'law'})
-        self.assertEqual((q['expected'], q['options'], q['kind']), ('C', 4, 'letter'))
-        self.assertIsNone(c.mmlu_pro_item({'options': ['a', 'b', 'c', 'N/A'], 'answer_index': 1, 'answer': 'B',
-                                           'question_id': 1, 'question': 'Q'}))
-        z = c.ceval_item({'id': 3, 'question': '问', 'A': '1', 'B': '2', 'C': '3', 'D': '4', 'answer': 'D'}, 'logic')
+        omni = c.omni_item({'domain': ['Mathematics -> Number Theory -> Divisibility'], 'difficulty': '5.5',
+                            'problem': 'Find n.', 'answer': '$\\boxed{1{,}024}$'}, ['Number Theory'], 4.0)
+        self.assertEqual((omni['expected'], omni['kind'], omni['group']), (1024, 'number', 'Number Theory -> Divisibility'))
+        self.assertIsNone(c.omni_item({'domain': "['Mathematics -> Number Theory -> X']", 'difficulty': '3.0',
+                                       'problem': 'p', 'answer': '5'}, ['Number Theory'], 4.0))   # too easy
+        self.assertIsNone(c.omni_item({'domain': ['Mathematics -> Geometry -> X'], 'difficulty': '6',
+                                       'problem': 'p', 'answer': '5'}, ['Number Theory'], 4.0))   # other domain
+        self.assertIsNone(c.omni_item({'domain': ['Mathematics -> Number Theory -> X'], 'difficulty': '6',
+                                       'problem': 'p', 'answer': '\\frac{1}{2}'}, ['Number Theory'], 4.0))
+        jee = lambda **kw: {'subject': 'phy', 'description': 'JEE Adv 2016 Paper 1', 'index': '3', 'question': 'Q (A) a (B) b', **kw}
+        self.assertEqual(c.jee_item(jee(type='MCQ', gold='B'), ['phy'])['kind'], 'letter')
+        self.assertEqual(c.jee_item(jee(type='MCQ(multiple)', gold='DAB'), ['phy'])['expected'], 'ABD')
+        self.assertEqual(c.jee_item(jee(type='Integer', gold='7'), ['phy'])['expected'], 7)
+        self.assertEqual(c.jee_item(jee(type='Numeric', gold='0.83'), ['phy'])['kind'], 'numeric')
+        self.assertIsNone(c.jee_item(jee(type='MCQ', gold='B', subject='math'), ['phy', 'chem']))
+        m = c.musr_item({'narrative': 'A story.', 'question': 'Who?', 'choices': "['Ann', 'Bob', 'Cy']",
+                         'answer_index': 1, 'answer_choice': 'Bob'}, 'murder_mystery.csv')
+        self.assertEqual((m['expected'], m['options'], m['group']), ('B', 3, 'murder_mystery'))
+        self.assertIn('C. Cy', m['question'])
+        self.assertIsNone(c.musr_item({'narrative': 'A', 'question': 'Q', 'choices': "['x', 'y']", 'answer_index': 1,
+                                       'answer_choice': 'x'}, 'f.csv'))                    # inconsistent row
+        x = c.lcb_item({'question_id': '1', 'id': 'sample_0', 'code': 'def f(a):\n    return a', 'input': 'f(a = 1)',
+                        'output': '1', 'difficulty': 'medium'}, ['medium', 'hard'])
+        self.assertEqual((x['expected'], x['kind']), ('1', 'literal'))
+        self.assertIsNone(c.lcb_item({'question_id': '1', 'id': 's', 'code': 'def f(a): return a', 'input': 'f(1)',
+                                      'output': '1', 'difficulty': 'easy'}, ['medium', 'hard']))
+        z = c.ceval_item({'id': 3, 'question': '问', 'A': '1', 'B': '2', 'C': '3', 'D': '4', 'answer': 'D'}, 'college_physics')
         self.assertEqual((z['expected'], z['kind'], z['lang']), ('D', 'letter_zh', 'zh'))
-        x = c.cruxeval_item({'id': 'sample_1', 'code': 'def f(a):\n    return a', 'input': '1', 'output': "'1'"})
-        self.assertEqual(x['expected'], "'1'")
-        self.assertIsNone(c.cruxeval_item({'id': 's', 'code': 'def (', 'input': '1', 'output': '1'}))
-        self.assertEqual(c.bbh_item({'input': 'Q (A) x (B) y', 'target': '(B)'}, 'navigate', 0)['expected'], 'B')
-        self.assertEqual(c.bbh_item({'input': 'Q', 'target': '-12'}, 'multistep', 1)['expected'], -12)
-        self.assertEqual(c.bbh_item({'input': 'Q', 'target': 'True'}, 'boolean', 2)['kind'], 'word')
-        self.assertIsNone(c.bbh_item({'input': 'Q', 'target': '(C)'}, 'navigate', 3))
 
-    def test_math_files_and_candidates(self):
+    def test_candidates_read_every_source(self):
         c = self.c
-        files = ['README.md', 'algebra/test-00000-of-00001.parquet', 'algebra/train-00000-of-00001.parquet',
-                 'number_theory/test-00000-of-00001.parquet', 'geometry/test-00000-of-00001.parquet']
-        self.assertEqual(c.math_files(files, ['number_theory', 'algebra'], 'test'),
-                         [('number_theory', 'number_theory/test-00000-of-00001.parquet'),
-                          ('algebra', 'algebra/test-00000-of-00001.parquet')])
-        with self.assertRaises(ValueError):
-            c.math_files(files, ['precalculus'], 'test')
-        rows = {'number_theory/test-00000-of-00001.parquet': [
-                    {'problem': 'a', 'level': 'Level 3', 'solution': '\\boxed{5}'},
-                    {'problem': 'b', 'level': 'Level 1', 'solution': '\\boxed{6}'}],
-                'algebra/test-00000-of-00001.parquet': [{'problem': 'c', 'level': 'Level 5', 'solution': '\\boxed{-2}'}]}
-        items = c.candidates('math', lambda repo, rev, name: name, lambda path: rows[path], files)
-        self.assertEqual(sorted(i['expected'] for i in items), [-2, 5])          # level 1 dropped
+        rows = {
+            'test.jsonl': [{'domain': ['Mathematics -> Number Theory -> Primes'], 'difficulty': 4.5, 'problem': 'a', 'answer': '5'}],
+            'test.json': [{'subject': 'chem', 'description': 'd', 'index': 1, 'type': 'Integer', 'gold': '3', 'question': 'q'}],
+            'murder_mystery.csv': [{'narrative': 'n', 'question': 'q', 'choices': "['a', 'b']", 'answer_index': 0, 'answer_choice': 'a'}],
+            'object_placements.csv': [], 'team_allocation.csv': [],
+            'data/test-00000-of-00001.parquet': [{'question_id': 1, 'id': 's', 'code': 'def f(): return 2', 'input': 'f()',
+                                                  'output': '2', 'difficulty': 'hard'}],
+        }
+        fetch = lambda repo, rev, name: name
+        read = lambda path: rows.get(path, [{'id': 1, 'question': '问', 'A': '1', 'B': '2', 'C': '3', 'D': '4', 'answer': 'A'}])
+        got = {cat: c.candidates(cat, fetch, read) for cat in c.SOURCES}
+        self.assertEqual([i['expected'] for i in got['math']], [5])
+        self.assertEqual([i['expected'] for i in got['science']], [3])
+        self.assertEqual([i['expected'] for i in got['code_reasoning']], ['2'])
+        self.assertEqual(len(got['chinese_mc']), 2 * len(c.CEVAL_HARD))          # val and dev of every hard subject
+        self.assertEqual(len(got['logic']), 1)
+        self.assertTrue(all('source' in i for items in got.values() for i in items))
 
     def test_select(self):
         c = self.c
@@ -147,6 +161,13 @@ class Answers(unittest.TestCase):
         self.assertTrue(c.grade(problem('d', expected=12), '12.00'))
         self.assertFalse(c.grade(problem('e', expected=12), '12.0000001'))
         self.assertIsNotNone(c.grade(problem('f', expected=1), '1' * 400))                       # no OverflowError
+        multi = problem('m', 'science', 'letters', 'ABD')
+        for text, want in (('ABD', True), ('A, B, D', True), ('(A)(B)(D)', True), ('D B A', True), ('A and B and D', True),
+                           ('AB', False), ('ABCD', False), ('E', None), ('None of these', None), ('', None)):
+            self.assertEqual(c.grade(multi, text), want, text)
+        num = problem('n', 'science', 'numeric', 0.83)
+        for text, want in (('0.83', True), ('0.835', True), ('0.82', True), ('0.85', False), ('about 0.8', None)):
+            self.assertEqual(c.grade(num, text), want, text)
         self.assertFalse(c.grade(problem('v', 'code_reasoning', 'literal', '3'), '3.0'))
         self.assertTrue(c.grade(problem('w', 'logic', 'word', 'True'), 'true.'))
 
@@ -396,3 +417,37 @@ class PairsStageHandOff(CellsBase):
             pl.check_pairs_subject({**settings, 'S_repo': 's/s', 'S_revision': 'a' * 40, 'S_subfolder': ''}, local)
         finally:
             pl.CONTRAST['tau'] = saved
+
+
+class StartVllm(unittest.TestCase):
+    """make_llm with a stand-in for vllm.LLM: a failed start is tried again with the same (text-only) settings; only an
+    argument vLLM rejects, or a second failure, drops the text-only setting."""
+    def start(self, outcomes):
+        c = load()
+        calls = []
+
+        class LLM:
+            def __init__(self, **kw):
+                calls.append('limit_mm_per_prompt' in kw)
+                outcome = outcomes[len(calls) - 1]
+                if outcome is not None:
+                    raise outcome
+        fake = type(sys)('vllm');fake.LLM = LLM
+        saved = sys.modules.get('vllm');sys.modules['vllm'] = fake
+        try:
+            c.make_llm('/m', 100)
+        finally:
+            if saved is None:
+                sys.modules.pop('vllm', None)
+            else:
+                sys.modules['vllm'] = saved
+        return calls
+
+    def test_retry_same_settings_first(self):
+        self.assertEqual(self.start([RuntimeError('Engine core initialization failed'), None]), [True, True])
+
+    def test_then_without_text_only(self):
+        self.assertEqual(self.start([RuntimeError('x'), RuntimeError('x'), None]), [True, True, False])
+
+    def test_rejected_argument(self):
+        self.assertEqual(self.start([TypeError('unexpected keyword limit_mm_per_prompt'), None]), [True, False])

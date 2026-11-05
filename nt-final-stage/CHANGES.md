@@ -296,6 +296,10 @@
 
 全部属实，已修，逐条见 `1-model-merge/README.md`“外部检查报告（2026-11-04）的处理”。要点：GPU 上分量筛选和反向自检的设备不一致（F01，原来一到分量筛选就会失败并回退）；对比模式下护栏改成硬条件，没有合格候选就停下（F02）；把关请求绑定权重摘要，上传前核对 Drive 上的权重（F03）；把关的评测身份和重新判分（F04）；对比对清单和共享的 S 锁（F05）；恢复缓存时不再同时留两套隐状态（F06）；OT 边缘核对和 N / N₂ 复用前的核对，不改缓存身份，已算好的 N、N₂ 继续用（F07、F08）；按题号续跑（F09）；读不出的答案不进对比对、数字精确比较（F10）。对比对的采样身份不变，已经生成的样本沿用，读取时按新规则重新判分。测试 104 项全部通过。
 
+### 追加（2026-11-05）：对比对的题目换成难题
+
+第一次采样（MATH 3–5 级、BBH、CRUXEval、C-Eval 理科、MMLU-Pro）pi 正确率 95%，600 题只凑出 19 对。改用 pi 大约能做对一半到八成、考推理的题：Omni-MATH 数论（难度 ≥ 4、整数答案）、JEEBench 物理化学、MuSR、C-Eval 难科目、LiveCodeBench 读代码求输出；对比用 450 题、留出 130 题。新判分类型：多选（字母集合完全相同才算对）、数值（相差不超过 0.01，按 JEEBench，精确比较）。vLLM：每批 128 题、显存比例 0.93、纯文本；启动失败先用同样设置重试。测试 107 项全部通过。
+
 ## 三、测试结果
 
 在本环境运行（Python 3.13.18；notebook 测试用 torch 2.15.0、numpy 2.5.4、safetensors 0.8.0；本机没有 latexmk / pdflatex，也没有可用的 Docker）：
@@ -324,7 +328,7 @@ OK
 | coop（`5-final-review`） | 96 | 46 | 142 通过 | 3 项：2 项真实 latexmk 编译（本机没有 latexmk；你的 Mac 上会跑），1 项 Docker 隔离集成测试（需显式开启） |
 | nt27b（`2-branch2`） | 86 | 11 | 97 通过 | 1 项：实际 pdflatex 编译（本机没有 pdflatex） |
 | 合并与留存率（`3-combine`） | 7 | 16 | 23 通过 | — |
-| 融合 notebook（`1-model-merge`） | — | 104 | 104 通过 | — |
+| 融合 notebook（`1-model-merge`） | — | 107 | 107 通过 | — |
 | 交叉审查打包（`4-cross-review`） | — | 4 | 4 通过 | — |
 
 原有测试文件一行没删、一行没改；只在 `2-branch2/tests/test_gpu_runner.py`、`3-combine/test_retention.py`、`test_run_retention.py`、`test_merge_check.py` 里追加了测试。详细的逐项输出见 `5-final-review/docs/test-results.txt`，或用 `-v` 重跑。
