@@ -62,6 +62,10 @@ class Problems(unittest.TestCase):
                                        'problem': 'p', 'answer': '5'}, ['Number Theory'], 4.0))   # other domain
         self.assertIsNone(c.omni_item({'domain': ['Mathematics -> Number Theory -> X'], 'difficulty': '6',
                                        'problem': 'p', 'answer': '\\frac{1}{2}'}, ['Number Theory'], 4.0))
+        nt = lambda q: c.omni_item({'domain': ['Mathematics -> Number Theory -> X'], 'difficulty': 5, 'problem': q, 'answer': '7'},
+                                   ['Number Theory'], 4.0)
+        self.assertIsNone(nt('Find the greatest GOOD number and the smallest BAD number.'))   # two answers asked, one given
+        self.assertIsNotNone(nt('How many n are there such that n and 2n are both palindromes?'))
         jee = lambda **kw: {'subject': 'phy', 'description': 'JEE Adv 2016 Paper 1', 'index': '3', 'question': 'Q (A) a (B) b', **kw}
         self.assertEqual(c.jee_item(jee(type='MCQ', gold='B'), ['phy'])['kind'], 'letter')
         self.assertEqual(c.jee_item(jee(type='MCQ(multiple)', gold='DAB'), ['phy'])['expected'], 'ABD')
