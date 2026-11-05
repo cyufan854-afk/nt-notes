@@ -194,6 +194,23 @@ class Setup(Base):
         old, _ = pl.resolve_runtime({'proxy_options': self.options(), 'contrast_pairs_file': 'x.jsonl', 'objective': 'reference_nll'})
         self.assertEqual(old['proxy_options']['max_tokens'], 1024)
 
+    def test_several_pairs_files(self):
+        pl = self.pl
+        sub = self.tmp / 'second';sub.mkdir()
+        first = self.write_pairs(pair_rows([('math', 3, 4)] * 3))
+        rows2 = [{**r, 'id': 'b' + r['id'], 'pair': 'b' + r['pair']} for r in pair_rows([('logic', 2, 2)] * 3)]
+        second = sub / 'pairs.jsonl'
+        second.write_text(''.join(json.dumps(r) + '\n' for r in rows2), encoding='utf-8')
+        (sub / 'pairs.manifest.json').write_text(json.dumps({'subject': {'repo': 's/s', 'revision': 'a' * 40, 'subfolder': ''},
+                                                             'tokenizer': {}, 'pairs_sha256': self.core.sha_file(second)}))
+        settings = {'contrast_pairs_file': [str(first), str(second)]}
+        got = pl.contrast_setup(settings)
+        self.assertEqual(len(got), 12)
+        self.assertEqual(len(settings['_pairs_manifest']), 2)
+        pl.check_pairs_subject({**settings, 'S_repo': 's/s', 'S_revision': 'a' * 40, 'S_subfolder': ''})
+        with self.assertRaises(ValueError):                                       # the same file twice: pairs repeat
+            pl.contrast_setup({'contrast_pairs_file': [str(first), str(first)]})
+
     def test_thin_categories_are_left_out(self):
         rows = pair_rows([('math', 3, 4)] * 4 + [('logic', 2, 2)] * 3 + [('code', 2, 2)])
         settings = {'contrast_pairs_file': str(self.write_pairs(rows))}

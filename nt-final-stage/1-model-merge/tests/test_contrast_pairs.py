@@ -600,3 +600,19 @@ class RegroupPartial(CellsBase):
         self.assertFalse((work / 'heldout_subject.json').exists())
         manifest = json.loads((work / 'pairs.manifest.json').read_text())
         self.assertEqual((manifest['pool_problems_sampled'], manifest['pool_problems_missing']), (3, 1))
+
+
+class LoadRun(unittest.TestCase):
+    def test_earlier_run_directory(self):
+        c = load()
+        with tempfile.TemporaryDirectory() as tmp:
+            run = Path(tmp)
+            pin = {'repo': 's/s', 'revision': 'a' * 40, 'subfolder': ''}
+            with self.assertRaises(ValueError):
+                c.load_run(run, pin)                                              # not a run directory
+            (run / 'identity.json').write_text(json.dumps({'subject': pin, 'samples_pool': 4, 'samples_heldout': 2}))
+            c.write_jsonl(run / 'problems.jsonl', [problem('a')])
+            identity, problems = c.load_run(run, pin)
+            self.assertEqual((identity['samples_pool'], [p['pid'] for p in problems]), (4, ['a']))
+            with self.assertRaises(ValueError):
+                c.load_run(run, {**pin, 'revision': 'b' * 40})                    # another subject
