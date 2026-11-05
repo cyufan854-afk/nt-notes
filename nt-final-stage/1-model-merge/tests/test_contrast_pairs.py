@@ -6,6 +6,7 @@ vLLM parts need a GPU and are not run here.
 import hashlib
 import importlib.util
 import json
+import re
 from pathlib import Path
 import sys
 import tempfile
@@ -468,7 +469,7 @@ class AutoDisconnect(unittest.TestCase):
         src = [''.join(c['source']) for c in nb['cells']]
         arm = next(s for s in src if s.startswith('# 夜里无人看着时用'))
         final = next(s for s in src if s.startswith('if AUTO_DISCONNECT:'))
-        settings = next(s for s in src if 'AUTO_DISCONNECT = False' in s)
+        settings = next(s for s in src if re.search(r'^AUTO_DISCONNECT = (True|False)', s, re.M))
         self.assertLess(src.index(settings), src.index(arm))
         self.assertEqual(src.index(final), len(src) - 1)                      # the very last cell
         return arm, final
@@ -524,3 +525,19 @@ class AutoDisconnect(unittest.TestCase):
                 self.assertEqual(events, ['traceback', 'flush', 'unassign'])
                 events, handlers = self.run_cells(path, False)
                 self.assertEqual((events, handlers), ([], []))
+
+
+class AutoDisconnectTestNotebook(AutoDisconnect):
+    """AutoDisconnect_test.ipynb carries exactly the cells of the two real notebooks, and its own cells run."""
+    def test_same_cells_as_the_real_notebooks(self):
+        test_nb = HERE.parent / 'AutoDisconnect_test.ipynb'
+        mine = self.cells(test_nb)
+        for path in self.NOTEBOOKS:
+            self.assertEqual(self.cells(path), mine, path.name)
+        nb = json.loads(test_nb.read_text(encoding='utf-8'))
+        src = [''.join(c['source']) for c in nb['cells'] if c['cell_type'] == 'code']
+        self.assertIn('MODE = "finish"', src[0])
+        self.assertIn('raise RuntimeError', src[3])
+
+    def test_both_notebooks(self):            # covered by the parent class; not repeated here
+        pass

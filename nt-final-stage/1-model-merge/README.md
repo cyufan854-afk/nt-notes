@@ -11,7 +11,7 @@
 3. 对比对 notebook，`STAGE = "veto"`，从头运行：候选在 130 道留出题上开思考生成，写出 `DRIVE_DIR/veto/result.json`。
 4. 融合 notebook 再从头运行：通过的候选从 Drive 上的副本上传（搜索和分量筛选不会重做），然后照常做 FP8。
 
-断开后从头运行都会接着做。两个 notebook 的第 1 节都有 `AUTO_DISCONNECT`：设成 `True`，全部跑完或中途出错后先把 Drive 写完再自动断开运行时，停止计费（出错时报错另存到 `DRIVE_DIR/run_logs/`），适合夜里无人看着时跑。e15 以前在 CPU 上评过的搜索候选用的是旧目标，不再使用。
+断开后从头运行都会接着做。两个 notebook 的第 1 节都有 `AUTO_DISCONNECT`：设成 `True`，全部跑完或中途出错后先把 Drive 写完再自动断开运行时，停止计费（出错时报错另存到 `DRIVE_DIR/run_logs/`），适合夜里无人看着时跑。第一次用之前，可以先在 CPU 运行时上跑 `AutoDisconnect_test.ipynb`（同样的两格，约 1 分钟）确认能正常断开。e15 以前在 CPU 上评过的搜索候选用的是旧目标，不再使用。
 
 ## 产物怎么交给第 2 步
 
