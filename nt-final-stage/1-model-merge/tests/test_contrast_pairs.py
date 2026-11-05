@@ -616,3 +616,31 @@ class LoadRun(unittest.TestCase):
             self.assertEqual((identity['samples_pool'], [p['pid'] for p in problems]), (4, ['a']))
             with self.assertRaises(ValueError):
                 c.load_run(run, {**pin, 'revision': 'b' * 40})                    # another subject
+
+
+class CpuRuntime(unittest.TestCase):
+    """STAGE = "regroup" runs on a CPU runtime: no nvidia-smi, no upgrade of Colab's packages, no tokenizer."""
+    def setUp(self):
+        nb = json.loads(NOTEBOOK.read_text(encoding='utf-8'))
+        self.cells = [''.join(x['source']) for x in nb['cells'] if x['cell_type'] == 'code']
+
+    def test_missing_nvidia_smi(self):
+        env_cell = next(c for c in self.cells if 'nvidia-smi' in c)
+        start = env_cell.index('try:')
+        end = env_cell.index('print(f"GPU：')
+        snippet = env_cell[start:end].replace('"nvidia-smi"', '"no-such-binary-nvidia-smi"')
+        g = {'subprocess': __import__('subprocess')}
+        exec(snippet, g)
+        self.assertEqual((g['GPU_NAME'], g['GPU_GIB']), (None, 0.0))
+
+    def test_regroup_installs_nothing_it_has(self):
+        env_cell = next(c for c in self.cells if 'nvidia-smi' in c)
+        self.assertIn('if INSTALL and NEED_GPU:', env_cell)                        # the -U upgrades only with vLLM
+        self.assertIn('find_spec(m) is None', env_cell)
+
+    def test_tokenizer_only_for_new_problems(self):
+        setup = next(c for c in self.cells if 'SUBJECT_PIN = ' in c and '_problems_path' in c)
+        self.assertNotIn('AutoTokenizer.from_pretrained(LOCAL_MODEL)\n_gc_path', setup)
+        for line in setup.splitlines():
+            if 'tokenizer' in line and not line.startswith('#') and 'def _tokenizer' not in line and 'global tokenizer' not in line:
+                self.assertTrue(line.startswith((' ', 'tokenizer = None')) or '_tokenizer()' in line, line)
