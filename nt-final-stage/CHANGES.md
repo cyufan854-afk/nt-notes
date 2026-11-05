@@ -310,6 +310,8 @@ pi 在难题上的失败多半是写到 8192 token 被截断，写完答错的�
 
 `regroup` 在 CPU 运行时上能跑：没有 nvidia-smi 时当作没有 GPU（原先直接报 FileNotFoundError）；不再用 `-U` 升级 Colab 自带的包，只补装缺的 pandas / pyarrow / huggingface_hub；分词器只在要新抽题时才加载（regroup 和 veto 用 problems.jsonl 里存好的 prompt）。测试 118 项全部通过。
 
+融合 notebook 第一次带对比对完整运行时，在核对对比对清单（分词器文件）那一步报 `KeyError: 'metadata_dir'`：S 的配置和分词器文件要到后面准备本地副本时才下载。现在核对前先下载这几个小文件（后面直接沿用）。新增一项测试，用替身从头走 `run_pipeline` 到选型这一步，修之前能复现同样的 KeyError。D、C、N、N₂ 的缓存不受影响。测试 119 项全部通过。
+
 ## 三、测试结果
 
 在本环境运行（Python 3.13.18；notebook 测试用 torch 2.15.0、numpy 2.5.4、safetensors 0.8.0；本机没有 latexmk / pdflatex，也没有可用的 Docker）：
@@ -338,7 +340,7 @@ OK
 | coop（`5-final-review`） | 96 | 46 | 142 通过 | 3 项：2 项真实 latexmk 编译（本机没有 latexmk；你的 Mac 上会跑），1 项 Docker 隔离集成测试（需显式开启） |
 | nt27b（`2-branch2`） | 86 | 11 | 97 通过 | 1 项：实际 pdflatex 编译（本机没有 pdflatex） |
 | 合并与留存率（`3-combine`） | 7 | 16 | 23 通过 | — |
-| 融合 notebook（`1-model-merge`） | — | 118 | 118 通过 | — |
+| 融合 notebook（`1-model-merge`） | — | 119 | 119 通过 | — |
 | 交叉审查打包（`4-cross-review`） | — | 4 | 4 通过 | — |
 
 原有测试文件一行没删、一行没改；只在 `2-branch2/tests/test_gpu_runner.py`、`3-combine/test_retention.py`、`test_run_retention.py`、`test_merge_check.py` 里追加了测试。详细的逐项输出见 `5-final-review/docs/test-results.txt`，或用 `-v` 重跑。

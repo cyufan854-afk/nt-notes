@@ -657,6 +657,51 @@ class PairsManifest(Base):
         with self.assertRaises(ValueError):
             pl.contrast_setup({'contrast_pairs_file': str(path)})
 
+    def test_full_run_checks_against_the_subject_files(self):
+        """run_pipeline with pairs, from the start to the selection: S's metadata is fetched for the manifest check before
+        anything that would download it (a full run on Colab stopped with KeyError 'metadata_dir' here)."""
+        pl, rt = self.pl, self.pl.runtime
+        rows = pair_rows([('math', 3, 4)] * 4)
+        tok = b'{"v": 1}'
+        path = self.write_pairs(rows, tokenizer={'tokenizer.json': __import__('hashlib').sha256(tok).hexdigest()})
+        work = self.tmp / 'work'
+        fetched = []
+
+        def download_metadata(engine, repo, root):
+            fetched.append(repo)
+            d = Path(root) / 'meta-x';d.mkdir(parents=True, exist_ok=True)
+            (d / 'tokenizer.json').write_bytes(tok)
+            return d
+
+        def pin_subject(settings, api, token, root):
+            settings.update(S_repo='s/s', S_revision='a' * 40, S_subfolder='')
+
+        def setup_inputs(settings, legacy, api, token, extras, searched=()):
+            return {'engine': 'engine', 'S_repo': settings['S_repo'], 'root': work, 'identity': {'inputs': 'x'}, 'settings': settings}
+
+        def prepare_stage(context, search, extra, datasets):
+            self.assertEqual(context['metadata_dir'].name, 'meta-x')
+            return {'is_baseline': True, 'recipe': {'lambda': 0.}}
+
+        saved = {n: getattr(pl, n) for n in ('pin_subject', 'aux_plan', 'setup_inputs', 'prepare_stage')}
+        saved_rt = {n: getattr(rt, n) for n in ('download_metadata', 'ensure_inference_dependencies')}
+        try:
+            pl.pin_subject, pl.setup_inputs, pl.prepare_stage = pin_subject, setup_inputs, prepare_stage
+            pl.aux_plan = lambda settings: (0.5, [], [], ())
+            rt.download_metadata, rt.ensure_inference_dependencies = download_metadata, lambda *a, **k: None
+            settings = {'work': str(work), 'run': True, 'objective': 'contrast', 'proxy_options': Setup.options(self),
+                        'contrast_pairs_file': str(path), 'allow_contrast_on_cpu': True,
+                        'contrast_options': {'min_pairs': 4, 'veto': False}}
+            out = pl.run_pipeline(settings, None, None, '')
+            self.assertEqual((out['status'], fetched), ('subject_best', ['s/s']))
+            tok = b'{"v": 2}'                                                     # S's tokenizer is not the one of the traces
+            shutil.rmtree(work)
+            with self.assertRaises(ValueError):
+                pl.run_pipeline(settings, None, None, '')
+        finally:
+            for n, f in saved.items():setattr(pl, n, f)
+            for n, f in saved_rt.items():setattr(rt, n, f)
+
 
 class NotebookE16(unittest.TestCase):
     def test_settings_and_messages(self):
