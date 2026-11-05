@@ -211,7 +211,7 @@ class Pairs(unittest.TestCase):
             'cut': {'samples': [sample(0, True, 100), sample(1, False, 100, finish='length')]},
         }
         prompt_ids = {p['pid']: [7, 8, 9] for p in probs}
-        rows, report = c.build_pairs(probs, results, prompt_ids, max_ratio=2.0, seed=0)
+        rows, report = c.build_pairs(probs, results, prompt_ids, max_ratio=2.0, seed=0, use_cut=False)
         self.assertEqual(report['pairs'], 1)
         self.assertEqual((report['all_right'], report['all_wrong'], report['length_mismatch']), (2, 1, 1))  # 'cut' counts as all right
         self.assertEqual(report['problems'], 5)                                   # held-out problems are not paired
@@ -221,6 +221,30 @@ class Pairs(unittest.TestCase):
         self.assertEqual(right['prompt_ids'], [7, 8, 9])
         self.assertEqual(set(c.check_pairs(rows)), {'mixed'})
         self.assertEqual(report['tokens'], 3 + 100 + 3 + 130)
+
+    def test_cut_traces_pair_by_their_prefix(self):
+        c = self.c
+        probs = [problem('mixed'), problem('cut'), problem('loop'), problem('long')]
+        loop = [5, 6, 7, 8] * 2048                                               # a trace that went round in circles
+        results = {
+            'mixed': {'samples': [sample(0, True, 100), sample(1, False, 130), sample(2, False, 90, finish='length')]},
+            'cut': {'samples': [sample(0, True, 300), sample(1, True, 200), sample(2, True, 250),
+                                {**sample(3, None, 0, finish='length'), 'response_ids': loop},
+                                {**sample(4, None, 0, finish='length'), 'response_ids': list(range(1000, 9192))}]},
+            'loop': {'samples': [sample(0, True, 200), {**sample(1, None, 0, finish='length'), 'response_ids': loop}]},
+            'long': {'samples': [sample(0, True, 100), sample(1, False, 500)]},       # no cut trace: as before
+        }
+        prompt_ids = {p['pid']: [7, 8, 9] for p in probs}
+        rows, report = c.build_pairs(probs, results, prompt_ids, seed=0)
+        self.assertEqual((report['pairs'], report['wrong_answer'], report['cut_prefix']), (2, 1, 1))
+        self.assertEqual((report['cut_too_repetitive'], report['length_mismatch']), (1, 1))
+        by_pair = {(r['pair'], r['role']): r for r in rows}
+        self.assertEqual(by_pair[('mixed', 'wrong')]['failure'], 'wrong_answer')   # a finished wrong answer comes first
+        right, failed = by_pair[('cut', 'correct')], by_pair[('cut', 'wrong')]
+        self.assertEqual(len(right['response_ids']), 250)                        # the right trace of middle length
+        self.assertEqual(failed['response_ids'], list(range(1000, 1250)))        # the non-repeating cut trace, cut to 250
+        self.assertEqual(failed['failure'], 'cut_prefix')
+        c.check_pairs(rows)
 
     def test_check_pairs_rejects(self):
         c = self.c
@@ -403,6 +427,12 @@ class PairsStageHandOff(CellsBase):
         env['cp'].generate = generate
         exec(compile(self.samples_cell, 'pairs-cell', 'exec'), env)
         work = self.root / 'work'
+        first = (work / 'pairs.jsonl').read_text()
+        # STAGE = "regroup": every sample is on Drive; no model, nothing generated, the same pairs written again
+        self.generated.clear()
+        exec(compile(self.samples_cell, 'regroup-cell', 'exec'), {**env, 'STAGE': 'regroup', 'LLM': None})
+        self.assertEqual(self.generated, [])
+        self.assertEqual((work / 'pairs.jsonl').read_text(), first)
         manifest = json.loads((work / 'pairs.manifest.json').read_text())
         self.assertEqual(manifest['subject']['revision'], 'a' * 40)
         self.assertEqual(set(manifest['tokenizer']), {'tokenizer.json', 'chat_template.jinja'})

@@ -304,6 +304,10 @@
 
 两个 notebook 第 1 节加了 `AUTO_DISCONNECT`（默认 `False`）。设成 `True`：最后一格先把 Drive 写完（`drive.flush_and_unmount()`），再断开运行时（`google.colab.runtime.unassign()`），停止计费；中途任何一格出错时也一样，报错先另存到 `DRIVE_DIR/run_logs/`。手动中断不触发。测试 108 项全部通过。
 
+### 追加（2026-11-05）：截断的回答也可以当失败的那条
+
+pi 在难题上的失败多半是写到 8192 token 被截断，写完答错的很少（前两批 256 题只 11 对）。组对时，没有写完答错的回答，就用一条截断回答、只取和答对那条一样长的开头；开头重复太多（低于同类答对回答不重复 4-gram 比例的 5% 分位数）的不用。同样 256 题按新规则 54 对。新增 `STAGE = "regroup"`：样本齐全时只重新组对，CPU 运行时即可。vLLM 锁定 0.33.0。测试 112 项全部通过。
+
 ## 三、测试结果
 
 在本环境运行（Python 3.13.18；notebook 测试用 torch 2.15.0、numpy 2.5.4、safetensors 0.8.0；本机没有 latexmk / pdflatex，也没有可用的 Docker）：
@@ -332,7 +336,7 @@ OK
 | coop（`5-final-review`） | 96 | 46 | 142 通过 | 3 项：2 项真实 latexmk 编译（本机没有 latexmk；你的 Mac 上会跑），1 项 Docker 隔离集成测试（需显式开启） |
 | nt27b（`2-branch2`） | 86 | 11 | 97 通过 | 1 项：实际 pdflatex 编译（本机没有 pdflatex） |
 | 合并与留存率（`3-combine`） | 7 | 16 | 23 通过 | — |
-| 融合 notebook（`1-model-merge`） | — | 108 | 108 通过 | — |
+| 融合 notebook（`1-model-merge`） | — | 112 | 112 通过 | — |
 | 交叉审查打包（`4-cross-review`） | — | 4 | 4 通过 | — |
 
 原有测试文件一行没删、一行没改；只在 `2-branch2/tests/test_gpu_runner.py`、`3-combine/test_retention.py`、`test_run_retention.py`、`test_merge_check.py` 里追加了测试。详细的逐项输出见 `5-final-review/docs/test-results.txt`，或用 `-v` 重跑。
