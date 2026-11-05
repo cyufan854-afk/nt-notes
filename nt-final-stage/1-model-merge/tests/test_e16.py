@@ -194,6 +194,13 @@ class Setup(Base):
         old, _ = pl.resolve_runtime({'proxy_options': self.options(), 'contrast_pairs_file': 'x.jsonl', 'objective': 'reference_nll'})
         self.assertEqual(old['proxy_options']['max_tokens'], 1024)
 
+    def test_thin_categories_are_left_out(self):
+        rows = pair_rows([('math', 3, 4)] * 4 + [('logic', 2, 2)] * 3 + [('code', 2, 2)])
+        settings = {'contrast_pairs_file': str(self.write_pairs(rows))}
+        got = self.pl.contrast_setup(settings)
+        self.assertEqual({r['category'] for r in got}, {'math', 'logic'})        # one code pair: below 3
+        self.assertEqual(len(got), 14)
+
     def test_runtime_options_for_long_traces(self):
         settings, info = self.pl.resolve_runtime({'proxy_options': self.options(), 'contrast_pairs_file': 'x.jsonl'})
         o = settings['proxy_options']

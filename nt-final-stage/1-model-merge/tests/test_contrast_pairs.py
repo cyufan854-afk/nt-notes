@@ -571,3 +571,32 @@ class AutoDisconnectTestNotebook(AutoDisconnect):
 
     def test_both_notebooks(self):            # covered by the parent class; not repeated here
         pass
+
+
+class RegroupPartial(CellsBase):
+    """STAGE = "regroup" after a run stopped early: the sampled problems are paired, the rest skipped; without every
+    held-out problem pi's base accuracy is not written."""
+    def test_stopped_run(self):
+        pool = [problem(f'p{i}', expected=12) for i in range(4)]
+        problems = pool + self.heldout
+        local = self.root / 'model';local.mkdir()
+        (local / 'tokenizer.json').write_text('{"t": 1}')
+        env = self.env(problems=problems)
+        env.update(SAMPLES_POOL=4, MAX_PAIR_RATIO=2.0, GPU_NAME=None, LOCAL_MODEL=str(local),
+                   SUBJECT_PIN={'repo': 's/s', 'revision': 'a' * 40, 'subfolder': ''},
+                   PROMPT_IDS={p['pid']: [i % 4, 7] for i, p in enumerate(problems)})
+
+        def generate(llm, prompt_ids, n, params, max_tokens, seeds):
+            return [[{'text': '</think><answer>' + ('12' if k < n // 2 else '13') + '</answer>', 'token_ids': [1, 2, 3 + k],
+                      'finish_reason': 'stop'} for k in range(n)] for _ in prompt_ids]
+        env['cp'].generate = generate
+        env['run_samples']('pi', pool[:3], 'pool', 4, self.root / 'work' / 'samples', 'pool')     # stopped after 3 problems
+        exec(compile(self.samples_cell, 'regroup-cell', 'exec'), {**env, 'STAGE': 'regroup', 'LLM': None})
+        work = self.root / 'work'
+        report = json.loads((work / 'report.json').read_text())
+        self.assertEqual(report['missing'], {'pool': 1, 'heldout': 4})
+        self.assertEqual(report['pairs']['pairs'], 3)
+        self.assertIsNone(report['accuracy_heldout'])
+        self.assertFalse((work / 'heldout_subject.json').exists())
+        manifest = json.loads((work / 'pairs.manifest.json').read_text())
+        self.assertEqual((manifest['pool_problems_sampled'], manifest['pool_problems_missing']), (3, 1))
