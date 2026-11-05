@@ -300,6 +300,10 @@
 
 第一次采样（MATH 3–5 级、BBH、CRUXEval、C-Eval 理科、MMLU-Pro）pi 正确率 95%，600 题只凑出 19 对。改用 pi 大约能做对一半到八成、考推理的题：Omni-MATH 数论（难度 ≥ 4、整数答案）、JEEBench 物理化学、MuSR、C-Eval 难科目中大学的 5 个、LiveCodeBench 读代码求输出；对比用 440 题、留出 130 题。新判分类型：多选（字母集合完全相同才算对）、数值（相差不超过 0.01，按 JEEBench，精确比较）。vLLM：每批 128 题、显存比例 0.93、纯文本；启动失败先用同样设置重试。测试 107 项全部通过。
 
+### 追加（2026-11-05）：跑完或出错后自动断开运行时
+
+两个 notebook 第 1 节加了 `AUTO_DISCONNECT`（默认 `False`）。设成 `True`：最后一格先把 Drive 写完（`drive.flush_and_unmount()`），再断开运行时（`google.colab.runtime.unassign()`），停止计费；中途任何一格出错时也一样，报错先另存到 `DRIVE_DIR/run_logs/`。手动中断不触发。测试 108 项全部通过。
+
 ## 三、测试结果
 
 在本环境运行（Python 3.13.18；notebook 测试用 torch 2.15.0、numpy 2.5.4、safetensors 0.8.0；本机没有 latexmk / pdflatex，也没有可用的 Docker）：
@@ -328,7 +332,7 @@ OK
 | coop（`5-final-review`） | 96 | 46 | 142 通过 | 3 项：2 项真实 latexmk 编译（本机没有 latexmk；你的 Mac 上会跑），1 项 Docker 隔离集成测试（需显式开启） |
 | nt27b（`2-branch2`） | 86 | 11 | 97 通过 | 1 项：实际 pdflatex 编译（本机没有 pdflatex） |
 | 合并与留存率（`3-combine`） | 7 | 16 | 23 通过 | — |
-| 融合 notebook（`1-model-merge`） | — | 107 | 107 通过 | — |
+| 融合 notebook（`1-model-merge`） | — | 108 | 108 通过 | — |
 | 交叉审查打包（`4-cross-review`） | — | 4 | 4 通过 | — |
 
 原有测试文件一行没删、一行没改；只在 `2-branch2/tests/test_gpu_runner.py`、`3-combine/test_retention.py`、`test_run_retention.py`、`test_merge_check.py` 里追加了测试。详细的逐项输出见 `5-final-review/docs/test-results.txt`，或用 `-v` 重跑。

@@ -11,7 +11,7 @@
 3. 对比对 notebook，`STAGE = "veto"`，从头运行：候选在 130 道留出题上开思考生成，写出 `DRIVE_DIR/veto/result.json`。
 4. 融合 notebook 再从头运行：通过的候选从 Drive 上的副本上传（搜索和分量筛选不会重做），然后照常做 FP8。
 
-断开后从头运行都会接着做。e15 以前在 CPU 上评过的搜索候选用的是旧目标，不再使用。
+断开后从头运行都会接着做。两个 notebook 的第 1 节都有 `AUTO_DISCONNECT`：设成 `True`，全部跑完或中途出错后先把 Drive 写完再自动断开运行时，停止计费（出错时报错另存到 `DRIVE_DIR/run_logs/`），适合夜里无人看着时跑。e15 以前在 CPU 上评过的搜索候选用的是旧目标，不再使用。
 
 ## 产物怎么交给第 2 步
 
@@ -133,9 +133,9 @@ cd 1-model-merge
 python3 -m unittest discover -s tests -v
 ```
 
-需要 numpy、torch、safetensors（notebook 自己的依赖），不下载任何东西。测试直接从 notebook 取出内嵌模块的源码，共 107 项：
+需要 numpy、torch、safetensors（notebook 自己的依赖），不下载任何东西。测试直接从 notebook 取出内嵌模块的源码，共 108 项：
 - `test_e16.py` 28 项（含外部检查报告各条的修复：护栏硬条件、把关请求绑定权重、对比对清单、N 的缓存核对、OT 下溢拒绝、GPU 设备流的源码核对）：对比对的格式检查和 token id 打分；按对算目标、类别均值和护栏；按 token 预算整对选子集；`contrast_setup` 与长推理的运行选项；没有对比对时停下；在极小的 Llama 上，分段 logits 与整段的 NLL 一致、分段算的损失梯度与整段一致、逐层评分器的结果与直接前向一致；梯度这一步把隐状态放在另一个目录时结果不变、隐状态丢了会从前向重来；分量筛选整条流程按对跑通（用线性模型代替真实前向：有害分量被去掉、有益分量保留，护栏生效，每个变体都在整对上评分）；生成把关的交接（等待、不重复构造、采用备选、全部否决、选型变了重新请求）；只换输出头的补评直接用内存里上一个候选的隐状态；旧目标不理会还填着的对比对路径；CPU 运行时上不开始；
-- `test_contrast_pairs.py` 21 项：对比对 notebook 的模块（抽题、答案提取与判分、配对、把关规则），以及用真实单元格加假的 vLLM 跑第 6、7 节（改 CHUNK 后按题续跑、第一个通过就停、一次运行只加载一个候选、全部否决、评测身份变了不沿用旧成绩、量化方式不同就停下、写出的对比对和清单能被融合 notebook 读入并核对）；真的 vLLM 要 GPU，没有跑；
+- `test_contrast_pairs.py` 22 项（含两个 notebook 共用的自动断开单元格）：对比对 notebook 的模块（抽题、答案提取与判分、配对、把关规则），以及用真实单元格加假的 vLLM 跑第 6、7 节（改 CHUNK 后按题续跑、第一个通过就停、一次运行只加载一个候选、全部否决、评测身份变了不沿用旧成绩、量化方式不同就停下、写出的对比对和清单能被融合 notebook 读入并核对）；真的 vLLM 要 GPU，没有跑；
 - `test_tm2.py` 30 项：e15 新增部分，以及 2026-11-02 补丁的 `vocabulary_difference` 和设置默认值；e16 里改为核对“算 D、C、N、N₂ 的 7 个模块与 e15 逐字节相同”；
 - `test_lora_source.py` 9 项：融合 notebook 的 `lora` 来源（缩放、张量名配对、对到 S 的矩阵时避开 MTP / 视觉 / 输出头、按 float32 算 scale·B·A、改过的 adapter 和形状不符时拒绝、等待与就绪、补加到已有 D 上的结果、报告）；
 - `test_range_retry.py` 3 项：读 Hugging Face 时 499 / 5xx / 408 重试、重试用尽后报错、整份文件的回答仍立即拒绝（要 requests 和 huggingface_hub）；

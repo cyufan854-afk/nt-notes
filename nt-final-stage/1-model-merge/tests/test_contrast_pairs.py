@@ -455,3 +455,72 @@ class StartVllm(unittest.TestCase):
 
     def test_rejected_argument(self):
         self.assertEqual(self.start([TypeError('unexpected keyword limit_mm_per_prompt'), None]), [True, False])
+
+
+class AutoDisconnect(unittest.TestCase):
+    """The cells both notebooks share: with AUTO_DISCONNECT, a finished run and an error both flush Drive and release the
+    runtime (an error is saved to DRIVE_DIR/run_logs first); without it nothing is released. Colab and IPython are
+    stand-ins here."""
+    NOTEBOOKS = (NOTEBOOK, HERE.parent / 'Qwen38_pi_AuxMix_e16_FP8.ipynb')
+
+    def cells(self, path):
+        nb = json.loads(Path(path).read_text(encoding='utf-8'))
+        src = [''.join(c['source']) for c in nb['cells']]
+        arm = next(s for s in src if s.startswith('# 夜里无人看着时用'))
+        final = next(s for s in src if s.startswith('if AUTO_DISCONNECT:'))
+        settings = next(s for s in src if 'AUTO_DISCONNECT = False' in s)
+        self.assertLess(src.index(settings), src.index(arm))
+        self.assertEqual(src.index(final), len(src) - 1)                      # the very last cell
+        return arm, final
+
+    def run_cells(self, path, enabled, error=None):
+        arm, final = self.cells(path)
+        events = []
+        colab = type(sys)('google.colab')
+        colab.drive = type(sys)('google.colab.drive');colab.drive.flush_and_unmount = lambda: events.append('flush')
+        colab.runtime = type(sys)('google.colab.runtime');colab.runtime.unassign = lambda: events.append('unassign')
+        google = type(sys)('google');google.colab = colab
+        handlers = []
+
+        class Shell:
+            def set_custom_exc(self, kinds, handler):
+                handlers.append((kinds, handler))
+
+            def showtraceback(self, *a, **k):
+                events.append('traceback')
+        ipython = type(sys)('IPython');shell = Shell();ipython.get_ipython = lambda: shell
+        names = ('google', 'google.colab', 'google.colab.drive', 'google.colab.runtime', 'IPython')
+        saved = {n: sys.modules.get(n) for n in names}
+        sys.modules.update({'google': google, 'google.colab': colab, 'google.colab.drive': colab.drive,
+                            'google.colab.runtime': colab.runtime, 'IPython': ipython})
+        try:
+            with tempfile.TemporaryDirectory() as tmp:
+                env = {'DRIVE_DIR': tmp, 'AUTO_DISCONNECT': enabled, 'NOTEBOOK_TAG': 'test'}
+                exec(compile(arm, 'arm', 'exec'), env)
+                if error is not None:
+                    self.assertEqual(len(handlers), 1)
+                    kinds, handler = handlers[0]
+                    self.assertNotIn(KeyboardInterrupt, kinds)                    # the stop button does not release it
+                    handler(shell, type(error), error, None)
+                    logs = list((Path(tmp) / 'run_logs').glob('test-*-error.txt'))
+                    self.assertEqual(len(logs), 1)
+                    self.assertIn(str(error), logs[0].read_text(encoding='utf-8'))
+                else:
+                    exec(compile(final, 'final', 'exec'), env)
+                return events, handlers
+        finally:
+            for n, m in saved.items():
+                if m is None:
+                    sys.modules.pop(n, None)
+                else:
+                    sys.modules[n] = m
+
+    def test_both_notebooks(self):
+        for path in self.NOTEBOOKS:
+            with self.subTest(path.name):
+                events, handlers = self.run_cells(path, True)
+                self.assertEqual(events, ['flush', 'unassign'])
+                events, handlers = self.run_cells(path, True, ValueError('vLLM failed'))
+                self.assertEqual(events, ['traceback', 'flush', 'unassign'])
+                events, handlers = self.run_cells(path, False)
+                self.assertEqual((events, handlers), ([], []))
