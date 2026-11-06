@@ -1,6 +1,8 @@
 """Lessons from the first real run (2026-11-06, A100, 3090 requests):
 - evidence quotes are compared up to whitespace (the manuscript wraps and indents, a quotation joins with one space);
-  polish originals and triage patches stay exact;
+  triage patches stay exact;
+- a polish original may differ from the source in line layout only (the author's decision after the run: 73 of the 76
+  rejected originals differed only so); a blank line, a formula, a comment or anything else may not;
 - one request still failing after the GPU runner's retries can be accepted explicitly (`next --accept-errors`); it stays
   in the agent's review list. Pending or stale answers can never be accepted."""
 import contextlib
@@ -40,7 +42,7 @@ class QuoteComparison(unittest.TestCase):
         self.assertFalse(nt.found_quote('then', self.TARGET))                 # too short to be evidence
         self.assertTrue(nt.found_quote('$bc \\mid a$', self.TARGET))           # a short formula still counts
 
-    def test_collect_refs_uses_it_and_polish_stays_exact(self):
+    def test_collect_refs_uses_it(self):
         with self.subTest('refs'):
             import tempfile
             with tempfile.TemporaryDirectory() as d:
@@ -51,10 +53,48 @@ class QuoteComparison(unittest.TestCase):
                           'missing_hypotheses': [], 'note_zh': '支持'}
                 _, stats = nt.collect_refs(Path(d), [req], {'a': {'answer': answer}})
                 self.assertEqual((stats['supports'], stats['quote_unverified']), (1, 0))
-        block = 'This sentence\ncontains enough text for an exact original quote.'
-        self.assertEqual(nt.polish_checks({'original': block.replace('\n', ' '),
-                                           'revised': 'This sentence contains enough text for a better original quote.'}, block)[0],
-                         'rejected')
+        self.assertFalse(nt.found_anywhere('If $b \\mid a$, $c \\mid a$, and $\\gcd(b, c)=1$', self.TARGET))   # patches: exact
+
+
+class PolishLayout(unittest.TestCase):
+    BLOCK = ('We now show that every integer\n\t\tsatisfies the bound, and the argument\n\t\tis short.\n\n'
+             'A new paragraph starts here and goes on.\n% a comment line\nMore words after the comment follow here.\n'
+             'The sum $a +\n\tb$ is computed below in detail.')
+
+    def check(self, original, revised):
+        return nt.polish_checks({'original': original, 'revised': revised}, self.BLOCK)
+
+    def test_a_wrapped_and_indented_line_is_located(self):
+        old = 'We now show that every integer satisfies the bound, and the argument is short.'
+        status, rejected, flagged, _ = self.check(old, old.replace('and the argument', 'and the proof'))
+        self.assertEqual(status, 'clean', rejected + flagged)
+        hits, tolerant = nt.find_original(self.BLOCK, old)
+        self.assertTrue(tolerant)
+        self.assertEqual(len(hits), 1)
+        start, end = hits[0]
+        self.assertEqual(self.BLOCK[start:end], 'We now show that every integer\n\t\tsatisfies the bound, and the argument\n\t\tis short.')
+        exact = 'every integer\n\t\tsatisfies'
+        i = self.BLOCK.index(exact)
+        self.assertEqual(nt.find_original(self.BLOCK, exact), ([(i, i + len(exact))], False))   # exact matches come first
+
+    def test_a_paragraph_break_is_not_a_space(self):
+        old = 'and the argument is short. A new paragraph starts here'
+        self.assertIn('original 不在本块原文中（不是原样抄写）', self.check(old, old.replace('short', 'brief'))[1])
+
+    def test_joining_a_comment_line_is_rejected(self):
+        old = 'and goes on. % a comment line More words after the comment'
+        self.assertEqual(self.check(old, old.replace('goes on', 'continues'))[0], 'rejected')
+
+    def test_a_formula_broken_over_lines_must_stay_verbatim(self):
+        old = 'The sum $a + b$ is computed below in detail.'
+        status, rejected, _, _ = self.check(old, 'The sum $a + b$ is computed below.')
+        self.assertEqual(status, 'rejected')
+        self.assertTrue(any('公式' in r for r in rejected), rejected)
+
+    def test_two_layout_matches_are_ambiguous(self):
+        block = 'one two\nthree four.\nAnd one\ttwo three four.'
+        self.assertEqual(len(nt.find_original(block, 'one two three four')[0]), 2)
+        self.assertIn('出现 2 次', ' '.join(nt.polish_checks({'original': 'one two three four', 'revised': 'one two three five'}, block)[1]))
 
 
 class AcceptErrors(unittest.TestCase):

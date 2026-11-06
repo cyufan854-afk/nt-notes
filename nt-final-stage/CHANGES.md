@@ -424,13 +424,25 @@ pi 在难题上的失败多半是写到 8192 token 被截断，写完答错的�
 - 现在只剩重试后仍出错的请求时，`next` 会列出它们；显式 `--accept-errors` 才继续，它们以 `[error]` 列进 for-claude.md，交给 agent 人工判断。
 - 有待处理、过期或无效的回答时不能接受；接受之后又出现别的出错条目，会重新要求确认。
 
-**没有改、等你决定的**：润色里因为“original 不在本块原文中”被拒的 76 条，有 73 条也只是空白不同。润色要把改写写回稿子，nt27b 1.1.0 特意规定 original 必须逐字一致（有一项原有测试专门检查这一点），所以没有放宽。
+**修正 3（你决定放宽）：润色的 original 可以只在换行、缩进上与稿子不同**（`find_original`）
+- 原因：润色因为“original 不在本块原文中”被拒的 76 条里，有 73 条只是空白不同。nt27b 1.1.0 原来规定必须逐字一致，现在按你的决定放宽。
+- 怎么定位：先找逐字一致的；找不到时，一处空白可以对应“空格或制表符，最多一个换行”。
+- 不放宽的：空行（分段）必须仍是空行；公式要逐字一致，包括公式内部的换行；被换行结束的 `%` 注释、命令、花括号的检查照旧在原稿的精确范围上做。
+- 结果：润色变成规则检查通过 87、需人工看 15、被拒 57（原为 53 / 10 / 96）。
+- 提示：这样定位到的修改，在 `review.md` 里注明“原文的换行 / 缩进与稿子不同……采用后这几行在源码里合成一行”，一共 39 条。
+- 验证：在真实结果上 `--accept-clean` 试写第 1 阶段稿，87 处全部应用、跳过 0 处，全文不变量和 label / 编号环境检查全部通过。
+- 测试：`tests/test_reliability.py` 里原有的 `test_original_must_be_exact_not_whitespace_equivalent` 按这个决定改成 `test_original_may_differ_from_the_source_in_line_layout_only`，同时检查空行仍被拒。这是本项目里第一次改归档原有的测试。
 
 **RunPod 上的经验**（`2-branch2/README.md` 已更新）：
 - PyTorch 模板（Ubuntu 24.04）的系统 Python 里有 apt 装的 PyJWT，pip 卸不掉。用 `--ignore-installed` 绕过去，新版 torch 就盖在模板自带的 torch 上，vLLM 启动时报 `duplicate template name`。改成一开始就把 vLLM 装进 `python3 -m venv` 建的虚拟环境。
 - 不挂卷、只用 150 GB 容器盘可以跑（缓存盘下载后剩 75 GiB），但不能用 `AUTO_STOP`，下载完结果再 Terminate。
 
-**测试**：nt27b 新增 5 项（`2-branch2/tests/test_first_run.py`：空白差异的引文、改写仍算不同、短公式、collect 的归类、润色仍逐字；出错条目点名、显式接受、换了出错条目要重新确认、待处理的不能接受），共 119 项，原有测试一行未改。
+**测试**：nt27b 新增 10 项（`2-branch2/tests/test_first_run.py`），共 124 项：
+- 引文：空白差异的引文、改写仍算不同、短公式、collect 的归类、补丁仍逐字；
+- 润色版式：换行和缩进不同能定位、空行不算空格、接上注释行被拒、公式内部的换行必须逐字、两处匹配算有歧义；
+- 出错条目：点名、显式接受、换了出错条目要重新确认、待处理的不能接受。
+
+另改了 1 项原有测试（见修正 3）。
 
 ## 三、测试结果
 
@@ -442,7 +454,7 @@ $ PYTHON=<装了 torch 的 python> bash check_all.sh
 Ran 145 tests in 15.685s
 OK (skipped=3)
 == 2-branch2
-Ran 119 tests in 11.868s
+Ran 124 tests in 12.383s
 OK (skipped=1)
 == 3-combine
 Ran 23 tests in 0.035s
@@ -458,14 +470,14 @@ OK
 | 套件 | 原有 | 新增 | 结果 | 跳过的 |
 |---|---|---|---|---|
 | coop（`5-final-review`） | 96 | 49 | 145 通过 | 3 项：2 项真实 latexmk 编译（本机没有 latexmk；你的 Mac 上会跑），1 项 Docker 隔离集成测试（需显式开启） |
-| nt27b（`2-branch2`） | 86 | 33 | 119 通过 | 1 项：实际 pdflatex 编译（本机没有 pdflatex） |
+| nt27b（`2-branch2`） | 86 | 38 | 124 通过 | 1 项：实际 pdflatex 编译（本机没有 pdflatex） |
 | 合并与留存率（`3-combine`） | 7 | 16 | 23 通过 | — |
 | 融合 notebook（`1-model-merge`） | — | 119 | 119 通过 | — |
 | 交叉审查打包（`4-cross-review`） | — | 4 | 4 通过 | — |
 
 （2026-11-06 第 2 步在 RunPod 上跑的改动之后，在本环境重跑了 coop、nt27b、合并与留存率、交叉审查打包四套，结果同上，nt27b 为 114 项；之后第 5 步去掉 Grok、新增 Muse Code，coop 为 145 项；本环境没有 torch，融合 notebook 一套没有重跑，那部分代码这次没动。）
 
-原有测试文件一行没删、一行没改；只在 `2-branch2/tests/test_gpu_runner.py`、`3-combine/test_retention.py`、`test_run_retention.py`、`test_merge_check.py` 里追加了测试。详细的逐项输出见 `5-final-review/docs/test-results.txt`，或用 `-v` 重跑。
+原有测试文件一行没删；2026-11-06 按你的决定改了 `2-branch2/tests/test_reliability.py` 的 1 项（润色 original 的空白规则），其余一行没改；只在 `2-branch2/tests/test_gpu_runner.py`、`3-combine/test_retention.py`、`test_run_retention.py`、`test_merge_check.py` 里追加了测试。详细的逐项输出见 `5-final-review/docs/test-results.txt`，或用 `-v` 重跑。
 
 ## 四、没有验证、只能在你那边验证的
 

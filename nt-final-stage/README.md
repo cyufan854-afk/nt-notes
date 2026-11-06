@@ -134,7 +134,7 @@ v0.4.3 另外有三项：
 bash check_all.sh
 ```
 
-五套测试：coop 145 项（原 96 + 新 49），nt27b 119 项（原 86 + 新 33），合并与留存率 23 项（原 7 + 新 16），交叉审查打包 4 项，融合 notebook 58 项（需要 numpy、torch、safetensors，端到端训练测试另需 transformers 和 peft；没有时跳过）。结果见 `CHANGES.md`。
+五套测试：coop 145 项（原 96 + 新 49），nt27b 124 项（原 86 + 新 38），合并与留存率 23 项（原 7 + 新 16），交叉审查打包 4 项，融合 notebook 58 项（需要 numpy、torch、safetensors，端到端训练测试另需 transformers 和 peft；没有时跳过）。结果见 `CHANGES.md`。
 
 ## 需要你验证
 

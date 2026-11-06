@@ -1028,11 +1028,44 @@ def syntax_tokens(text):
             'groups': groups, 'comments': comments}
 
 
+def _layout_pattern(snippet):
+    """A regex for `snippet` that tolerates a different line layout only: each run of spaces / one line break may be any
+    run of spaces and tabs with at most one line break (the manuscript wraps and indents; a model rewrites a wrapped line
+    with single spaces). A blank line (paragraph break) must still be a blank line; everything else is exact."""
+    out = []
+    for part in re.split(r'(\s+)', snippet):
+        if not part:
+            continue
+        if not part.isspace():
+            out.append(re.escape(part))
+        elif part.count('\n') >= 2:
+            out.append(r'[ \t]*\n[ \t]*\n\s*')
+        else:
+            out.append(r'(?:[ \t]+(?:\n[ \t]*)?|\n[ \t]*)')
+    return ''.join(out)
+
+
+def find_original(text, original):
+    """([(start, end)], tolerant): exact occurrences of a polish `original`; only when there is none, the occurrences
+    that differ from it in line layout alone (see _layout_pattern; decided 2026-11-06 after the first run, where 73 of
+    the 76 originals 'not in the block' differed only so). The span is always the manuscript's own text, and every
+    check on the composed result (formulas verbatim, commands, braces, comments) still runs on the real source."""
+    if not original or not original.strip():
+        return [], False
+    hits = [(m.start(), m.end()) for m in re.finditer(re.escape(original), text)]
+    if hits:
+        return hits, False
+    return [(m.start(), m.end()) for m in re.finditer(_layout_pattern(original), text)], True
+
+
+LAYOUT_NOTE = '原文的换行 / 缩进与稿子不同，按版式定位；采用后这几行在源码里合成一行（输出不变）'
+
+
 def polish_checks(rev, block):
     """(status, reasons): status 'clean', 'flagged' (needs a human tick) or 'rejected' (never applied)."""
     old, new = rev['original'], rev['revised']
     rejected, flagged = [], []
-    hits = list(re.finditer(re.escape(old), block)) if old else []
+    hits, _ = find_original(block, old)
     if not hits:
         rejected.append('original 不在本块原文中（不是原样抄写）')
     elif len(hits) > 1:
@@ -1057,8 +1090,8 @@ def polish_checks(rev, block):
     if comments.findall(old) != comments.findall(new):
         rejected.append('改动了 LaTeX 注释，可能隐藏正文')
     if len(hits) == 1:
-        hit = hits[0]
-        composed = block[:hit.start()] + new + block[hit.end():]
+        start, end = hits[0]
+        composed = block[:start] + new + block[end:]
         if qp.math_tokens(block) != qp.math_tokens(composed):
             rejected.append('放回原文后改动了公式或引用（含公式内部片段）')
         before, after = syntax_tokens(block), syntax_tokens(composed)
@@ -1114,6 +1147,8 @@ def collect_polish(job, reqs, done):
             stats['revisions'] += 1
             status, rej, flg, sim = polish_checks(rev, meta['block'])
             reasons = rej + flg
+            if status != 'rejected' and find_original(meta['block'], rev['original'])[1]:
+                reasons = reasons + [LAYOUT_NOTE]
             stats[status] += 1; stats['sim'].append(sim)
             for reason in rej:
                 k = re.sub(r'\d+', '#', reason)[:40]
@@ -1492,12 +1527,12 @@ def cmd_apply(args):
             final_status, final_rej, _, _ = polish_checks({'original': rev['original'], 'revised': revised}, meta['block'])
             if final_status == 'rejected':
                 skipped.append((key, meta['location'], '最终替换未通过检查：' + '；'.join(final_rej))); continue
-            hits = list(re.finditer(re.escape(rev['original']), tex))
+            hits, _ = find_original(tex, rev['original'])
             if same:
-                hits = [h for h in hits if meta['start'] <= h.start() and h.end() <= meta['end']]
+                hits = [h for h in hits if meta['start'] <= h[0] and h[1] <= meta['end']]
             if len(hits) != 1:
                 skipped.append((key, meta['location'], '原文在稿中出现 %d 次' % len(hits))); continue
-            planned.append({'key': key, 'loc': meta['location'], 'start': hits[0].start(), 'end': hits[0].end(),
+            planned.append({'key': key, 'loc': meta['location'], 'start': hits[0][0], 'end': hits[0][1],
                             'revised': revised})
     planned.sort(key=lambda p: p['start'])
     applied, last = [], -1

@@ -54,9 +54,12 @@ class ReliabilityTests(unittest.TestCase):
         old = 'For every integer $n$, the claimed conclusion follows.'
         self.assertEqual(nt.polish_checks({'original': old, 'revised': old.replace('every', 'some')}, old)[0], 'flagged')
 
-    def test_original_must_be_exact_not_whitespace_equivalent(self):
+    def test_original_may_differ_from_the_source_in_line_layout_only(self):
+        # Changed 2026-11-06 (the author's decision after the first run): was "must be exact, not whitespace equivalent".
+        # A line break / indentation may differ; a blank line, a formula or anything else may not (tests/test_first_run.py).
         block = 'This sentence\ncontains enough text for an exact original quote.'
-        self.assertEqual(nt.polish_checks({'original': block.replace('\n', ' '), 'revised': 'This sentence contains enough text for a better original quote.'}, block)[0], 'rejected')
+        self.assertEqual(nt.polish_checks({'original': block.replace('\n', ' '), 'revised': 'This sentence contains enough text for a better original quote.'}, block)[0], 'clean')
+        self.assertEqual(nt.polish_checks({'original': block.replace('\n', '\n\n'), 'revised': 'This sentence contains enough text for a better original quote.'}, block)[0], 'rejected')
 
     def test_small_grammar_change_remains_eligible(self):
         self.assertEqual(nt.polish_checks({'original': self.text, 'revised': self.text.replace('the original', 'an improved')}, self.text)[0], 'clean')
