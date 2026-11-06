@@ -5,7 +5,7 @@
     (RunPod)  MODEL=… MODEL_REVISION=… JOB=job-27b bash gpu/run_gpu.sh      all three tasks in one GPU session
     python3 branch2.py import results-….tgz    Mac: unpack the GPU results into the job directory (safely)
     python3 branch2.py status                  where things stand and what to do next
-    python3 branch2.py next [--accept-clean] [--compile] [--done] [--force]
+    python3 branch2.py next [--accept-clean] [--compile] [--done] [--force] [--accept-errors]
 
 Stages (each a full manuscript in stages/, so that every change can be attributed):
   1-polish.tex   baseline + the polish revisions you ticked in job-27b/polish/review.md (written by nt27b apply)
@@ -129,6 +129,32 @@ def count_ticks(review):
     return len(re.findall(r'^\s*- \[[xX]\]', review.read_text(encoding='utf-8'), re.M)) if review.exists() else 0
 
 
+def failed_requests(p):
+    """{task: [(id, reason)]} when the answers are complete except for requests that failed (still failing after the
+    GPU runner's retries); None when anything is pending, stale or invalid, so that only real failures can be accepted."""
+    import contextlib
+    import io
+    out = io.StringIO()
+    with contextlib.redirect_stdout(out), contextlib.redirect_stderr(io.StringIO()):
+        code = nt.main(['status', str(p.job), '--json', '--details'])
+    if code != 0:
+        return None
+    try:
+        report = json.loads(out.getvalue())
+    except ValueError:
+        return None
+    failed = {}
+    for task, row in report.items():
+        if not isinstance(row, dict) or row.get('pending') or row.get('stale') or row.get('state') not in ('ready', 'incomplete'):
+            return None
+        issues = [i for i in row.get('issues', []) if i.get('state') == 'error']
+        if len(issues) != row.get('errors', 0):
+            return None
+        if issues:
+            failed[task] = [(i['id'], i.get('reason', '')) for i in issues]
+    return failed or None
+
+
 def where(p):
     """(stage key, message) of the next thing to do."""
     state = load_state(p)
@@ -141,6 +167,16 @@ def where(p):
         import io
         with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
             complete = nt.main(['verify', str(p.job)]) == 0
+        failed = None if complete else failed_requests(p)
+        accepted = state.get('accepted_errors')
+        if failed and accepted == {k: [i for i, _ in v] for k, v in failed.items()}:
+            complete = True                 # accepted with --accept-errors: they are in the agents' review lists
+        elif failed:
+            n = sum(len(v) for v in failed.values())
+            lines = '；'.join(f'{task} {i}（{why}）' for task, v in failed.items() for i, why in v)
+            return 'errors', (f'回答都齐了，只有 {n} 条重试后仍然出错：{lines}。它们会以 [error] 列进对应的 for-claude.md，'
+                              '由初筛 / 引用核查那一步的 agent 对照原文人工判断。接受并继续：python3 branch2.py next --accept-errors'
+                              '（也可以在 GPU 上用同样的命令再跑一次，只会重试这几条）')
         if not complete:
             return 'answers', (f'回答还不完整。在 RunPod 上运行 MODEL=<第 1 步的仓名> MODEL_REVISION=<commit> JOB={p.job.name} bash gpu/run_gpu.sh，'
                                f'把 results-*.tgz 取回后 python3 branch2.py import results-….tgz；进度：python3 nt27b.py status {p.job.name}')
@@ -177,7 +213,11 @@ def cmd_import(p, args):
             raise SystemExit(f'归档里有不该有的路径（只接受 {p.job.name}/ 下的普通文件）：{bad[:5]}')
         kwargs = {'filter': 'data'} if hasattr(tarfile, 'data_filter') else {}
         tar.extractall(p.job.parent, members=members, **kwargs)
-    print(f'已解到 {p.job}。下一步：python3 branch2.py next')
+    print(f'已解到 {p.job}。')
+    # The review files in the archive were written on the GPU machine; write them again with this copy's rules.
+    if (p.job / 'manifest.json').exists() and nt.main(['collect', str(p.job)]) != 0:
+        print('（重新整理审阅文件时有条目不完整，见上面；python3 branch2.py status 会说明下一步）')
+    print(where(p)[1])
     return 0
 
 
@@ -195,6 +235,16 @@ def check_stage(p, i):
 def cmd_next(p, args):
     key, message = where(p)
     state = load_state(p)
+    if key == 'errors':
+        if not args.accept_errors:
+            print(message)
+            return 2
+        state['accepted_errors'] = {k: [i for i, _ in v] for k, v in failed_requests(p).items()}
+        save_state(p, state)
+        if not (p.job / 'polish' / 'review.md').exists():
+            nt.main(['collect', str(p.job)])
+        print('已接受出错的条目，它们留在给 agent 的清单里。\n' + where(p)[1])
+        return 0
     if key in ('prepare', 'answers', 'done'):
         print(message)
         return 0 if key == 'done' else 2
@@ -282,6 +332,8 @@ def main(argv=None):
     a.add_argument('--compile', action='store_true', help='润色和收尾时用 pdflatex 编译核对')
     a.add_argument('--done', action='store_true', help='初筛 / 引用核查的修改已经完成')
     a.add_argument('--force', action='store_true', help='收尾时允许替换已有的 ../branch2.tex')
+    a.add_argument('--accept-errors', action='store_true',
+                   help='只剩重试后仍出错的请求时接受它们并继续（它们列在 for-claude.md 里，由 agent 人工判断）')
     args = ap.parse_args(argv)
     p = Paths(args.root, args.job)
     if args.root:

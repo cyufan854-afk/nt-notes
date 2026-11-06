@@ -17,7 +17,7 @@ python3 branch2.py next                          # 一步一步往下走（见�
 
 | 阶段 | `next` 做什么 | 你做什么 | 产物 |
 |---|---|---|---|
-| 整理 | 校验回答完整，生成 `job-27b/polish/review.md` 等审阅文件 | — | — |
+| 整理 | 校验回答完整，生成 `job-27b/polish/review.md` 等审阅文件（`import` 时已用本机的规则重新整理一遍） | 只剩重试后仍出错的请求时，`next --accept-errors` 接受它们（它们以 `[error]` 列进 for-claude.md，由 agent 人工判断）；待处理、过期的回答不能接受 | — |
 | 1. 润色 | 应用你勾选的润色（`--accept-clean` 同时采用所有规则检查通过的；`--compile` 编译核对） | 在 `review.md` 里勾选 | `stages/1-polish.tex` |
 | 2. 初筛修补 | 复制出 `2-triage.tex`，写任务说明 `stages/2-triage-task.md` | 把任务说明交给 Claude（agent 模式）：它按 `job-27b/triage/for-claude.md` 逐条判断，修改 `2-triage.tex`，写 `2-triage-log.md`；完成后 `next --done` | `stages/2-triage.tex` |
 | 3. 引用核查修补 | 同上：`3-refs.tex`、`stages/3-refs-task.md` | 同上，依据 `job-27b/refs/for-claude.md`；完成后 `next --done` | `stages/3-refs.tex` |
@@ -67,7 +67,8 @@ runpodctl send 2-branch2.tgz          # 打印一个一次性的取件码
 cd /workspace
 runpodctl receive <取件码>
 tar -xzf 2-branch2.tgz
-python3 -m pip install "vllm==0.33.0"
+python3 -m venv /workspace/venv && source /workspace/venv/bin/activate
+pip install "vllm==0.33.0"
 cd 2-branch2
 MODEL=YFC-112358/Qwen3.8-27B-pi-AuxMix-v1 MODEL_REVISION=0708c99c1ed8cd893ce03014adf1d8f0a811ebe4 JOB=job-27b GPU_PRICE=<时价> nohup bash gpu/run_gpu.sh > run.log 2>&1 &
 tail -f run.log                       # Ctrl-C 只是不看了，不影响运行
@@ -95,10 +96,11 @@ python3 branch2.py status
 
 **出问题时**：
 - `下载 … 失败`：`HF_TOKEN` 没设、没有读权限，或者 commit 写错了。
-- `pip install` 报 externally-managed-environment：这台 Pod 用完就删，加 `--break-system-packages` 再装。
+- 一定装进虚拟环境（上面的 `venv` 两行）。2026-11-06 第一次运行时，直接往 PyTorch 模板的系统 Python 里装，先是 apt 装的 PyJWT 卸不掉；改用 `--ignore-installed` 后新版 torch 盖在模板自带的 torch 上，启动时报 `duplicate template name`。新开的终端要先 `source /workspace/venv/bin/activate`。`python3 -m venv` 报 ensurepip 不可用时先 `apt-get install -y python3.12-venv`。
 - `vLLM 启动失败`：看 `vllm.log` 的最后几十行。版本不是 0.33.0 时先装回 0.33.0 再试；报 CUDA 驱动太旧时，换一台 CUDA 版本更新的机器。
 - 中途断了：用同样的命令再跑一遍。commit 不变，已经完成的回答都保留，只补没做完的；模型也不会重新下载。
 - 冒烟样本没通过：脚本在全量之前停下并打包，把 `run.log`、`vllm.log` 和结果包带回来看。
+- 少数请求重试后仍失败（例如每次都写到 token 上限被截断）：不必为它们再开机。Mac 上 `import` 之后，`next` 会列出这几条，用 `next --accept-errors` 接受并继续。
 - `AUTO_STOP=1`（跑完或出错后自动停机）只在没人看着时用。程序包要在 `/workspace` 下（上面的做法就是）；脚本发现结果在容器盘上会拒绝开跑，因为停机会清空容器盘。停机后要先在控制台重新 Start 这个 Pod 才能取回结果。
 
 ## 任务进度与排错

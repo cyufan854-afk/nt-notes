@@ -400,6 +400,38 @@ pi 在难题上的失败多半是写到 8192 token 被截断，写完答错的�
 
 换人、排班、候补测试里的替补从 grok 改名为 muse（都是演示 provider，测的逻辑不变），另加一条“遗留的 grok 不能上岗”。这两个测试文件是本项目新加的，不是归档里原有的。coop 共 145 项，全部通过。
 
+### 追加（2026-11-06）：第 2 步的第一次运行——结果和两处修正
+
+**运行**：RunPod，1 张 A100 SXM 80GB，vLLM 0.33.0（装在虚拟环境里），BF16 仓库 @ `0708c99c…`，纯文本、`--max-num-seqs 64`、思考关闭、服务端 JSON schema。
+- 全量运行 34.4 分钟，重试出错的 8.7 分钟。
+- 输入 6.51M token、输出 0.39M token，按 $1.81/小时，GPU 计算部分约 $1.3（另有安装、下载和启动的时间）。
+- 冒烟样本 9 条全部通过。
+
+**回答**：3090 条里 3089 条有效。
+- 唯一失败的是引用核查 `05a351ef5e0f`：全量和重试一共 8 次都写到 token 上限被截断（输出上限翻倍到 6400 仍写不完），多半是陷进了重复。不为它再开机。
+- 润色：570 块里建议修改 120 块、159 条；规则检查通过 53，需人工看 10，被拒 96。
+- 初筛：real_gap 78、cannot_decide 110；证据无法核实 52（原为 416，见下），resolved 558，obvious 1002。
+- 引用核查：不符 29、前提未核对 4、引文未核实 92（原为 486，见下），支持 594，出错 1。
+
+**修正 1：引文比对忽略空白差异**（`2-branch2/nt27b.py` 的 `found_quote`）
+- 现象：讲义的定理正文换行并用制表符缩进，模型引用时写成一个空格，原来逐字节比对，把这些都算成“证据不是原文 / 引文不是原文”。抽查的 4 条里有 3 条除了空白和原文一模一样。
+- 改法：只用于初筛的 evidence 和引用核查的 cited_fact，也就是一条发现进哪个清单。润色的 original 和初筛补丁仍然逐字定位，归档原有的 `found_anywhere` 测试照旧通过。
+- 重新归类后剩下的 52 / 92 条抽查都是真改写：去掉了公式的 `$`、把 `|G|$` 抄成 `|G$`、多写了一句说明。
+- 不需要重跑 GPU：`branch2.py import` 现在会用本机的代码重新整理审阅文件。
+
+**修正 2：`branch2.py next --accept-errors`**
+- 原来 `next` 要求三类回答全部完整，这 1 条出错会让流程一直停在“回答还不完整”。
+- 现在只剩重试后仍出错的请求时，`next` 会列出它们；显式 `--accept-errors` 才继续，它们以 `[error]` 列进 for-claude.md，交给 agent 人工判断。
+- 有待处理、过期或无效的回答时不能接受；接受之后又出现别的出错条目，会重新要求确认。
+
+**没有改、等你决定的**：润色里因为“original 不在本块原文中”被拒的 76 条，有 73 条也只是空白不同。润色要把改写写回稿子，nt27b 1.1.0 特意规定 original 必须逐字一致（有一项原有测试专门检查这一点），所以没有放宽。
+
+**RunPod 上的经验**（`2-branch2/README.md` 已更新）：
+- PyTorch 模板（Ubuntu 24.04）的系统 Python 里有 apt 装的 PyJWT，pip 卸不掉。用 `--ignore-installed` 绕过去，新版 torch 就盖在模板自带的 torch 上，vLLM 启动时报 `duplicate template name`。改成一开始就把 vLLM 装进 `python3 -m venv` 建的虚拟环境。
+- 不挂卷、只用 150 GB 容器盘可以跑（缓存盘下载后剩 75 GiB），但不能用 `AUTO_STOP`，下载完结果再 Terminate。
+
+**测试**：nt27b 新增 5 项（`2-branch2/tests/test_first_run.py`：空白差异的引文、改写仍算不同、短公式、collect 的归类、润色仍逐字；出错条目点名、显式接受、换了出错条目要重新确认、待处理的不能接受），共 119 项，原有测试一行未改。
+
 ## 三、测试结果
 
 在本环境运行（Python 3.13.18；notebook 测试用 torch 2.15.0、numpy 2.5.4、safetensors 0.8.0；本机没有 latexmk / pdflatex，也没有可用的 Docker）：
@@ -410,7 +442,7 @@ $ PYTHON=<装了 torch 的 python> bash check_all.sh
 Ran 145 tests in 15.685s
 OK (skipped=3)
 == 2-branch2
-Ran 114 tests in 11.847s
+Ran 119 tests in 11.868s
 OK (skipped=1)
 == 3-combine
 Ran 23 tests in 0.035s
@@ -426,7 +458,7 @@ OK
 | 套件 | 原有 | 新增 | 结果 | 跳过的 |
 |---|---|---|---|---|
 | coop（`5-final-review`） | 96 | 49 | 145 通过 | 3 项：2 项真实 latexmk 编译（本机没有 latexmk；你的 Mac 上会跑），1 项 Docker 隔离集成测试（需显式开启） |
-| nt27b（`2-branch2`） | 86 | 28 | 114 通过 | 1 项：实际 pdflatex 编译（本机没有 pdflatex） |
+| nt27b（`2-branch2`） | 86 | 33 | 119 通过 | 1 项：实际 pdflatex 编译（本机没有 pdflatex） |
 | 合并与留存率（`3-combine`） | 7 | 16 | 23 通过 | — |
 | 融合 notebook（`1-model-merge`） | — | 119 | 119 通过 | — |
 | 交叉审查打包（`4-cross-review`） | — | 4 | 4 通过 | — |

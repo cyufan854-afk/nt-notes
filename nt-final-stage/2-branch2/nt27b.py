@@ -1156,6 +1156,17 @@ def found_anywhere(needle, *haystacks):
     return any(needle in h for h in haystacks if h)
 
 
+def found_quote(needle, *haystacks):
+    """Evidence quotes (triage evidence, refs cited_fact): verbatim up to whitespace. The manuscript wraps lines and
+    indents them with tabs inside environments, while a quotation naturally joins them with one space; nothing else is
+    normalised (spacing inside a formula such as n-1 / n - 1 still differs). This only decides which review list a
+    finding goes to; polish originals and triage patches are still located exactly (found_anywhere, polish_checks)."""
+    compact = squash(needle)
+    if not compact or (len(compact) < 8 and not qp.MATH.search(needle)):
+        return False
+    return any(compact in squash(h) for h in haystacks if h)
+
+
 def collect_triage(job, reqs, done, tex, conventions):
     groups = {'real_gap': [], 'cannot_decide': [], 'unverified': [], 'resolved': [], 'obvious': [], 'error': []}
     stats = {'requests': len(reqs), 'answered': 0, 'errors': 0, 'first_try_ok': 0}
@@ -1172,7 +1183,7 @@ def collect_triage(job, reqs, done, tex, conventions):
         a, notes = row['answer'], []
         v = a['verdict']
         if v == 'resolved':
-            if not found_anywhere(a['evidence'], m['material'], conventions):
+            if not found_quote(a['evidence'], m['material'], conventions):
                 notes.append('evidence 不是书中原文（无法核实），按未核实处理')
                 v = 'unverified'
         if a['patch_original'] or a['patch_revised']:
@@ -1251,7 +1262,7 @@ def collect_refs(job, reqs, done):
         if v == 'supports' and (not a['cited_fact'] or a['missing_hypotheses']):
             notes.append('支持结论缺少证据或仍有未核对前提')
             v = 'quote_unverified'
-        elif a['cited_fact'] and not found_anywhere(a['cited_fact'], m['target']):
+        elif a['cited_fact'] and not found_quote(a['cited_fact'], m['target']):
             notes.append('cited_fact 不是被引定理的原文')
             if v == 'supports':
                 v = 'quote_unverified'
