@@ -144,7 +144,7 @@ fi
 if [ -z "${HF_HOME:-}${HF_HUB_CACHE:-}" ] && [ -d "$VOLUME" ] && [ -w "$VOLUME" ]; then
   export HF_HUB_CACHE="${VOLUME}/.cache/huggingface/hub"
   export HF_XET_CACHE="${VOLUME}/.cache/huggingface/xet"
-  echo "== Hugging Face 缓存放在卷上：${HF_HUB_CACHE}"
+  echo "== Hugging Face 缓存放在 ${VOLUME} 下：${HF_HUB_CACHE}"
 fi
 
 if command -v nvidia-smi >/dev/null; then

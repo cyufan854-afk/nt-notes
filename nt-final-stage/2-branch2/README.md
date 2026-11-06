@@ -48,6 +48,7 @@ python3 branch2.py next                          # 一步一步往下走（见�
 1. GPU：1 张 H100 80GB 或 A100 80GB，哪个有货用哪个。两种卡跑 BF16 是同一条路径。
 2. 模板：Runpod PyTorch（2.x 的任何一版，带 JupyterLab、SSH 和 `/workspace`）。CUDA 版本筛选里选最新的。
 3. 磁盘：Container Disk 40 GB（vLLM 和它带的 torch 装在这里）；Volume Disk 100 GB，挂在 `/workspace`（模型缓存、程序包、结果都放这里）。容器盘在停机时会被清空，卷不会。
+   - 不挂卷也行：Container Disk 设 150 GB（至少 100 GB：模型约 55 GB，vLLM 和 torch 10–15 GB，下载缓存约 15 GB）。这时不要用 `AUTO_STOP=1`，取回结果之后再 Terminate；没有 `/workspace` 时先 `mkdir -p /workspace`。
 4. 环境变量：先在 Settings → Secrets 建一个 secret（例如叫 `hf_token`，值是对 `YFC-112358` 的私有仓库有读权限的 token），再在 Pod 的环境变量里加 `HF_TOKEN`，值写 `{{ RUNPOD_SECRET_hf_token }}`。也可以开机后在终端里 `export HF_TOKEN=…`。token 不要写进文件。
 
 **把程序包传上去**（Mac，在 `nt-final-stage/` 里；Mac 上装 runpodctl：`brew install runpod/runpodctl/runpodctl`）：
