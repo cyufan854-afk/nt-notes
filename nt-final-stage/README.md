@@ -42,7 +42,7 @@ D、C、N、N₂ 已在 Colab CPU 高 RAM 上算好（e15）。e16 的选型在 
 cd 2-branch2
 python3 branch2.py prepare                       # Mac：读 ../baseline.tex（校验哈希），生成 3090 条请求
 # 把整个 2-branch2/（含 job-27b/）传到 RunPod，在那里：
-MODEL=<output_repo> MODEL_REVISION=<commit> JOB=job-27b GPU_PRICE=<时价> bash gpu/run_gpu.sh
+MODEL=YFC-112358/Qwen3.8-27B-pi-AuxMix-v1 MODEL_REVISION=0708c99c1ed8cd893ce03014adf1d8f0a811ebe4 JOB=job-27b GPU_PRICE=<时价> nohup bash gpu/run_gpu.sh > run.log 2>&1 &
 # 取回 results-*.tgz，然后在 Mac：
 python3 branch2.py import results-….tgz
 python3 branch2.py status                        # 随时看到了哪一步、下一步做什么
@@ -53,6 +53,7 @@ python3 branch2.py next                          # 整理 → 润色（先勾选
 - 初筛修补、引用核查修补：`next` 各生成一份给 Claude 的任务说明（`stages/2-triage-task.md`、`stages/3-refs-task.md`）。Claude 按 27B 的待复核清单修改对应的阶段稿，并写说明；完成后运行 `next --done`。
 - 每个阶段结束都检查 label 和编号环境与 baseline 相同。收尾时写出 `../branch2.tex` 和来源统计 `stages/provenance.md`。
 - `qwen_polish.py` 不再单独运行：它的 100 条语言清单已经作为提示放进了润色请求里。
+- RunPod 上用第 1 步的 BF16 仓库（不用没测过的 FP8 仓库）：开 Pod、传程序包、装 vLLM 0.33.0、取回结果的完整做法见 `2-branch2/README.md`“在 RunPod 上跑”。
 
 详见 `2-branch2/README.md`。
 
@@ -127,7 +128,7 @@ v0.4.3 另外有三项：
 bash check_all.sh
 ```
 
-五套测试：coop 142 项（原 96 + 新 46），nt27b 97 项（原 86 + 新 11），合并与留存率 23 项（原 7 + 新 16），交叉审查打包 4 项，融合 notebook 58 项（需要 numpy、torch、safetensors，端到端训练测试另需 transformers 和 peft；没有时跳过）。结果见 `CHANGES.md`。
+五套测试：coop 142 项（原 96 + 新 46），nt27b 114 项（原 86 + 新 28），合并与留存率 23 项（原 7 + 新 16），交叉审查打包 4 项，融合 notebook 58 项（需要 numpy、torch、safetensors，端到端训练测试另需 transformers 和 peft；没有时跳过）。结果见 `CHANGES.md`。
 
 ## 需要你验证
 
@@ -163,5 +164,5 @@ bash check_all.sh
 
 **RunPod（nt27b）**
 
-14. vLLM 能否加载第 1 步的仓库：BF16 在 80GB 卡上没问题；FP8（128×128 分块 e4m3）在 H100 上原生支持，A100 要先看冒烟样本。私有仓库要设 `HF_TOKEN`。
+14. vLLM 0.33.0 能否在 80GB 卡上按 BF16、纯文本加载第 1 步的 BF16 仓库（`run.log` 里有没有“去掉 --limit-mm-per-prompt 重启”，打印的 vLLM 版本和 GPU）。FP8 仓库这次不用，仍然没有生成测试。私有仓库要设 `HF_TOKEN`。
 15. `run_gpu.sh` 打印 “模型 … 固定在 commit …”，vLLM 日志里下载的是这个 commit。

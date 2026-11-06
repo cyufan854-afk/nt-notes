@@ -1,3 +1,16 @@
+# nt-final-stage 版 · 在 RunPod 上跑第 1 步的模型（2026-11-06，版本号仍为 1.1.1）
+
+`gpu/run_gpu.sh`（请求、回答和校验都没变；不设 `QUANTIZATION` 时回答缓存的身份与以前相同，已有回答照常沿用）：
+- RunPod 上把 Hugging Face 缓存放到 `/workspace` 卷（只设 `HF_HUB_CACHE` / `HF_XET_CACHE`，登录 token 的位置不变；已设 `HF_HOME` / `HF_HUB_CACHE` 时不动）。
+- `PREFETCH=1`（默认）：Hub 上的模型先用 `hf download` 按 commit 下到缓存再启动 vLLM。下载不再占就绪的 30 分钟；没有 token、commit 不对时马上停下。下载前打印缓存所在盘的剩余空间。
+- `TEXT_ONLY=1`（默认）：`--limit-mm-per-prompt '{"image":0,"video":0}'`，与第 1 步的生成把关相同；vLLM 因这一项启动失败时去掉它重启一次（启动时打印的 non-default args 不算）。
+- `--max-num-seqs` 等于 `CONC`。
+- `QUANTIZATION=fp8` 等：传给 vLLM，并进入回答缓存的身份。
+- 打印 GPU 型号和显存，BF16 放不下时提示；就绪后从 `vllm.log` 读出 vLLM 版本，与 `VLLM_EXPECTED`（默认 0.33.0）不同时提示。
+- `AUTO_STOP=1`：结果在 RunPod 的容器盘上时拒绝开跑（停机会清空容器盘），这次退出也不停机；停机先用 `runpodctl stop pod`，失败再用新写法 `runpodctl pod stop`。
+- README 新增“在 RunPod 上跑”：用哪个仓库、Pod 怎么开、怎么传、怎么取回、出问题怎么办。
+- 新增 17 项测试（`tests/test_runpod.py`），原有测试一行未改，共 114 项。
+
 # nt-final-stage 版（2026-10-31 / 11-01，版本号仍为 1.1.1）
 
 - 新增 `branch2.py`：第 2 步总控（prepare / import / status / next），三类请求全部基于 baseline、一次 GPU 跑完；Mac 上分润色、初筛修补、引用核查修补三个阶段应用，每个阶段留一份稿子（`stages/`），给 agent 的任务说明自动生成，每步检查 label 与编号环境，收尾写 `../branch2.tex` 和来源统计。`qwen_polish.py` 只作为公共模块保留，不再单独运行。新增 3 项测试。

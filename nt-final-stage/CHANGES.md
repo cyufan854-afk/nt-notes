@@ -337,6 +337,25 @@ pi 在难题上的失败多半是写到 8192 token 被截断，写完答错的�
 
 **云盘清理**（`qwen38_efficientthink/`，两个仓库都已上传）：`veto/selected-c806a46b…`（52 GB）和 `fp8/2bc905524d1ab7f44440c3f5`（约 37 GB）可以直接删；`aux_delta`（48 GB）、`searched_delta`（46 GB）、`tm_delta`（12 GB）、`tm_delta2`（6.8 GB）、`component_store`（2.6 GB）只在要重跑融合时有用，删了以后重跑要重算好几个小时。`contrast/`、`veto/request.json`、`veto/result.json`、`eval-selected.json` 和各记录 json 都很小，留着。删完记得清空回收站。
 
+### 追加（2026-11-06）：第 2 步在 RunPod 上跑
+
+**用哪个仓库**：BF16 `YFC-112358/Qwen3.8-27B-pi-AuxMix-v1` @ `0708c99c…`，80GB 卡（H100 或 A100）上按 BF16 跑，不用 FP8 仓库。这份权重与交去生成把关的逐文件一致；FP8 仓库没有生成测试，而第 2 步整体只有约 6.6M 输入、0.6M 输出 token（`estimate`，单卡一小时左右），FP8 省下的时间不值得另做一轮验证。想与把关时完全一样（BF16 仓库 + vLLM 在线 FP8）可以加 `QUANTIZATION=fp8`。
+
+**`2-branch2/gpu/run_gpu.sh`**（请求、回答、校验都没变；不设 `QUANTIZATION` 时回答缓存的身份与以前逐字相同）：
+- **缓存放在卷上**：RunPod 的容器盘一般放不下 54 GB 的权重，停机时还会被清空。有 `/workspace`、没有另设 `HF_HOME` / `HF_HUB_CACHE` 时，设 `HF_HUB_CACHE`、`HF_XET_CACHE` 到 `/workspace/.cache/huggingface/`。不改 `HF_HOME`，所以 `hf auth login` 存的 token 照常能找到。
+- **先下载、再启动**（`PREFETCH=1`）：原来模型由 vLLM 启动时下载，54 GB 在慢的节点上可能占掉大半个 30 分钟的就绪时限，私有仓库没有 token 时也要等 vLLM 报错。现在 Hub 上的模型先 `hf download 仓名 --revision commit`，失败（token、权限、commit、磁盘）马上停下并说明；之后 vLLM 用同一个 commit 从缓存读。没有 `hf` 命令时退回原来的做法。下载前打印缓存所在盘的剩余空间，不到 60 GiB 时提示。
+- **纯文本**（`TEXT_ONLY=1`）：`--limit-mm-per-prompt '{"image":0,"video":0}'`，不给视觉编码器留显存，与第 1 步对比对 notebook 的设置相同。vLLM 因这一项启动失败（不认这个参数，或模型不是多模态的）时去掉它重启一次，第一次的日志存为 `vllm-text-only.log`；启动时打印的 non-default args 不算，所以显存不够之类的失败不会白白重启。
+- `--max-num-seqs` 等于 `CONC`（默认 64，与第 1 步相同），不为用不到的批大小捕获 CUDA graph。
+- `QUANTIZATION`：传给 vLLM 的 `--quantization`，并进入回答缓存的身份。
+- **提示**：打印 GPU 型号和显存，BF16 放不下时建议 80GB 卡或 `QUANTIZATION=fp8`；就绪后从 `vllm.log` 读出 vLLM 版本，不是 0.33.0（`VLLM_EXPECTED`）时提示。都只提示，不停。
+- **`AUTO_STOP` 不会丢结果**：RunPod 停机会清空容器盘。`AUTO_STOP=1` 而任务目录在容器盘上（`df` 的挂载点是 `/`）时，开跑前就停下，而且这次退出也不停机（写测试时发现：原样退出的话，清理函数照样会打包到容器盘再停机）。停机先用 `runpodctl stop pod`，失败再试新版的 `runpodctl pod stop`。
+
+**文档**：`2-branch2/README.md` 新增“在 RunPod 上跑”：仓库和 commit、Pod 怎么开（GPU、模板、容器盘 40 GB、卷 100 GB、`HF_TOKEN` 用 RunPod secret）、Mac 上打包和 `runpodctl send`、Pod 上装 `vllm==0.33.0` 并用 `nohup` 运行、取回和 `import`、用完 Terminate，以及出问题时看什么。主 README 第 2 步的命令填上了这次的仓库和 commit。
+
+**测试**：新增 `2-branch2/tests/test_runpod.py` 17 项，用假的 vllm / hf / df / nvidia-smi / runpodctl：按 commit 下载且在 vLLM 之前、缓存在卷上、已有 `HF_HOME` 不动、下载失败时不启动 vLLM 并提到 `HF_TOKEN`、本地模型和 `PREFETCH=0` 不下载、没有 `hf` 时由 vLLM 下载、磁盘不足的提示；默认参数（纯文本、BF16、`--max-num-seqs`、前缀缓存）且身份不变、`fp8` 进身份、非法的 `QUANTIZATION` 被拒；纯文本被拒时只重启一次、别的启动失败不重启、`TEXT_ONLY=0`；版本提示、显存提示；`AUTO_STOP` 在容器盘上拒绝且不停机、在卷上照常停机、新旧两种 `runpodctl` 写法。原有 17 项 GPU 测试一行未改，照样通过。
+
+另外在本环境把真实的 nt27b 接上仓库自带的假模型服务（`tools/mock_server.py`，冒充 vLLM），完整跑了一遍改过的 `run_gpu.sh`：3090 条请求冒烟、全量、重试、收集、完整验证都通过，退出码 0；结果包在一份新的 Mac 侧副本里 `branch2.py prepare` → `import` → `status` → `next` 也都接得上。真实的 vLLM 0.33.0、真实的 27B 和 RunPod 都没有在这里运行过。
+
 ## 三、测试结果
 
 在本环境运行（Python 3.13.18；notebook 测试用 torch 2.15.0、numpy 2.5.4、safetensors 0.8.0；本机没有 latexmk / pdflatex，也没有可用的 Docker）：
@@ -347,7 +366,7 @@ $ PYTHON=<装了 torch 的 python> bash check_all.sh
 Ran 142 tests in 16.748s
 OK (skipped=3)
 == 2-branch2
-Ran 97 tests in 8.432s
+Ran 114 tests in 11.847s
 OK (skipped=1)
 == 3-combine
 Ran 23 tests in 0.035s
@@ -363,10 +382,12 @@ OK
 | 套件 | 原有 | 新增 | 结果 | 跳过的 |
 |---|---|---|---|---|
 | coop（`5-final-review`） | 96 | 46 | 142 通过 | 3 项：2 项真实 latexmk 编译（本机没有 latexmk；你的 Mac 上会跑），1 项 Docker 隔离集成测试（需显式开启） |
-| nt27b（`2-branch2`） | 86 | 11 | 97 通过 | 1 项：实际 pdflatex 编译（本机没有 pdflatex） |
+| nt27b（`2-branch2`） | 86 | 28 | 114 通过 | 1 项：实际 pdflatex 编译（本机没有 pdflatex） |
 | 合并与留存率（`3-combine`） | 7 | 16 | 23 通过 | — |
 | 融合 notebook（`1-model-merge`） | — | 119 | 119 通过 | — |
 | 交叉审查打包（`4-cross-review`） | — | 4 | 4 通过 | — |
+
+（2026-11-06 第 2 步在 RunPod 上跑的改动之后，在本环境重跑了 coop、nt27b、合并与留存率、交叉审查打包四套，结果同上，nt27b 为 114 项；本环境没有 torch，融合 notebook 一套没有重跑，那部分代码这次没动。）
 
 原有测试文件一行没删、一行没改；只在 `2-branch2/tests/test_gpu_runner.py`、`3-combine/test_retention.py`、`test_run_retention.py`、`test_merge_check.py` 里追加了测试。详细的逐项输出见 `5-final-review/docs/test-results.txt`，或用 `-v` 重跑。
 
@@ -376,6 +397,7 @@ OK
 - agy 的实际参数和事件格式、Argon 的 slug（默认配置写的 `gemini-4-argon` 是猜的）、报错文本；
 - SenseNova 的远程代码与 config 是否与模型卡一致、前向闸门、实际用时；
 - e16：A100 上 vLLM 采样与把关、对比目标的逐层评分、分量筛选——2026-11-06 已在 Colab 上完整跑通，见上面的运行记录；
-- vLLM 能否加载 FP8 仓库、FP8 仓库的生成质量（还没有测）。
+- 第 2 步：vLLM 0.33.0 在 RunPod 上按 BF16、纯文本加载 BF16 仓库，`hf download` 的实际行为；
+- vLLM 能否加载 FP8 仓库、FP8 仓库的生成质量（还没有测；第 2 步不用它）。
 
 这些路径都用假程序、小模型或合成数据测过，但没有在真实的 agy、真实的 SenseNova 权重和真实的 GPU 上运行过。

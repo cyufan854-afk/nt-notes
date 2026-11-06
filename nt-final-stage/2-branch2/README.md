@@ -30,12 +30,75 @@ python3 branch2.py next                          # 一步一步往下走（见�
   - 初筛和引用核查是 27B 提出、agent 决定并写入的。
   - 第 3 步的 `run_retention.py` 看到 `stages/` 里的三份稿子，会把 27B 的改动按这三个阶段分开统计。
 - 第 1 步的成品：BF16 仓库是笔记本的 `output_repo`，commit 在笔记本的 `uploaded.json`（或 Hub 页面）里；FP8 仓库是 `output_repo + "-FP8"`，commit 在 `fp8_uploaded.json`。`MODEL` 是 Hub 仓名、`MODEL_REVISION` 是 40 位 commit 时，`run_gpu.sh` 会把它作为 `--revision` 交给 vLLM，下载的正是这一版，它同时进入回答缓存的身份。仓库默认私有，RunPod 上要设 `HF_TOKEN`。
-- **BF16 还是 FP8**：
+- **BF16 还是 FP8**：这次用 BF16 仓库，理由和完整做法见下一节。
   - FP8 仓库是 128×128 分块的 e4m3 权重（`quant_method: fp8`，动态激活），vLLM 在 H100 上原生支持。
   - A100 没有 FP8 计算单元，能否用 weight-only 方式加载分块 FP8 取决于 vLLM 版本，要先用冒烟样本试。
   - BF16 在 80GB 卡上也放得下（权重约 54GB）。
   - 两者的回答不保证逐字相同，选定一个后整次运行不要换；换了要换新的 `MODEL_REVISION`。
 - 也可以不用 `branch2.py`，按下面各节直接用 `nt27b.py` 的子命令；那样就没有阶段稿和来源统计。
+
+## 在 RunPod 上跑（第 1 步的成品）
+
+**用哪个仓库**：BF16 仓库 `YFC-112358/Qwen3.8-27B-pi-AuxMix-v1`，commit `0708c99c1ed8cd893ce03014adf1d8f0a811ebe4`，不设 `QUANTIZATION`，在 80GB 的卡上按 BF16 跑。
+- 这份权重与交去生成把关的那份逐文件一致（权重指纹 `c806a46b…`，见 `../CHANGES.md` 第 1 步的运行记录）。FP8 仓库只做过格式转换和文件校验，没有生成测试。
+- 整个第 2 步约 6.6M token 输入、0.6M token 输出（`python3 nt27b.py estimate job-27b`），单卡一小时左右。FP8 省下的这点时间，不值得为它另做一轮生成验证。
+- 第 1 步的生成把关是“BF16 仓库 + vLLM 在线 FP8”（A100）。直接跑 BF16 比那时更接近原权重；想与把关时完全一样，加 `QUANTIZATION=fp8`（它进入回答缓存的身份，与不加时的回答不混用）。
+
+**开 Pod**（RunPod 控制台 → Pods → Deploy）：
+1. GPU：1 张 H100 80GB 或 A100 80GB，哪个有货用哪个。两种卡跑 BF16 是同一条路径。
+2. 模板：Runpod PyTorch（2.x 的任何一版，带 JupyterLab、SSH 和 `/workspace`）。CUDA 版本筛选里选最新的。
+3. 磁盘：Container Disk 40 GB（vLLM 和它带的 torch 装在这里）；Volume Disk 100 GB，挂在 `/workspace`（模型缓存、程序包、结果都放这里）。容器盘在停机时会被清空，卷不会。
+4. 环境变量：先在 Settings → Secrets 建一个 secret（例如叫 `hf_token`，值是对 `YFC-112358` 的私有仓库有读权限的 token），再在 Pod 的环境变量里加 `HF_TOKEN`，值写 `{{ RUNPOD_SECRET_hf_token }}`。也可以开机后在终端里 `export HF_TOKEN=…`。token 不要写进文件。
+
+**把程序包传上去**（Mac，在 `nt-final-stage/` 里；Mac 上装 runpodctl：`brew install runpod/runpodctl/runpodctl`）：
+
+```bash
+(cd 2-branch2 && python3 branch2.py prepare)
+COPYFILE_DISABLE=1 tar -czf 2-branch2.tgz --exclude stages --exclude __pycache__ 2-branch2
+runpodctl send 2-branch2.tgz          # 打印一个一次性的取件码
+```
+
+也可以在 Pod 的 JupyterLab 里把 `2-branch2.tgz` 直接拖进 `/workspace` 上传。
+
+**在 Pod 上**（JupyterLab 的 Terminal 或 SSH）：
+
+```bash
+cd /workspace
+runpodctl receive <取件码>
+tar -xzf 2-branch2.tgz
+python3 -m pip install "vllm==0.33.0"
+cd 2-branch2
+MODEL=YFC-112358/Qwen3.8-27B-pi-AuxMix-v1 MODEL_REVISION=0708c99c1ed8cd893ce03014adf1d8f0a811ebe4 JOB=job-27b GPU_PRICE=<时价> nohup bash gpu/run_gpu.sh > run.log 2>&1 &
+tail -f run.log                       # Ctrl-C 只是不看了，不影响运行
+```
+
+`run_gpu.sh` 依次做这些（`nohup` 让网页终端断开也不影响）：
+1. 把 Hugging Face 缓存放在 `/workspace/.cache/huggingface`，用 `hf download` 按 commit 下载模型（约 54 GB，已经下好的跳过）。没有 token、没有权限、commit 写错时马上停下，不会等到 vLLM 的 30 分钟就绪时限。
+2. 打印 GPU 和缓存所在盘的剩余空间；不是 80GB 的卡、或空间不到 60 GiB 时提示。
+3. 启动 vLLM（日志 `vllm.log`）：BF16、纯文本（`--limit-mm-per-prompt` 图像和视频为 0，同第 1 步；vLLM 因这一项启动失败时去掉它重启一次）、`--max-num-seqs` 等于并发数 64、前缀缓存。就绪后打印 vLLM 的版本，不是 0.33.0 时提示。
+4. 每类 3 条冒烟样本，验证通过才全量；全量、重试出错的、收集、完整验证。
+5. 无论成功失败都打包成 `/workspace/2-branch2/results-….tgz`。
+
+用时大约：装 vLLM 5 分钟，下载 5–20 分钟，vLLM 启动 5–10 分钟，三类请求一小时左右。
+
+**取回结果**：
+
+```bash
+runpodctl send "$(ls -t results-*.tgz | head -1)"   # Pod 上，在 /workspace/2-branch2 里；发最新的那个
+runpodctl receive <取件码>             # Mac 上，在 2-branch2/ 里
+python3 branch2.py import results-….tgz
+python3 branch2.py status
+```
+
+取回后在控制台 **Terminate** 这个 Pod：Stop 只停 GPU，卷还会继续按存储计费。
+
+**出问题时**：
+- `下载 … 失败`：`HF_TOKEN` 没设、没有读权限，或者 commit 写错了。
+- `pip install` 报 externally-managed-environment：这台 Pod 用完就删，加 `--break-system-packages` 再装。
+- `vLLM 启动失败`：看 `vllm.log` 的最后几十行。版本不是 0.33.0 时先装回 0.33.0 再试；报 CUDA 驱动太旧时，换一台 CUDA 版本更新的机器。
+- 中途断了：用同样的命令再跑一遍。commit 不变，已经完成的回答都保留，只补没做完的；模型也不会重新下载。
+- 冒烟样本没通过：脚本在全量之前停下并打包，把 `run.log`、`vllm.log` 和结果包带回来看。
+- `AUTO_STOP=1`（跑完或出错后自动停机）只在没人看着时用。程序包要在 `/workspace` 下（上面的做法就是）；脚本发现结果在容器盘上会拒绝开跑，因为停机会清空容器盘。停机后要先在控制台重新 Start 这个 Pod 才能取回结果。
 
 ## 任务进度与排错
 
@@ -94,7 +157,7 @@ data/nt.before-fixes.tex     审计表行号对应的旧讲义
 data/ntaudit-DS反馈分拣.csv  审计表
 gpu/run_gpu.sh              GPU 批处理入口
 tools/mock_server.py        本地假模型服务
-tests/                      回归测试
+tests/                      回归测试（test_runpod.py：RunPod 上的下载、vLLM 参数、自动停机）
 CHANGELOG.md                修订记录
 ```
 
