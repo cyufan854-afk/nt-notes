@@ -1,4 +1,4 @@
-# 五家入口适配：v0.3（Gemini 一行 v0.4.2 更新）
+# 入口适配：v0.3（Gemini 一行 v0.4.2 更新；Muse Code 一行 v0.4.4 新增）
 
 接入方案以 2026-10-27 官方文档为依据。程序已经有对应适配器和离线测试；你账户的真实登录、模型权限和额度需要在你的 Mac 上验证。CLI 可选模型不一定与网页聊天产品相同，工具不会把网页模型名猜成 CLI 模型 ID。
 
@@ -9,6 +9,7 @@
 | Google AI Pro（Gemini Argon） | Antigravity CLI `agy`（v0.4.2 起；Gemini CLI 已停止个人订阅服务） | 第一次交互运行 `agy` 时登录，之后读缓存凭据 | headless：stdin stream-json，取 `result` 事件的 `response`；`--model` 固定 Argon，`--print-timeout` 按岗位超时 |
 | Gemini API key（付费） | Gemini CLI（kind `gemini`，保留） | `GEMINI_API_KEY`，`auth_mode: native` | headless JSON `response` |
 | Kimi Pro | Kimi Code CLI | `kimi login`，浏览器设备授权 | `kimi -p`，JSONL Assistant 消息 |
+| Muse Code Power / Maximum（Muse Wonder Full） | Muse Code CLI `muse`（kind `muse`，v0.4.4） | 第一次交互运行 `muse` 时在浏览器登录 dev.meta.ai，之后读缓存凭据 | `muse exec --json --prompt-file`，取 `run.terminal.completed` 的 `text`；`--model` 固定 Wonder Full，每次核对 `run.model.configured` |
 | DeepSeek API | 官方 HTTPS API | `DEEPSEEK_API_KEY` 环境变量 | Chat Completions；可查询 `/models` |
 
 Kimi 的具体套餐权益、可用模型和余额以原生账户显示为准，不假设网页会员给任意模型 API 额度。
@@ -156,9 +157,14 @@ printf '%s\n' '{"event":"user","message":{"content":"Reply with the single word 
 - 最后一条若报参数错误（例如 `-p` 必须带提示文字），把 provider 改成 `"input": "argv"`（提示改作 `-p` 的参数，输出用 `--output-format json`）；macOS 的参数总长上限约 1 MB，coop 最长的提示也放得下。
 - `configure gemini --kind gemini` / `--kind antigravity` 在两种入口之间切换（切到 antigravity 时同时给 `--model`）。
 
-## v0.4.2：临时额度（Grok CLI、Kimi）
+## v0.4.4：临时额度（Muse Code 的 Muse Wonder Full、Kimi）；Grok 已移除
 
-- Grok：kind `grok`，官方 Grok CLI，`grok login` 登录（订阅，含试用），headless `grok --no-auto-update -p "<prompt>" --output-format json [-m MODEL]`。依据 docs.x.ai/build/cli/headless-scripting；json 信封的字段名以你 Mac 上的实际输出为准（coop 依次找 result / response / text / output / content / message）。订阅模式去掉 `GROK_CODE_XAI_API_KEY`、`XAI_API_KEY`。
-- 在 Mac 上核对：`grok --help`（`-p`、`--output-format json`、`-m`、`--no-auto-update` 是否都在；有没有只读或关闭工具的开关，有的话写进 provider 的 `extra_args`）、`grok -p "Reply with OK" --output-format json`（看 JSON 字段）、`python3 -m coop --workspace .coop-final check grok`。
+- Grok：v0.4.2 的 kind `grok` 已移除。旧工作区 `config.json` 里的 `grok` 一项不能再上岗，`doctor` 会提示删掉。
+- Muse Wonder Full：kind `muse`，Meta 的 Muse Code CLI，订阅登录（Wonder Full 只在 Power / Maximum 档）。headless `muse exec --json --prompt-file F --workspace W --no-session-log --contributor-mode off --model <id>`，依据 [dev.meta.ai/docs/muse-code](https://dev.meta.ai/docs/muse-code/extending)。JSONL 的字段（`payload_type` / `payload`、`run.terminal.completed` 的 `text`、`run.model.configured` 的 `model_id`）和 Wonder Full 的 id（`muse-wonder-full-1.0`）来自第三方实测，以你 Mac 上的实际输出为准。订阅模式去掉 `META_API_KEY`、`MODEL_API_KEY`。
+- 在 Mac 上核对：
+  - `muse --help` 和 `muse exec --help`：确认 `--json`、`--prompt-file`、`--workspace`、`--no-session-log`、`--contributor-mode`、`--model`、`--reasoning-effort` 都在。
+  - 在 muse 里用 `/models` 看 Wonder Full 的 id。
+  - `muse exec --json --model <id> "Reply with OK" > muse-ok.jsonl`：看事件的字段名，以及 `run.model.configured` 报告的模型。
+  - 最后运行 `python3 -m coop --workspace .coop-final check muse`。
 - Kimi：kind `kimi` 不变；macOS 上提示长度按参数总长计算。开放平台的 API 额度用 kind `api` 的 provider（见 README）。
 - 换人：`edit resume EDIT_ID --use 岗位=provider`，见 README“临时额度”一节。

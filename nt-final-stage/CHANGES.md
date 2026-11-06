@@ -356,6 +356,50 @@ pi 在难题上的失败多半是写到 8192 token 被截断，写完答错的�
 
 另外在本环境把真实的 nt27b 接上仓库自带的假模型服务（`tools/mock_server.py`，冒充 vLLM），完整跑了一遍改过的 `run_gpu.sh`：3090 条请求冒烟、全量、重试、收集、完整验证都通过，退出码 0；结果包在一份新的 Mac 侧副本里 `branch2.py prepare` → `import` → `status` → `next` 也都接得上。真实的 vLLM 0.33.0、真实的 27B 和 RunPod 都没有在这里运行过。
 
+### 追加（2026-11-06）：第 5 步去掉 Grok、保留 Kimi、新增 Muse Code 的 Muse Wonder Full（coop v0.4.4）
+
+**去掉 Grok**（`5-final-review/`）：
+- 删掉了 provider kind `grok`、它的参数和解析代码、默认配置里的 `grok` 条目，以及 README / ENTRYPOINTS 里的说明。
+- 以前建的工作区 `config.json` 里留着的 `grok` 一项不影响别的，但不能再上岗：`--use`、排班表、候补名单都会拒绝并说明原因，`doctor` 提示删掉这一项，直接调用时报“已移除”。
+- 排班表、候补名单、换人的说明和测试里，原来拿 grok 当替补的例子都改成 muse。
+
+**Kimi** 不变：仍在默认配置里，不在任何岗位上。
+
+**新增 Muse Code（kind `muse`），默认模型 Muse Wonder Full**：
+- **依据**：Meta 的官方文档（dev.meta.ai/docs/muse-code 的 Configuration、Extending and automating）写了这些：
+  - `muse exec` 跑一个提示就退出；`--json` 输出 JSONL 事件；
+  - `--prompt-file`、`--model`、`--reasoning-effort`、`--workspace`、`--no-session-log`、`--contributor-mode on|off`（只影响这一次运行）、`--max-model-steps`；
+  - 退出码 0 / 1 / 2 / 130 / 143。
+
+  官方文档没写的两样来自第三方，要你核对：
+  - JSONL 的字段：每行 `{"payload_type", "payload"}`；`run.model.configured` 带 `model_id`，`run.terminal.completed` 带最终的 `text`，`run.usage` 带用量和订阅额度。来自 github.com/fuad-daoud/relevo 的 issue 1357（Muse Code 1.4.11 的实测）。
+  - Wonder Full 的 id `muse-wonder-full-1.0`：来自 github.com/402goose/orc 的 issue 70。
+
+  只在 Power / Maximum 订阅里有、Model API 不卖，这一点来自第三方站点 musecodes.io，没有在 Meta 的官方文档里核实。
+- **调用**：`muse exec --json --prompt-file <调用目录>/muse-prompt.txt --workspace <空的 muse-workspace/> --no-session-log --contributor-mode off --model <id>`。
+  - 每次新会话；提示走文件（最长 18 万字）。
+  - `effort`（`--reasoning-effort`，不接受 none）和 `max_model_steps` 可选。
+- **不回退**：Muse Code 没有命令行的模型列表，所以每次调用都核对 `run.model.configured` 报告的模型（忽略 `meta/` 这类前缀和 `#high` 这类后缀）。与配置不同就按 `model` 错误停下整次运行。没有这个事件时照常用，`transport.json` 里记为 null。
+- **权限**：保持 Muse Code 默认的审批方式。
+  - coop 从不传 `--yolo`、`--disable-approval`、`--disable-sandbox`、`--approval-mode`。
+  - `extra_args` 里写这些，或写 coop 自己设的参数（`--model`、`--session-id`、`--contributor-mode`、`--workspace` 等），会被拒绝。
+- **计费**：订阅模式下去掉 `META_API_KEY`、`MODEL_API_KEY`。`muse auth set` 存下的 key 优先于浏览器登录，coop 看不到，所以 `doctor` 和文档都提醒不要存。
+- **报错分类**：Muse 的 stdout 会回显提示，讲义里的 429、401 会被原来的规则当成额度或登录错误，所以退出码非 0 时只看 stderr 和失败事件（`run.terminal.failed` / `cancelled`、含 error 的事件）。认证一类补上了 “not signed in / please sign in / sign in to” 几种说法。
+- **其他**：
+  - 独立性检查里 kind `muse` 算 Meta 一家。
+  - `login muse` 打开 muse，第一次在浏览器里登录；`check muse` 的结果里有 `observed_model`。
+  - `transport.json` 记实际模型、结束状态、用量（含额度百分比）和回答取自哪个事件。
+- **文档**：`5-final-review/README.md` 开头新增 v0.4.4 一节，“临时额度”改成 Muse Wonder Full 和 Kimi；`docs/ENTRYPOINTS.md` 加了 Muse Code 一行和核对步骤；主 README 第 5 步、“需要你验证”第 8 条已更新；`docs/test-results.txt` 重新生成。版本号 0.4.3 → 0.4.4。
+
+**测试**：`tests/test_temporary_providers.py` 里 Grok 的 4 项换成 Muse Code 的 7 项，用一个按上面的事件格式输出的假 `muse` 程序：
+- 参数、空工作目录、20 万字的提示走文件、`META_API_KEY` 不外传、禁用的参数；
+- 模型核对（被换成 Spark 时停下整次运行、带前缀和后缀的 id 算同一个、没报告时照常）；
+- 未登录、额度、内部错误、被取消的分类，以及回显的提示里有 429 / 401 时不误判；
+- 解析器的几种形状；默认配置（有 muse 和 kimi、没有 grok、都不在岗位上）；
+- `doctor` 的提示和遗留的 grok 一项。
+
+换人、排班、候补测试里的替补从 grok 改名为 muse（都是演示 provider，测的逻辑不变），另加一条“遗留的 grok 不能上岗”。这两个测试文件是本项目新加的，不是归档里原有的。coop 共 145 项，全部通过。
+
 ## 三、测试结果
 
 在本环境运行（Python 3.13.18；notebook 测试用 torch 2.15.0、numpy 2.5.4、safetensors 0.8.0；本机没有 latexmk / pdflatex，也没有可用的 Docker）：
@@ -363,7 +407,7 @@ pi 在难题上的失败多半是写到 8192 token 被截断，写完答错的�
 ```
 $ PYTHON=<装了 torch 的 python> bash check_all.sh
 == 5-final-review
-Ran 142 tests in 16.748s
+Ran 145 tests in 15.685s
 OK (skipped=3)
 == 2-branch2
 Ran 114 tests in 11.847s
@@ -381,13 +425,13 @@ OK
 
 | 套件 | 原有 | 新增 | 结果 | 跳过的 |
 |---|---|---|---|---|
-| coop（`5-final-review`） | 96 | 46 | 142 通过 | 3 项：2 项真实 latexmk 编译（本机没有 latexmk；你的 Mac 上会跑），1 项 Docker 隔离集成测试（需显式开启） |
+| coop（`5-final-review`） | 96 | 49 | 145 通过 | 3 项：2 项真实 latexmk 编译（本机没有 latexmk；你的 Mac 上会跑），1 项 Docker 隔离集成测试（需显式开启） |
 | nt27b（`2-branch2`） | 86 | 28 | 114 通过 | 1 项：实际 pdflatex 编译（本机没有 pdflatex） |
 | 合并与留存率（`3-combine`） | 7 | 16 | 23 通过 | — |
 | 融合 notebook（`1-model-merge`） | — | 119 | 119 通过 | — |
 | 交叉审查打包（`4-cross-review`） | — | 4 | 4 通过 | — |
 
-（2026-11-06 第 2 步在 RunPod 上跑的改动之后，在本环境重跑了 coop、nt27b、合并与留存率、交叉审查打包四套，结果同上，nt27b 为 114 项；本环境没有 torch，融合 notebook 一套没有重跑，那部分代码这次没动。）
+（2026-11-06 第 2 步在 RunPod 上跑的改动之后，在本环境重跑了 coop、nt27b、合并与留存率、交叉审查打包四套，结果同上，nt27b 为 114 项；之后第 5 步去掉 Grok、新增 Muse Code，coop 为 145 项；本环境没有 torch，融合 notebook 一套没有重跑，那部分代码这次没动。）
 
 原有测试文件一行没删、一行没改；只在 `2-branch2/tests/test_gpu_runner.py`、`3-combine/test_retention.py`、`test_run_retention.py`、`test_merge_check.py` 里追加了测试。详细的逐项输出见 `5-final-review/docs/test-results.txt`，或用 `-v` 重跑。
 
@@ -398,6 +442,7 @@ OK
 - SenseNova 的远程代码与 config 是否与模型卡一致、前向闸门、实际用时；
 - e16：A100 上 vLLM 采样与把关、对比目标的逐层评分、分量筛选——2026-11-06 已在 Colab 上完整跑通，见上面的运行记录；
 - 第 2 步：vLLM 0.33.0 在 RunPod 上按 BF16、纯文本加载 BF16 仓库，`hf download` 的实际行为；
+- 第 5 步：Muse Code 的实际参数和 `--json` 事件格式、Wonder Full 的 id、未登录和额度用完时的报错原文；
 - vLLM 能否加载 FP8 仓库、FP8 仓库的生成质量（还没有测；第 2 步不用它）。
 
 这些路径都用假程序、小模型或合成数据测过，但没有在真实的 agy、真实的 SenseNova 权重和真实的 GPU 上运行过。

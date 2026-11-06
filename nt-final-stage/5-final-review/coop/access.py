@@ -16,7 +16,7 @@ CATALOG = {
     'gemini': {'entry': 'Gemini CLI（付费 API key 时使用；个人订阅已停止服务）', 'login_argv': [], 'model_picker': 'gemini → /model', 'install_url': 'https://geminicli.com/docs/get-started/installation/', 'auth_url': 'https://geminicli.com/docs/get-started/authentication/'},
     'antigravity': {'entry': 'Antigravity CLI（agy）/ Google AI Pro 订阅', 'login_argv': [], 'model_picker': 'agy models（或 models NAME --fetch）', 'install_url': 'https://antigravity.google/docs/cli', 'auth_url': 'https://antigravity.google/docs/cli/headless'},
     'kimi': {'entry': 'Kimi Code CLI / Kimi Code login', 'login_argv': ['login'], 'model_picker': 'kimi → /model', 'install_url': 'https://www.kimi.com/code/docs/en/kimi-code-cli/guides/getting-started.html', 'auth_url': 'https://www.kimi.com/code/docs/en/kimi-code-cli/reference/kimi-command.html'},
-    'grok': {'entry': 'Grok CLI（grok）/ SuperGrok 订阅（含试用）', 'login_argv': ['login'], 'model_picker': 'grok --help（-m 指定模型）', 'install_url': 'https://docs.x.ai/build/cli', 'auth_url': 'https://docs.x.ai/build/cli/headless-scripting'},
+    'muse': {'entry': 'Muse Code（muse）/ Muse Code 订阅（Wonder Full 要 Power 或 Maximum 档）', 'login_argv': [], 'model_picker': 'muse → /models（Wonder Full 的 id）', 'install_url': 'https://dev.meta.ai/docs/muse-code/configuration', 'auth_url': 'https://dev.meta.ai/docs/muse-code/extending'},
     'cli': {'entry': '配置描述的命令行程序（通用模板，新模型不用改代码）', 'login_argv': [], 'model_picker': '见该程序自己的说明'},
     'api': {'entry': 'OpenAI-compatible Chat Completions API', 'auth_url': 'https://api-docs.deepseek.com/', 'model_picker': 'models NAME --fetch (requires API key)'},
 }
@@ -28,7 +28,7 @@ PREFIXES = {
     'gemini': ('GEMINI_API_KEY', 'GOOGLE_API_KEY', 'GOOGLE_GENAI_USE_VERTEXAI', 'GOOGLE_GENAI_USE_GCA', 'GOOGLE_GEMINI_BASE_URL'),
     'antigravity': ('GEMINI_API_KEY', 'GOOGLE_API_KEY', 'GOOGLE_GENAI_USE_VERTEXAI', 'GOOGLE_GENAI_USE_GCA', 'GOOGLE_GEMINI_BASE_URL'),
     'kimi': ('KIMI_MODEL', 'KIMI_BASE_URL', 'KIMI_API_KEY', 'KIMI_CODE_API_KEY', 'MOONSHOT_API_KEY'),
-    'grok': ('GROK_CODE_XAI_API_KEY', 'XAI_API_KEY', 'GROK_API_KEY'),
+    'muse': ('META_API_KEY', 'MODEL_API_KEY'),
 }
 
 
@@ -323,7 +323,7 @@ def preflight(cfg, names):
     return checked
 
 
-# ---------------------------------------------------------------- prompts passed as a command-line argument (Kimi, Grok)
+# ---------------------------------------------------------------- prompts passed as a command-line argument (Kimi, kind cli)
 
 def argv_prompt_limit(spec, default=60000):
     """Largest prompt (UTF-8 bytes) that can go into one argument. macOS limits only the total of all arguments and the
@@ -340,61 +340,144 @@ def argv_prompt_limit(spec, default=60000):
     return min(default, 131071)
 
 
-# ---------------------------------------------------------------- Grok CLI (grok)
+# ---------------------------------------------------------------- Muse Code (muse), Meta: Muse Wonder Full
 #
-# Headless use as documented at docs.x.ai/build/cli/headless-scripting (2026): `grok -p "<prompt>"` (the prompt is an
-# argument; no stdin input is documented), `-m/--model`, `--output-format json` (one JSON object at the end),
-# `--no-auto-update` for scripts. Login: `grok login` (cached); GROK_CODE_XAI_API_KEY would bill the xAI API instead and
-# is removed in subscription mode. coop never passes -c/--continue: every call is a new session.
+# Headless use as documented at dev.meta.ai/docs/muse-code (Configuration; Extending and automating), Muse Code 1.4.x:
+# `muse exec` runs one prompt to completion and exits; the prompt is an argument or `--prompt-file PATH` (coop prompts
+# reach 180k characters, so always the file); `--json` prints JSONL events; `--model`, `--reasoning-effort`,
+# `--workspace`, `--no-session-log`, `--contributor-mode on|off` (this run only), `--max-model-steps N`.
+# Exit codes: 0 the turn completed, 1 failed or cancelled (also at the step limit), 2 usage error, 130/143 signals.
+# The event schema is not in the official docs. Observed (Muse Code 1.4.11, github.com/fuad-daoud/relevo issue 1357):
+# every line is {"payload_type": …, "payload": {…}}; run.model.configured carries model_id; run.terminal.completed
+# carries the final text; run.usage the token counts and the plan allowance; unknown types are to be ignored.
+# Muse Wonder Full is sold only with the Power / Maximum plans of Muse Code, not on the Model API; its id is not in the
+# official docs (muse-wonder-full-1.0 seen in github.com/402goose/orc issue 70): check it with /models in muse.
+# Credentials: META_API_KEY, then a key stored with `muse auth set`, then the browser sign-in. Subscription mode removes
+# the environment keys; a stored key cannot be seen from here (do not store one). Every call: a new session in an empty
+# workspace, no session log, contributor mode off. Approvals stay at Muse Code's default: coop never passes --yolo,
+# --disable-approval, --disable-sandbox or --approval-mode never, and the prompt says not to use tools.
 
-GROK_FORBIDDEN = ('-c', '--continue', '--resume')
+MUSE_WONDER_FULL = 'muse-wonder-full-1.0'
+MUSE_EFFORTS = ('minimal', 'low', 'medium', 'high', 'xhigh', 'max', 'ultra')
+# Flags coop sets itself, or that would let the agent act without approval or carry context between calls.
+MUSE_FORBIDDEN = ('--yolo', '--disable-approval', '--disable-sandbox', '--approval-mode', '--trust-workspace',
+                  '--session-id', '--allow-workspace-switch', '--contributor-mode', '--workspace', '--prompt-file',
+                  '--json', '--model', '--reasoning-effort', '--max-model-steps', '--no-session-log')
 
 
-def grok_argv(executable, spec, prompt):
+def muse_argv(executable, spec, prompt_file, workspace):
+    model = spec.get('model')
+    if not model:
+        raise ValueError('model: muse provider 必须写明模型 id（Muse Wonder Full）；不写时 Muse Code 用它的默认模型 Muse Spark')
     extra = list(spec.get('extra_args', []))
-    if any(a in GROK_FORBIDDEN for a in extra):
-        raise ValueError('grok 的 extra_args 不能续接以前的会话（-c / --continue）：每次调用都要新开上下文')
-    limit = argv_prompt_limit(spec, 120000)
-    size = len(prompt.encode())
-    if size > limit:
-        raise ValueError(f'Grok 的提示只能作为命令行参数传入：本次 {size} 字节，超过上限 {limit}；'
-                         '在 macOS 上一般不会碰到，必要时在 provider 里写 max_prompt_bytes')
-    argv = [executable, '--no-auto-update', '-p', prompt, '--output-format', 'json']
-    if spec.get('model'):
-        argv += ['-m', spec['model']]
+    bad = [a for a in extra if a.split('=', 1)[0] in MUSE_FORBIDDEN]
+    if bad:
+        raise ValueError(f'muse 的 extra_args 不能有 {bad}：coop 自己设这些参数，或者它们会跳过权限确认、续接以前的会话')
+    argv = [executable, 'exec', '--json', '--prompt-file', str(prompt_file), '--workspace', str(workspace),
+            '--no-session-log', '--contributor-mode', 'off', '--model', model]
+    effort = spec.get('effort')
+    if effort:
+        if effort not in MUSE_EFFORTS:
+            raise ValueError('muse 的 effort 只能是 ' + ' / '.join(MUSE_EFFORTS))
+        argv += ['--reasoning-effort', effort]
+    steps = spec.get('max_model_steps')
+    if steps is not None:
+        if type(steps) is not int or steps <= 0:
+            raise ValueError('muse 的 max_model_steps 必须是正整数')
+        argv += ['--max-model-steps', str(steps)]
     return argv + extra
 
 
-def parse_grok(raw):
-    """{'ok', 'response', 'error'} from `grok -p … --output-format json`: one JSON object (a trailing log line before it is
-    tolerated). The answer text is read from the first of result / response / text / output / content / message."""
-    obj = None
-    for text in [raw] + [l for l in raw.splitlines() if l.strip()][::-1]:
+def _muse_records(raw):
+    """[(payload_type, payload)] of the JSON lines of `muse exec --json`; other lines are skipped."""
+    out = []
+    for line in raw.splitlines():
+        line = line.strip()
+        if not line.startswith('{'):
+            continue
         try:
-            value = json.loads(text)
+            obj = json.loads(line)
         except ValueError:
             continue
+        if not isinstance(obj, dict):
+            continue
+        kind = obj.get('payload_type') or obj.get('type') or ''
+        payload = obj.get('payload') if isinstance(obj.get('payload'), dict) else obj
+        out.append((str(kind), payload))
+    return out
+
+
+def _muse_failure_text(kind, payload):
+    for key in ('error', 'message', 'reason', 'detail', 'terminal', 'text'):
+        value = payload.get(key)
         if isinstance(value, dict):
-            obj = value
-            break
-    if obj is None:
-        raise ValueError('grok 的 json 输出不是 JSON 对象；检查 CLI 版本和 stdout.log')
-    error = obj.get('error')
-    if isinstance(error, dict):
-        error = error.get('message') or json.dumps(error, ensure_ascii=False)
-    status = str(obj.get('status') or obj.get('subtype') or '').lower()
-    failed = bool(obj.get('is_error')) or bool(error) or status.startswith(('error', 'fail'))
-    response = None
-    for key in ('result', 'response', 'text', 'output', 'content', 'message'):
-        if key in obj:
-            response = _text_of(obj[key])
-            if response is not None:
-                break
-    if failed:
-        return {'ok': False, 'response': None, 'error': str(error or response or status or 'grok 报告失败')}
-    if not (isinstance(response, str) and response.strip()):
-        return {'ok': False, 'response': None, 'error': 'grok 的 json 里没有回答文本'}
-    return {'ok': True, 'response': response, 'error': ''}
+            value = value.get('message') or value.get('reason') or json.dumps(value, ensure_ascii=False)
+        if isinstance(value, str) and value.strip():
+            return f'{kind}: {value.strip()}'
+    return kind
+
+
+def muse_errors(raw):
+    """Only the failure records of the stream (never the echoed prompt, which may hold numbers like 429 or 401)."""
+    texts = []
+    for kind, payload in _muse_records(raw):
+        low = kind.lower()
+        if ('error' in low or 'fail' in low or 'cancel' in low or 'denied' in low
+                or (low.startswith('run.terminal') and low != 'run.terminal.completed')):
+            texts.append(_muse_failure_text(kind, payload))
+    return '\n'.join(texts)
+
+
+MUSE_DONE = ('completed', 'complete', 'succeeded', 'success', 'ok', 'done')
+
+
+def parse_muse(raw):
+    """{'ok', 'response', 'error', 'model', 'terminal', 'usage', 'text_source', 'events'} from `muse exec --json`."""
+    records = _muse_records(raw)
+    if not records:
+        raise ValueError('muse 的输出里没有 JSON 事件；检查 --json 和 CLI 版本，查看 stdout.log')
+    events, model, usage, terminal, deltas = {}, None, None, None, []
+    for kind, payload in records:
+        events[kind] = events.get(kind, 0) + 1
+        low = kind.lower()
+        if low == 'run.model.configured':
+            model = payload.get('model_id') or payload.get('model')
+        elif low == 'run.usage':
+            usage = payload
+        elif low.startswith('run.terminal'):
+            terminal = (low, payload)
+        elif low == 'run.output.delta' and isinstance(payload.get('text'), str):
+            deltas.append(payload['text'])
+    result = {'ok': False, 'response': None, 'error': '', 'model': model, 'terminal': None, 'usage': usage,
+              'text_source': None, 'events': events}
+    errors = muse_errors(raw)
+    if terminal is None:
+        result['error'] = errors or 'muse 的输出里没有 run.terminal 事件（运行没有结束？）'
+        return result
+    low, payload = terminal
+    state = payload.get('terminal')
+    result['terminal'] = state if isinstance(state, (str, int, float, bool)) or state is None else json.dumps(state, ensure_ascii=False)
+    done = low == 'run.terminal.completed' or (low == 'run.terminal' and str(state).lower() in MUSE_DONE)
+    if not done:
+        result['error'] = errors or _muse_failure_text(low, payload)
+        return result
+    text = _text_of(payload.get('text')) if 'text' in payload else _text_of(payload)
+    source = 'run.terminal'
+    if not (isinstance(text, str) and text.strip()) and deltas:
+        text, source = ''.join(deltas), 'run.output.delta'
+    if not (isinstance(text, str) and text.strip()):
+        result['error'] = errors or 'muse 运行完成但没有回答文本'
+        return result
+    result.update(ok=True, response=text, text_source=source)
+    return result
+
+
+def muse_model_matches(observed, configured):
+    """True when the model Muse Code reports is the configured one (provider prefixes and #effort tags aside)."""
+    def norm(x):
+        x = str(x or '').strip().lower().split('#', 1)[0]
+        return x.rsplit('/', 1)[-1]
+    return bool(observed) and norm(observed) == norm(configured)
 
 
 # ---------------------------------------------------------------- generic CLI provider (kind "cli")
@@ -512,7 +595,8 @@ def classify_error(message):
         ('billing', ('billing:', 'modelprovider'), '订阅模式下拒绝走 API 计费：检查 ~/.gemini/antigravity-cli/settings.json 的 modelProvider 与 API key，或明确改用 auth_mode native。'),
         ('rate_limit', ('429', 'rate limit', 'rate-limit', 'quota', 'usage limit', '额度', 'resource_exhausted', 'resource exhausted',
                         'too many requests', 'try again later', 'at capacity'), '等待额度恢复后 resume，或选择你已配置的其他模型。不会自动购买或切换付费入口。'),
-        ('authentication', ('401', 'unauthorized', 'not logged', 'authentication', 'login', '登录', '环境变量', 'unauthenticated'), '运行 login NAME，或设置 API 所需的环境变量。'),
+        ('authentication', ('401', 'unauthorized', 'not logged', 'authentication', 'login', '登录', '环境变量', 'unauthenticated',
+                            'not signed in', 'please sign in', 'sign in to'), '运行 login NAME，或设置 API 所需的环境变量。'),
         ('model', ('model not found', 'invalid model', 'model_not_found', 'model_not_supported', 'unknown model', 'unrecognized model',
                    'unsupported model', 'no such model', 'not in agy models', '模型 slug'), '用官方 CLI /model、agy models 或 models NAME --fetch 查询，配置准确模型 ID；不会回退到其他模型。'),
         ('permission', ('403', 'forbidden', 'permission denied'), '检查账户权限、可用地区和所选模型；403 不一定是密钥错误。'),
@@ -557,6 +641,17 @@ def inspect_provider(name, spec):
         if result['billing']['billing'] != 'subscription':
             result['warning'] = result['billing']['note']
         result['model_check'] = 'check NAME 或 models NAME --fetch 会运行 agy models 核对 slug'
+    if kind == 'muse':
+        result['effort'] = spec.get('effort') or 'CLI default (high)'
+        result['model_check'] = ('每次调用都核对 run.model.configured 报告的模型，与配置的不同就停下整次运行；'
+                                 'Wonder Full 的 id 在 muse 里用 /models 看，check NAME 会显示实际用到的模型')
+        result['notes'] = ['Wonder Full 只在 Muse Code 的 Power / Maximum 订阅里有，不走 API',
+                           '不要用 muse auth set 存 API key：存下的 key 优先于浏览器登录，coop 看不到也去不掉',
+                           'Muse Wonder 的 Active Memory 会跨对话记东西：在 muse 的设置里关掉']
+        if spec.get('auth_mode') == 'subscription' and any(k in os.environ for k in PREFIXES['muse']):
+            result['warning'] = '环境里有 META_API_KEY / MODEL_API_KEY：订阅模式下 coop 不把它们传给 muse'
+    if kind == 'grok':
+        result['warning'] = 'grok 已从 coop 移除（v0.4.4），调用会被拒绝：从 config.json 删掉这一项；临时额度用 muse 或 kimi'
     clean = environment_for(spec)
     result['ignored_environment_names'] = sorted(set(os.environ) - set(clean))
     result['authentication_verified'] = False
@@ -588,7 +683,7 @@ def configure(path, name, model=None, executable=None, auth_mode=None, reset_mod
             raise ValueError('API 必须指定模型')
         spec['model'] = None
     if executable is not None:
-        if spec['kind'] not in ('codex', 'claude', 'gemini', 'kimi', 'antigravity', 'grok', 'cli'):
+        if spec['kind'] not in ('codex', 'claude', 'gemini', 'kimi', 'antigravity', 'muse', 'cli'):
             raise ValueError('executable 只适用于官方 CLI')
         if not Path(executable).expanduser().is_absolute():
             raise ValueError('executable 必须是绝对路径')
@@ -622,8 +717,9 @@ def login(name, spec):
     if not binary:
         raise ValueError('找不到程序，安装地址：' + CATALOG[kind]['install_url'])
     argv = [binary, *(spec.get('login_argv', []) if kind == 'cli' else CATALOG[kind]['login_argv'])]
-    print('正在启动官方登录入口。' + ('agy 没有 login 子命令：第一次交互运行时按提示用订阅所在的 Google 账户登录，完成后退出 agy。'
-                                    if kind == 'antigravity' else 'Gemini 请选 Sign in with Google，完成后 /quit 返回。'), file=sys.stderr)
+    notes = {'antigravity': 'agy 没有 login 子命令：第一次交互运行时按提示用订阅所在的 Google 账户登录，完成后退出 agy。',
+             'muse': 'muse 第一次交互运行时在浏览器里登录 dev.meta.ai（Muse Code 订阅所在的账户）；登录后用 /models 看 Wonder Full 的 id，再退出。'}
+    print('正在启动官方登录入口。' + notes.get(kind, 'Gemini 请选 Sign in with Google，完成后 /quit 返回。'), file=sys.stderr)
     # Preserve native TTY for browser/device-code login. No credential interception.
     result = subprocess.run(argv, env=environment_for(spec))
     return {'provider': name, 'native_exit_code': result.returncode, 'next': 'check ' + name, 'note': '退出码不代表额度或所选模型已验证'}
@@ -643,6 +739,8 @@ def probe(root, name, spec, timeout):
         clean = raw.strip()
         if clean.startswith('```') and clean.endswith('```'):
             clean = clean.split('\n', 1)[1].rsplit('```', 1)[0].strip()
+        if spec['kind'] == 'muse' and (folder / 'transport.json').exists():
+            result['observed_model'] = json.loads((folder / 'transport.json').read_text(encoding='utf-8')).get('model')
         if json.loads(clean) != {'ok': True}:
             raise ValueError('JSON 未符合连通性检查约定')
         result['state'] = 'demo' if spec['kind'] == 'demo' else 'passed'

@@ -1,4 +1,40 @@
-# Co-op v0.4.3
+# Co-op v0.4.4
+
+## v0.4.4：去掉 Grok，新增 Muse Code（Muse Wonder Full），Kimi 不变
+
+- **Grok 移除**：provider kind `grok`、默认配置里的 `grok` 条目和它的说明都删了。以前建的工作区 `config.json` 里留着 `grok` 一项不影响别的，但不能再把岗位交给它：`--use`、排班表、候补名单都会拒绝并说明原因；`doctor` 提示删掉这一项。
+- **Kimi**：不变，仍在默认配置里，不在任何岗位上。
+- **Muse Code / Muse Wonder Full**：新 provider kind `muse`，默认配置里新增 `muse` 条目，不在任何岗位上。和 Kimi 一样，需要时用 `--use`、排班表或候补名单请它上岗（见下面“临时额度”）。依据 dev.meta.ai 的 Muse Code 文档（[Configuration](https://dev.meta.ai/docs/muse-code/configuration)、[Extending and automating](https://dev.meta.ai/docs/muse-code/extending)）。
+  - **调用**：每次新开一个会话：
+
+    ```
+    muse exec --json --prompt-file <提示文件> --workspace <空目录> --no-session-log --contributor-mode off --model <Wonder Full 的 id>
+    ```
+
+    - 提示写进文件传入（coop 的提示最长 18 万字，放不进命令行参数）。
+    - 工作目录是调用目录下一个空的 `muse-workspace/`。
+    - 不留会话日志，本次运行不开 Contributor mode。
+  - **回答**：取 `run.terminal.completed` 事件里的 `text`。官方文档没有写 `--json` 的事件字段，这是照第三方的实测记录（Muse Code 1.4.11：每行 `{"payload_type", "payload"}`）写的。
+    - 不认识的事件一律忽略。
+    - 结束事件里没有文字时，才退而用 `run.output.delta` 拼起来的文字；用的是哪一种，记在调用目录的 `transport.json` 里（`text_source`）。
+  - **模型**：默认 `muse-wonder-full-1.0`。这个 id 也是第三方资料里看到的，官方文档没写，**要在 muse 里用 `/models` 核对**；不对就 `configure muse --model <id>`。
+    - Muse Code 没有命令行的模型列表，所以 coop 每次调用都核对 `run.model.configured` 报告的模型。
+    - 报告的不是配置的那个（例如订阅档位不够，被换成默认的 Muse Spark），就停下整次运行，不回退到别的模型。
+    - 实际用的模型和 `run.usage`（含订阅额度的使用百分比）都记在 `transport.json`。
+  - **推理强度**：`effort` 留空时用 CLI 默认（high）；可写 `minimal / low / medium / high / xhigh / max / ultra`（Meta 的模型不接受 `none`）。`max_model_steps` 可选，对应 `--max-model-steps`。
+  - **权限**：保持 Muse Code 默认的审批方式。
+    - coop 从不传 `--yolo`、`--disable-approval`、`--disable-sandbox`、`--approval-mode never`。
+    - `extra_args` 里写这些，或写 coop 自己设的参数（`--model`、`--session-id`、`--contributor-mode` 等），会被拒绝。
+    - 提示里写明不要读写文件、不要运行命令。
+  - **计费**：Wonder Full 只在 Muse Code 的 Power / Maximum 订阅里有，Model API 不卖。
+    - 订阅模式下，子进程看不到 `META_API_KEY` / `MODEL_API_KEY`。
+    - 用 `muse auth set` 存下的 key 优先于浏览器登录，coop 看不到也去不掉，所以**不要存 key**。
+  - **报错**：分类只看 stderr 和失败事件（`run.terminal.failed` 等），不看 stdout 里回显的提示，所以讲义里的 429、401 不会被当成额度或登录错误。
+    - 没登录（not signed in 等）按认证错误，usage limit、rate limit、quota 按额度用完，都会暂停整次运行。
+    - 这些实际的报错文本还没有核实，见主 README“需要你验证”。
+  - **独立性**：kind `muse` 算 Meta 一家。
+  - **登录**：`python3 -m coop --workspace .coop-final login muse` 会打开 muse，第一次在浏览器里登录 dev.meta.ai。登录后在 muse 里用 `/models` 看 Wonder Full 的 id，然后退出，再运行 `check muse`（结果里的 `observed_model` 是实际用到的模型）。
+  - **Active Memory**：Muse Wonder 会跨对话记东西。分析、仲裁都要求每次独立，请在 muse 的设置里关掉（和 agy 的跨对话记忆同一个要求）。
 
 ## v0.4.3：小规模计算检查、跨单元决定台账、可变动的岗位与模型
 
@@ -50,13 +86,13 @@ python3 -m coop --workspace .coop-final edit ledger ../final.tex
 **2. 排班表（`edit.roster`）**：在某个日期段让某个岗位换人，到期自动换回来，适合试用期。
 
 ```json
-"edit": {"roster": [{"role": "analysts.0", "provider": "grok", "from": "2026-11-05", "to": "2026-11-11"}]}
+"edit": {"roster": [{"role": "analysts.0", "provider": "muse", "from": "2026-11-05", "to": "2026-11-11"}]}
 ```
 
-**3. 候补名单（`edit.fallbacks`）**：某家额度用完、运行暂停时，`edit status` 直接给出换人命令（例如 `--use analysts.0=grok`）。
+**3. 候补名单（`edit.fallbacks`）**：某家额度用完、运行暂停时，`edit status` 直接给出换人命令（例如 `--use analysts.0=muse`）。
 
 ```json
-"edit": {"fallbacks": {"analysts.0": ["grok", "kimi"], "reviewer": []}, "auto_fallback": false}
+"edit": {"fallbacks": {"analysts.0": ["muse", "kimi"], "reviewer": []}, "auto_fallback": false}
 ```
 
 - 显式设 `"auto_fallback": true` 时，调度器会自己把那个岗位交给下一位候补，同一单元接着做，已完成的调用取缓存。
@@ -112,19 +148,19 @@ python3 -m coop --workspace .coop-final check deepseek
    `edit run ../final.tex --unchanged-from ../branch1.tex`。
    第 1 批里被 coop 改过或保留 27B 文字的单元都与 branch1 不同，不会在第 2 批里重复。
 
-每天跑到某家订阅额度用完，整次运行就暂停（`paused`，error 开头写明是哪个 provider）；第二天 `edit resume EDIT_ID` 继续，或用下一节的 `--use` 临时把那个岗位交给 Grok / Kimi。规模：一个没问题的单元 4 次调用（规划 1、两位分析 2、审查 1），Claude 每单元约 1–3 次、Codex 与 Argon 各约 1–3 次；`edit units` 会给出最少和最多调用数。第一天跑完后看 `edit status` 的调用数，就能估算每家每天能处理多少单元。`merge-log.md` 里记着的单元可以用 `--only 单元id`（可重复）单独先跑。
+每天跑到某家订阅额度用完，整次运行就暂停（`paused`，error 开头写明是哪个 provider）；第二天 `edit resume EDIT_ID` 继续，或用下一节的 `--use` 临时把那个岗位交给 Muse Wonder Full / Kimi。规模：一个没问题的单元 4 次调用（规划 1、两位分析 2、审查 1），Claude 每单元约 1–3 次、Codex 与 Argon 各约 1–3 次；`edit units` 会给出最少和最多调用数。第一天跑完后看 `edit status` 的调用数，就能估算每家每天能处理多少单元。`merge-log.md` 里记着的单元可以用 `--only 单元id`（可重复）单独先跑。
 
 Python 独立多模型调度器。v0.4 新增 **edit 模式**：把一份 LaTeX 源文件按“定理／定义 + 其后的证明”切成单元，由 1 个规划、2 个分析、1 个独立审查逐轮讨论并直接修改源文件，所有人都同意结束（或到达轮数上限）才处理下一个单元；每次写入前都有 git 备份。v0.3 的 `run` / `batch`（只给结论、不改文件）保持不变，说明见后文。
 
 v0.4.1 新增 **网页仲裁**：日常循环照旧自动跑，只有分析者吵不拢、被审查打回或来回修改的单元，攒成批次文件交给网页版 Gemini Argon，你手动粘贴、保存回复、导入后继续。见下文“v0.4.1”一节。
 
-### 临时额度：Grok 7 天试用、Kimi 赠送额度
+### 临时额度：Muse Wonder Full、Kimi 赠送额度
 
 默认岗位不变（规划 deepseek，分析 codex / gemini(Argon)，审查 claude，仲裁 gemini）。临时额度不进默认岗位，而是在某家订阅当天额度用完、运行暂停时，**由你显式**把那个岗位交给它，额度恢复后再换回来。coop 不会自动换人：换人会改变审查结构，必须是你的决定，并且写进报告。
 
 ```bash
 python3 -m coop --workspace .coop-final edit status EDIT_ID                          # error 开头写着是哪家的额度用完
-python3 -m coop --workspace .coop-final edit resume EDIT_ID --use analysts.0=grok    # 从现在起分析者 A 用 Grok
+python3 -m coop --workspace .coop-final edit resume EDIT_ID --use analysts.0=muse    # 从现在起分析者 A 用 Muse Wonder Full
 python3 -m coop --workspace .coop-final edit resume EDIT_ID --use analysts.0=codex   # Codex 额度恢复后换回来
 ```
 
@@ -137,12 +173,12 @@ python3 -m coop --workspace .coop-final edit resume EDIT_ID --use analysts.0=cod
 
 | 当天额度用完的 | 建议 |
 |---|---|
-| Codex（分析者 A） | `--use analysts.0=grok`（试用期内）或 `analysts.0=kimi`；第二天换回 codex |
-| Argon（分析者 B / 仲裁） | 仲裁可先 `--arbiter manual` 改走网页人工中转；分析者 B 建议等额度恢复（要求全程 Argon）。确实要继续时可 `--use analysts.1=grok`，报告会记下 |
+| Codex（分析者 A） | `--use analysts.0=muse` 或 `analysts.0=kimi`；第二天换回 codex |
+| Argon（分析者 B / 仲裁） | 仲裁可先 `--arbiter manual` 改走网页人工中转；分析者 B 建议等额度恢复（要求全程 Argon）。确实要继续时可 `--use analysts.1=muse`，报告会记下 |
 | Claude（审查） | 建议等额度恢复：审查是写入前的最后一道闸门。必须继续时可交给与两位分析者都不同家的模型 |
 | DeepSeek（规划，API） | 按量计费，一般不会“用完”；余额不足时充值或等待 |
 
-**Grok**：新 provider kind `grok`，用官方 Grok CLI（[docs.x.ai](https://docs.x.ai/build/cli/headless-scripting)）的 headless 模式：`grok --no-auto-update -p "<prompt>" --output-format json -m <model>`，每次新开会话（从不传 `-c/--continue`），工作目录是空的 `grok-workspace/`。订阅模式下子进程看不到 `GROK_CODE_XAI_API_KEY`，所以不会悄悄走 xAI API 计费。文档里没有从 stdin 输入提示的方式，提示只能作为命令行参数；macOS 允许约 1 MB 的参数，coop 最长的提示放得下，超出时直接报错。默认配置里已有 `grok` 条目（不在任何岗位上）。登录：`python3 -m coop --workspace .coop-final login grok`（即 `grok login`），然后 `check grok`。试用结束后忘了换回来，grok 的调用会以认证或额度错误失败，整次运行暂停，不会悄悄计费；但试用到期是否自动转成付费订阅，要你在 xAI 账户里自己看。
+**Muse Wonder Full**：默认配置里的 `muse`（Muse Code CLI，订阅登录），不在任何岗位上；调用方式、模型核对和登录见开头 v0.4.4 一节。额度按 Muse Code 订阅计（每次调用的 `transport.json` 里有 `run.usage` 报告的使用百分比）；用完时整次运行暂停，和其他订阅一样等额度恢复后 resume。
 
 **Kimi**：默认配置一直有 `kimi`（Kimi Code CLI，订阅登录），不在任何岗位上。原来的 60 KB 提示上限是按 Linux 单个参数的限制定的；在 macOS 上现在按系统的参数总长计算（约 1 MB），edit 模式的提示都能放下。若赠送的是开放平台的 API 额度（不是 CLI 订阅），在工作区 `config.json` 里另加一个 API provider：
 

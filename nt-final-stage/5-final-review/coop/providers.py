@@ -13,12 +13,12 @@ import urllib.error
 from urllib.parse import urlsplit, urlunsplit
 try:
     from .access import (environment_for, parse_kimi, classify_error, parse_antigravity, antigravity_argv,
-                         antigravity_stdin, antigravity_billing, default_executable, argv_prompt_limit, grok_argv, parse_grok,
-                         cli_argv, parse_cli)
+                         antigravity_stdin, antigravity_billing, default_executable, argv_prompt_limit, muse_argv, parse_muse,
+                         muse_errors, muse_model_matches, cli_argv, parse_cli)
 except ImportError:  # Direct execution in the isolated transport worker.
     from access import (environment_for, parse_kimi, classify_error, parse_antigravity, antigravity_argv,
-                        antigravity_stdin, antigravity_billing, default_executable, argv_prompt_limit, grok_argv, parse_grok,
-                        cli_argv, parse_cli)
+                        antigravity_stdin, antigravity_billing, default_executable, argv_prompt_limit, muse_argv, parse_muse,
+                        muse_errors, muse_model_matches, cli_argv, parse_cli)
 
 
 def _invoke(spec, prompt, stage, folder, timeout):
@@ -129,12 +129,16 @@ def _invoke(spec, prompt, stage, folder, timeout):
         stdin = antigravity_stdin(spec, prompt)
         cwd = folder / 'agy-workspace'
         cwd.mkdir(exist_ok=True)
-    elif kind == 'grok':
-        # Official Grok CLI, headless, a new session every call; an empty workspace of its own (it is a coding agent).
-        argv = grok_argv(executable, spec, prompt)
-        stdin = ''
-        cwd = folder / 'grok-workspace'
+    elif kind == 'muse':
+        # Meta's Muse Code CLI, headless (`muse exec --json`): a new session every call, the prompt in a file (coop prompts
+        # reach 180k characters), an empty workspace of its own (it is a coding agent), no session log, contributor mode
+        # off. Approvals keep Muse Code's default; coop never passes --yolo / --disable-approval.
+        cwd = folder / 'muse-workspace'
         cwd.mkdir(exist_ok=True)
+        prompt_file = folder / 'muse-prompt.txt'
+        prompt_file.write_text(prompt, encoding='utf-8')
+        argv = muse_argv(executable, spec, prompt_file, cwd)
+        stdin = ''
     elif kind == 'cli':
         # A CLI described by its config (generic template): empty workspace, prompt on stdin / as an argument / in a file.
         cwd = folder / 'cli-workspace'
@@ -146,6 +150,8 @@ def _invoke(spec, prompt, stage, folder, timeout):
         stdin = prompt if spec.get('input', 'stdin') == 'stdin' else ''
     elif kind == 'command':
         argv = spec['argv']
+    elif kind == 'grok':
+        raise ValueError('grok 已从 coop 移除（v0.4.4）：从 config.json 删掉 grok 这一项；临时额度用 muse 或 kimi')
     else:
         raise ValueError('未知 provider kind: ' + kind)
     if spec.get('auth_mode') == 'subscription' and kind in ('codex', 'claude'):
@@ -179,8 +185,10 @@ def _invoke(spec, prompt, stage, folder, timeout):
             raise
     if proc.returncode:
         diagnostic = (folder / 'stderr.log').read_text(encoding='utf-8', errors='replace')
-        # Some CLIs report structured errors on stdout instead of stderr.
-        diagnostic += (folder / 'stdout.log').read_text(encoding='utf-8', errors='replace')
+        # Some CLIs report structured errors on stdout instead of stderr. Muse Code's stdout also echoes the prompt
+        # (numbers such as 429 or 401 in the mathematics), so only its failure records are read.
+        stdout = (folder / 'stdout.log').read_text(encoding='utf-8', errors='replace')
+        diagnostic += muse_errors(stdout) if kind == 'muse' else stdout
         error = classify_error(diagnostic)
         raise RuntimeError(f'{kind} 退出码 {proc.returncode}; {error["category"]}: {error["hint"]}; 查看 {folder / "stderr.log"}')
     path = result_file if kind == 'codex' else folder / 'stdout.log'
@@ -195,11 +203,17 @@ def _invoke(spec, prompt, stage, folder, timeout):
             error = classify_error(result['error'])
             raise RuntimeError(f'{spec.get("vendor", "cli")} 返回错误; {error["category"]}: {error["hint"]}; {result["error"][:300]}; 查看 {folder / "stdout.log"}')
         raw = result['response']
-    if kind == 'grok':
-        result = parse_grok(raw)
+    if kind == 'muse':
+        result = parse_muse(raw)
+        (folder / 'transport.json').write_text(json.dumps({k: v for k, v in result.items() if k != 'response'},
+                                                          ensure_ascii=False), encoding='utf-8')
+        if result['model'] and not muse_model_matches(result['model'], spec['model']):
+            # No fallback: a call answered by another model (e.g. Muse Spark, the default) stops the whole run.
+            raise RuntimeError(f'muse; model: Muse Code 报告实际用的模型是 {result["model"]}，不是配置的 {spec["model"]}；'
+                               f'不回退到别的模型。在 muse 里用 /models 核对 id，或检查订阅档位（Wonder Full 要 Power / Maximum）')
         if not result['ok']:
             error = classify_error(result['error'])
-            raise RuntimeError(f'grok 返回错误; {error["category"]}: {error["hint"]}; {result["error"][:300]}; 查看 {folder / "stdout.log"}')
+            raise RuntimeError(f'muse 返回错误; {error["category"]}: {error["hint"]}; {result["error"][:300]}; 查看 {folder / "stdout.log"}')
         raw = result['response']
     if kind == 'antigravity':
         result = parse_antigravity(raw, spec.get('input', 'stream-json'))

@@ -229,7 +229,7 @@ class Scheduling(EditBase):
     def setUp(self):
         super().setUp()
         self.models = {}
-        self.workspace(providers={'grok': {'kind': 'demo', 'model': 'tag-grok'}, 'kimi': {'kind': 'demo', 'model': 'tag-kimi'}})
+        self.workspace(providers={'muse': {'kind': 'demo', 'model': 'tag-muse'}, 'kimi': {'kind': 'demo', 'model': 'tag-kimi'}})
 
     def workspace(self, providers=None, **edit):
         path = self.store.root / 'config.json'
@@ -252,16 +252,16 @@ class Scheduling(EditBase):
             return sid, editloop.execute(self.store, sid, **kw)
 
     def test_roster_window(self):
-        self.assertEqual(editloop.roster_targets([{'role': 'analysts.0', 'provider': 'grok', 'from': '2026-11-05', 'to': '2026-11-11'}],
-                                                 '2026-11-08'), {'analysts.0': 'grok'})
-        self.assertEqual(editloop.roster_targets([{'role': 'analysts.0', 'provider': 'grok', 'from': '2026-11-05', 'to': '2026-11-11'}],
+        self.assertEqual(editloop.roster_targets([{'role': 'analysts.0', 'provider': 'muse', 'from': '2026-11-05', 'to': '2026-11-11'}],
+                                                 '2026-11-08'), {'analysts.0': 'muse'})
+        self.assertEqual(editloop.roster_targets([{'role': 'analysts.0', 'provider': 'muse', 'from': '2026-11-05', 'to': '2026-11-11'}],
                                                  '2026-11-12'), {})
         today = datetime.date.today()
-        window = {'role': 'analysts.0', 'provider': 'grok', 'from': (today - datetime.timedelta(days=1)).isoformat(),
+        window = {'role': 'analysts.0', 'provider': 'muse', 'from': (today - datetime.timedelta(days=1)).isoformat(),
                   'to': (today + datetime.timedelta(days=5)).isoformat()}
         self.workspace(roster=[window])
         sid, st = self.go(lambda s, p: agreeing(s, p))
-        self.assertEqual(self.models['edit-r1-analysis0'], ['tag-grok'])
+        self.assertEqual(self.models['edit-r1-analysis0'], ['tag-muse'])
         S = editloop.Session(self.store, sid)
         self.assertEqual(S.e['roster_state'], {'analysts.0': 'codex'})
         self.assertEqual(S.e['role_changes'][0]['reason'], '排班表')
@@ -271,25 +271,25 @@ class Scheduling(EditBase):
         self.assertEqual(S.e['roles']['analysts'][0], 'codex')
         self.assertEqual(S.e['roster_state'], {})
         with self.assertRaisesRegex(ValueError, 'roster'):
-            self.workspace(roster=[{'role': 'analysts.0', 'provider': 'grok', 'from': '2026-11-11', 'to': '2026-11-05'}])
+            self.workspace(roster=[{'role': 'analysts.0', 'provider': 'muse', 'from': '2026-11-11', 'to': '2026-11-05'}])
             editloop.live_edit(self.store)
 
     def test_manual_fallback_hint(self):
-        self.workspace(fallbacks={'analysts.0': ['grok', 'kimi']})
+        self.workspace(fallbacks={'analysts.0': ['muse', 'kimi']})
         sid, st = self.go(quota_once('edit-r1-analysis0', 'codex'))
         self.assertEqual(st['state'], 'paused')
-        self.assertIn('--use analysts.0=grok', st['next'])
+        self.assertIn('--use analysts.0=muse', st['next'])
 
     def test_automatic_fallback_finishes_the_unit_and_next_run_restores(self):
-        self.workspace(fallbacks={'analysts.0': ['grok', 'kimi']}, auto_fallback=True)
+        self.workspace(fallbacks={'analysts.0': ['muse', 'kimi']}, auto_fallback=True)
         sid, st = self.go(quota_once('edit-r1-analysis0', 'codex'))
         self.assertEqual(st['units'], {'done_edited': 1})
-        self.assertEqual(self.models['edit-r1-analysis0'][-1], 'tag-grok')
+        self.assertEqual(self.models['edit-r1-analysis0'][-1], 'tag-muse')
         S = editloop.Session(self.store, sid)
         self.assertEqual(S.e['fallback_state'], {'analysts.0': 'codex'})
         self.assertIn('自动', S.e['role_changes'][-1]['reason'])
         report = (self.store.root / sid / 'report.md').read_text(encoding='utf-8')
-        self.assertIn('codex → grok', report)
+        self.assertIn('codex → muse', report)
         editloop.execute(self.store, sid)                              # a new run: back to the original line-up
         S = editloop.Session(self.store, sid)
         self.assertEqual(S.e['roles']['analysts'][0], 'codex')

@@ -1,4 +1,4 @@
-coop v0.4.3 test run (2026-11-01, Python 3.13.18; latexmk absent here -> 2 compile tests skipped, Docker integration skipped)
+coop v0.4.4 test run (2026-11-06, Python 3.13.18; latexmk absent here -> 2 compile tests skipped, Docker integration skipped)
 
 test_categories (test_access.AccessTests.test_categories) ... ok
 test_configure_is_validated_and_preserves_existing_roles (test_access.AccessTests.test_configure_is_validated_and_preserves_existing_roles) ... ok
@@ -78,11 +78,14 @@ test_legacy_advisory_strings_do_not_pause (test_protocol.ProtocolTests.test_lega
 test_legacy_json_body_rejected (test_protocol.ProtocolTests.test_legacy_json_body_rejected) ... ok
 test_missing_script_is_not_ignored (test_protocol.ProtocolTests.test_missing_script_is_not_ignored) ... ok
 test_script_extraction_only_explicit_check (test_protocol.ProtocolTests.test_script_extraction_only_explicit_check) ... ok
-test_default_config_has_grok_but_no_role_uses_it (test_temporary_providers.GrokTransport.test_default_config_has_grok_but_no_role_uses_it) ... ok
-test_errors (test_temporary_providers.GrokTransport.test_errors) ... ok
-test_headless_call_in_a_fresh_session (test_temporary_providers.GrokTransport.test_headless_call_in_a_fresh_session) ... ok
-test_parser_and_prompt_size (test_temporary_providers.GrokTransport.test_parser_and_prompt_size) ... ok
 test_rules (test_temporary_providers.Independence.test_rules) ... ok
+test_arguments (test_temporary_providers.MuseTransport.test_arguments) ... ok
+test_default_config_has_muse_and_kimi_but_no_role_uses_them_and_no_grok (test_temporary_providers.MuseTransport.test_default_config_has_muse_and_kimi_but_no_role_uses_them_and_no_grok) ... ok
+test_doctor_notes_and_leftover_grok (test_temporary_providers.MuseTransport.test_doctor_notes_and_leftover_grok) ... ok
+test_errors (test_temporary_providers.MuseTransport.test_errors) ... ok
+test_headless_call_in_a_fresh_session (test_temporary_providers.MuseTransport.test_headless_call_in_a_fresh_session) ... ok
+test_parser (test_temporary_providers.MuseTransport.test_parser) ... ok
+test_the_model_is_checked_on_every_call_and_never_falls_back (test_temporary_providers.MuseTransport.test_the_model_is_checked_on_every_call_and_never_falls_back) ... ok
 test_bad_swaps_change_nothing (test_temporary_providers.SwapRoles.test_bad_swaps_change_nothing) ... ok
 test_cli_flag_is_wired (test_temporary_providers.SwapRoles.test_cli_flag_is_wired) ... ok
 test_quota_pause_names_the_provider_and_suggests_a_swap (test_temporary_providers.SwapRoles.test_quota_pause_names_the_provider_and_suggests_a_swap) ... ok
@@ -144,6 +147,6 @@ test_revision_is_bounded_and_not_promoted (test_workflow.Workflow.test_revision_
 test_same_job_is_locked (test_workflow.Workflow.test_same_job_is_locked) ... ok
 
 ----------------------------------------------------------------------
-Ran 142 tests in 14.105s
+Ran 145 tests in 15.685s
 
 OK (skipped=3)

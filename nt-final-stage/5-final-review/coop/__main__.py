@@ -43,7 +43,7 @@ def main():
     edit_resume.add_argument('--accept-external', action='store_true', help='接受 coop 之外对源文件的修改（先提交到备份）')
     edit_resume.add_argument('--use', action='append', default=[], metavar='岗位=PROVIDER',
                              help='从现在起把岗位交给另一个 provider（岗位：planner / analysts.0 / analysts.1 / reviewer / arbiter），'
-                                  '例如某家额度用完时 --use analysts.0=grok；可重复；记在报告里')
+                                  '例如某家额度用完时 --use analysts.0=muse；可重复；记在报告里')
     edit_resume.add_argument('--arbiter', choices=['cli', 'manual'],
                              help='切换仲裁方式：cli 自动调用 roles.arbiter（agy 上的 Argon）；manual 网页人工中转（agy 额度不够时的后备）')
     edit_ledger = edit.add_parser('ledger', help='跨单元决定台账：列出某个源文件的条目，或手工添加一条')

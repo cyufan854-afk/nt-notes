@@ -1534,7 +1534,9 @@ JOB_STATE = {'done_unchanged': 'completed', 'done_edited': 'completed', 'awaitin
 
 ARBITER_LABELS = {'cli': 'Gemini Argon（Antigravity CLI）', 'manual': 'Gemini Argon（网页版）'}
 ROLE_SLOTS = {'planner': '规划', 'analysts.0': '分析者 A', 'analysts.1': '分析者 B', 'reviewer': '审查', 'arbiter': '仲裁'}
-VENDORS = {'claude': 'Anthropic', 'codex': 'OpenAI', 'antigravity': 'Google', 'gemini': 'Google', 'kimi': 'Moonshot', 'grok': 'xAI'}
+VENDORS = {'claude': 'Anthropic', 'codex': 'OpenAI', 'antigravity': 'Google', 'gemini': 'Google', 'kimi': 'Moonshot', 'muse': 'Meta'}
+# Kinds coop can call. Anything else (e.g. 'grok', removed in v0.4.4) is refused when a role would be handed to it.
+CALLABLE_KINDS = ('claude', 'codex', 'gemini', 'antigravity', 'kimi', 'muse', 'cli', 'api', 'demo', 'command')
 
 
 def vendor(spec):
@@ -1574,7 +1576,7 @@ def check_roles(cfg, roles):
 
 def use_providers(store, sid, uses, reason='手动 --use', state=None):
     """`edit resume --use ROLE=PROVIDER`: hand a role to another provider from now on, e.g. while one subscription's
-    quota is exhausted (a Grok trial, Kimi credits). Finished calls are kept as they are (they are cached); only calls not
+    quota is exhausted (Kimi credits, Muse Wonder Full). Finished calls are kept as they are (they are cached); only calls not
     made yet go to the new provider. Every change is recorded in the session and the report."""
     S = Session(store, sid)
     cfg = S.cfg
@@ -1594,6 +1596,9 @@ def use_providers(store, sid, uses, reason='手动 --use', state=None):
             if name not in workspace:
                 raise ValueError(f'provider {name} 不在会话配置里，也不在工作区 config.json 里')
             cfg['providers'][name] = workspace[name]          # brought in from the workspace, frozen from now on
+        if cfg['providers'][name].get('kind') not in CALLABLE_KINDS:
+            raise ValueError(f'provider {name} 的 kind {cfg["providers"][name].get("kind")!r} 已不支持'
+                             + ('（grok 在 v0.4.4 移除了；临时额度用 muse 或 kimi）' if cfg['providers'][name].get('kind') == 'grok' else ''))
         old = _role_get(roles, slot)
         if slot.startswith('analysts.'):
             roles['analysts'][int(slot[-1])] = name
@@ -1645,8 +1650,8 @@ def set_arbiter_mode(store, sid, mode):
 # ---------------------------------------------------------------- scheduling (read live from the workspace config)
 #
 #   "edit": {
-#     "roster": [{"role": "analysts.0", "provider": "grok", "from": "2026-11-05", "to": "2026-11-11"}],
-#     "fallbacks": {"analysts.0": ["grok", "kimi"], "reviewer": []},
+#     "roster": [{"role": "analysts.0", "provider": "muse", "from": "2026-11-05", "to": "2026-11-11"}],
+#     "fallbacks": {"analysts.0": ["muse", "kimi"], "reviewer": []},
 #     "auto_fallback": false
 #   }
 # roster: during [from, to] (dates inclusive) the role is held by that provider; outside it the provider it replaced
@@ -1734,7 +1739,7 @@ def fallback_options(S, provider):
             if cand == provider or cand in tried.get(role, []):
                 continue
             providers = {**workspace, **S.cfg['providers']}
-            if cand not in providers:
+            if cand not in providers or providers[cand].get('kind') not in CALLABLE_KINDS:
                 continue
             roles = json.loads(json.dumps(S.e['roles']))
             if role.startswith('analysts.'):

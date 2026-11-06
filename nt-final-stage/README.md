@@ -14,7 +14,7 @@ nt-final-stage/
   2-branch2/         branch2.py（第 2 步总控）+ nt27b（只用标准库）
   3-combine/         合并说明 MERGE_PROMPT.md、合并检查 merge_check.py、留存率脚本
   4-cross-review/    交叉审查合并结果：给其他模型的 prompt、打包脚本、处理意见的 prompt
-  5-final-review/    coop v0.4.3（只用标准库）
+  5-final-review/    coop v0.4.4（只用标准库）
   check_all.sh       一次跑全部测试
 ```
 
@@ -111,7 +111,13 @@ python3 -m coop --workspace .coop-final edit run ../final.tex --unchanged-from .
 ```
 
 岗位：规划 DeepSeek（API），分析者 Codex 和 Gemini（Antigravity CLI `agy` 上的 Argon），独立审查 Claude，仲裁 Argon（自动调用，新开上下文）。每个单元最多 3 轮，范围只看数学。额度用完时整次运行暂停，第二天 `edit resume EDIT_ID` 接着做；agy 额度不够时可以 `edit resume EDIT_ID --arbiter manual` 改回网页人工中转。
-临时额度（Grok 7 天试用、Kimi 赠送额度）不进默认岗位：某家当天额度用完时，用 `edit resume EDIT_ID --use analysts.0=grok` 之类显式换人，额度恢复后再换回来。换人前会检查独立性，换人记录写进报告。
+临时额度（Kimi 赠送额度；Muse Code 订阅里的 Muse Wonder Full）不进默认岗位：某家当天额度用完时，用 `edit resume EDIT_ID --use analysts.0=muse` 之类显式换人，额度恢复后再换回来。换人前会检查独立性，换人记录写进报告。
+v0.4.4 去掉了 Grok，新增 Muse Code（kind `muse`）：
+- 调用是 `muse exec --json --prompt-file …`，每次新会话、空工作目录。
+- 默认模型 `muse-wonder-full-1.0`。每次调用都核对 Muse Code 报告的实际模型，不对就停下，不回退。
+- 从不传 `--yolo` 之类跳过审批的参数。
+- 订阅模式下不把 `META_API_KEY` 传给 muse。
+
 v0.4.3 另外有三项：
 - **小规模计算检查**：规划者给可计算的命题附一个小范围穷举脚本，在 Docker 里实际运行，输出交给分析者和审查。没有 Docker 时自动跳过。
 - **跨单元决定台账**：审查批准并写入的全书约定（记号、写法），后面的单元都看得到，跨会话共用；`edit ledger` 可以查看或手工添加。
@@ -128,7 +134,7 @@ v0.4.3 另外有三项：
 bash check_all.sh
 ```
 
-五套测试：coop 142 项（原 96 + 新 46），nt27b 114 项（原 86 + 新 28），合并与留存率 23 项（原 7 + 新 16），交叉审查打包 4 项，融合 notebook 58 项（需要 numpy、torch、safetensors，端到端训练测试另需 transformers 和 peft；没有时跳过）。结果见 `CHANGES.md`。
+五套测试：coop 145 项（原 96 + 新 49），nt27b 114 项（原 86 + 新 28），合并与留存率 23 项（原 7 + 新 16），交叉审查打包 4 项，融合 notebook 58 项（需要 numpy、torch、safetensors，端到端训练测试另需 transformers 和 peft；没有时跳过）。结果见 `CHANGES.md`。
 
 ## 需要你验证
 
@@ -148,8 +154,15 @@ bash check_all.sh
 6. agy 实际的报错文本：未登录、额度用完、模型名错误各是什么。coop 目前按 `authentication required`、`RESOURCE_EXHAUSTED` / quota / rate limit、`unknown model` 分类。不一样时把原文发给我。
 7. agy 有没有跨对话的记忆或知识库功能。仲裁要求与分析者 B 不共享上下文：coop 每次都是新的 headless 进程，工作目录是空的。如果 agy 会自动带入以前对话的记忆，请在它的设置里关掉。
 
-8. 用到 Grok / Kimi 时：
-   - Grok：运行 `grok --help`，确认 `-p`、`--output-format json`、`-m`、`--no-auto-update` 都在，并看有没有只读或关闭工具的开关（有就写进 provider 的 `extra_args`）。再运行 `grok -p "Reply with OK" --output-format json`，看回答在哪个字段。确认 `grok login` 用订阅登录后，headless 能读到缓存的凭据。最后 `coop check grok`。
+8. 用到 Muse Wonder Full / Kimi 时：
+   - Muse：
+     - 运行 `python3 -m coop --workspace .coop-final login muse`，在浏览器里用 Muse Code 订阅所在的账户（Power 或 Maximum 档才有 Wonder Full）登录 dev.meta.ai。
+     - 在 muse 里用 `/models` 看 Wonder Full 的 id：默认配置写的 `muse-wonder-full-1.0` 来自第三方资料，未核实；不对就 `configure muse --model <id>`。
+     - 在设置里关掉 Active Memory（跨对话记忆）。
+     - 不要用 `muse auth set` 存 API key：存下的 key 优先于浏览器登录。
+     - 运行 `muse exec --help`，确认 `--json`、`--prompt-file`、`--workspace`、`--no-session-log`、`--contributor-mode`、`--model` 都在。
+     - 运行 `muse exec --json --model <id> "Reply with OK" > muse-ok.jsonl`，看事件格式：coop 按 `payload_type` / `payload` 读，回答取 `run.terminal.completed` 的 `text`，模型取 `run.model.configured` 的 `model_id`。不一样时把这个文件发给我。
+     - 最后 `coop check muse`，结果里的 `observed_model` 应是 Wonder Full。没登录、额度用完时的报错原文也请发给我，coop 目前按 not signed in、usage limit、rate limit、quota 分类。
    - Kimi：赠送的是 Kimi Code CLI 的额度，还是开放平台的 API 额度（后者按 README 另加 `kimi-api`）？
 
 9. 小规模计算检查要用 Docker：装好 Docker Desktop 并启动，然后运行 `docker pull python:3.12-slim`。不装也能跑，检查会被跳过。
