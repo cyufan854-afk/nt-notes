@@ -180,3 +180,65 @@
 - 单元 thm:5.7.4 · 类型：冲突处理 · 改了什么：取 branch1（“the series defining …”、绝对收敛的依据、把 $\sum_{d\mid n}\varphi(d)=n$ 的推导改为 Theorem 5.1.5 的替代证明并调整段落次序）；branch2 只有 UTF-8 和重新折行 · 理由：branch2 没有实质修改。
 - 单元 thm:5.7.5 · 类型：冲突处理 · 改了什么：取 branch1（“an average order”，引用 def:5.7.2）；branch2 同样把 the 改为 an，另有 UTF-8 · 理由：两边一致的改动照收，引用按 label 对照。
 - 单元 thm:5.7.7 · 类型：冲突处理 · 改了什么：取 branch1（$Q(x)$ 写成 $n\in\mathbb{Z}^+$、自然密度改引用 def:4.2.2、补“so the left-hand side, as a function of $n$, is multiplicative”、`\clearpage`）；另采用 branch2 的措辞“agreeing exactly with $\mu^2(p^{a})$” · 理由：两边改的位置不重叠。§6 导读属于第 3 批。
+
+## 第 3 批（§6）
+
+### §6 Orders, Primitive Roots, and Multiplicative Structure Modulo $m$
+
+- 单元 sec:orders-primitive-roots-and-multiplicativ · 类型：回滚 · 改了什么：采用 branch2 在 §6 标题后新增的导读，只把“primitive prime divisors”改为“primitive prime factors” · 理由：与 §6.11 标题和全书用语（primitive prime factor）一致；导读内容已对照 §6 各小节核对。本单元的 `\section` 标题原在 thm:5.7.7 单元末尾。
+- 单元 def:6.1.1 · 类型：冲突处理 · 改了什么：取 branch1（“unit group”，负幂与零次幂的说法）；branch2 只有描述性 label、`\index` 和 `\pmod{n}` · 理由：branch2 没有实质修改。
+- 单元 thm:6.1.1 · 类型：冲突处理 · 改了什么：取 branch1（(d) 中两商互素的理由，(h)(i) 改用 $r\in\mathbb{Z}^+$）；另采用 branch2 在 (i) 末尾加的 `\qedhere`；branch2 的行内 `\tfrac`、`\pmod{m}`、“including”改“even”未采用 · 理由：后几项无排版差别或只是措辞。
+- 单元 thm:6.1.4 · 类型：冲突处理 · 改了什么：证明取 branch1（递推式的写法与 $j=0$ 的说明）；陈述中采用 branch2 补的“given by long division (the terminating one when $a/n$ has two expansions, Theorem~\ref{thm:4.1.3})” · 理由：两边改的位置不重叠；branch2 指明所说的展开是哪一个，消除歧义。
+- 单元 thm:6.1.5 · 类型：冲突处理 · 改了什么：取 branch1；branch2 只加了描述性 label 和 `\index` · 理由：branch2 没有实质修改。
+- 单元 def:6.2.1 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
+- 单元 thm:6.2.2 · 类型：冲突处理 · 改了什么：取 branch1（替代证明改写为不预设循环群事实的计数论证，标题“via cyclic-group counting”）；branch2 把原替代证明移到一个 remark 之后（标题“via orders in a cyclic group”）未采用；该 remark（链接到 §6.3 的替代证明）改写为本单元末尾的一句：“A further alternative proof of Theorem~\ref{thm:6.2.2}, via indices, appears after Theorem~\ref{thm:6.3.1}.” · 理由：branch1 的替代证明更自足；指引按约定改写，位置已在 branch1 中核对。
+- 单元 remark@5270 · 类型：回滚 · 改了什么：remark 环境和 `\hyperref` 不保留，改写为 thm:6.2.2 末尾的指引句 · 理由：终稿没有 remark 环境，链接目标是不能搬入的新 label。
+- 单元 thm:6.2.3 · 类型：冲突处理 · 改了什么：取 branch1；branch2 只有描述性 label、`\index` 和行内 `\tfrac` · 理由：branch2 没有实质修改。
+- 单元 thm:6.2.4 · 类型：冲突处理 · 改了什么：取 branch1：主证明用 Kummer 定理（进位计数），替代证明用 absorption 恒等式加 Lucas 定理；branch2 把两者对调（主证明用 absorption，替代证明用 Kummer，并重写了进位论证）未采用 · 理由：两边包含的是同样两个论证，只是主次相反，数学上都已核对；按 branch1 的安排（作者一侧有意把刚证的 Kummer 定理用作主证明）。 已列入疑难（情形 A）。
+- 单元 thm:6.2.6 · 类型：冲突处理 · 改了什么：取 branch1（替代证明标题统一为“via …”，Theorem 6.2.4 的替代证明移回 thm:6.2.4，Case 3 的“noncyclicity”替代证明移到 thm:6.6.5 之后）；证明开头加 branch2 的导引句“We first construct primitive roots for the listed moduli, lifting from odd primes to their powers. Order bounds then rule out all remaining moduli.”；branch2 在证明后加的 remark（链接到 §6.6）改写为本单元末尾的一句：“Further alternative arguments, for Case 3 via reduction modulo $8$ and for Case 4 via products of cyclic groups, appear after Theorem~\ref{thm:6.6.5}.”；branch2 把全部替代证明移到 remark 之后的做法和旧标题未采用 · 理由：branch1 的整理把替代证明放到了对应位置；导引句适用于 branch1 的证明结构。
+- 单元 remark@5499 · 类型：回滚 · 改了什么：remark 环境和 `\hyperref` 不保留，改写为 thm:6.2.6 末尾的指引句 · 理由：同 remark@5270。
+- 单元 def:6.2.2 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
+- 单元 def:6.3.1 · 类型：回滚 · 改了什么：同上 · 理由：见约定。
+- 单元 thm:6.3.1 · 类型：冲突处理 · 改了什么：取 branch1（替代证明标题“via indices”）；另采用 branch2 在 (e) 末尾加的 `\qedhere`；branch2 的标题“via the index”、`\pmod{m}`、行内 `\tfrac` 未采用 · 理由：标题按 branch1；其余无排版差别。
+- 单元 def:6.4.1 · 类型：回滚 · 改了什么：branch2 只有描述性 label、`\index` 和 `\pmod` 加括号，不采用 · 理由：见约定（自本批起：单元中有不能搬入的 label/`\index` 时，同一单元里无排版差别的源码改动不再单独搬）。
+- 单元 thm:6.4.1 · 类型：冲突处理 · 改了什么：取 branch1；branch2 只把 `\pmod` 加了括号 · 理由：无排版差别。
+- 单元 def:6.5.1 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
+- 单元 thm:6.5.2 · 类型：冲突处理 · 改了什么：融合两边：branch1 的“the defining property of the Carmichael number $n$ (Definition~\ref{def:6.5.1})”与 branch2 的“Since $\delta_p(g)=p-1$” · 理由：两处改动互不冲突。
+- 单元 def:6.6.1 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
+- 单元 def:6.6.2 · 类型：回滚 · 改了什么：同上 · 理由：见约定。
+- 单元 def:6.6.3 · 类型：冲突处理 · 改了什么：取 branch1；branch2 只有描述性 label、`\index` 和 `\pmod` 加括号 · 理由：branch2 没有实质修改。
+- 单元 thm:6.6.1 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
+- 单元 def:6.6.4 · 类型：回滚 · 改了什么：采用 branch2 的“an endomorphism if its source and target coincide”；branch2 把环的定义移出、另立 `definition*`（标题 ring conventions，label `def:rings`）并相应删去本定义标题中的“commutative ring”，不采用，环的定义仍留在 def:6.6.4 内（标题不变）；branch2 把“with one exception: the proof of Theorem 8.1.8 uses quaternions and $2\times2$ complex matrices”改成的“apart from the noncommutative construction … whose exception is explained there”也不采用 · 理由：终稿没有 definition* 环境，Notation 中“commutative ring with identity (Definition 6.6.4)”的引用依赖这里；原句说明了例外是什么，比 branch2 的说法具体。
+- 单元 thm:6.6.2 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
+- 单元 thm:6.6.3 · 类型：冲突处理 · 改了什么：取 branch1（$2p^e$ 情形改写为显式的环同构）；branch2 补的 CRT 引用（branch1 的改写已含）和把“$5$ 的阶为 $2^{e-2}$”的论证缩成“the calculation in the proof of Theorem 6.4.2 gives …”未采用 · 理由：branch1 保留了阶的显式论证（$v_2(5^{2^{e-3}}-1)=e-1<e$），branch2 的缩写把它删掉了。
+- 单元 thm:6.6.5 · 类型：冲突处理 · 改了什么：融合两边：取 branch1（从 thm:6.2.6 移来的“Case 3, via reduction modulo $8$”替代证明，Case 4 标题“via products of cyclic groups”）；采用 branch2 在主证明末尾加的 `\qedhere`、Case 4 替代证明中的措辞（“that is, by Theorem 6.1.1(c) applied in each factor, exactly when the order of each component divides $r$”）和补的反方向一句（“Conversely, for $m = 1, 2, 4, p^{e}, 2p^{e}$ every factor is cyclic and at most one factor has order greater than $1$ (as $\varphi(2) = 1$), so the factor orders are pairwise coprime.”）；branch2 的标题“via unit-group structure”、行内 `\tfrac`、`\phantomsection\label{proof:alt-6-2-6-6}` 未采用 · 理由：branch2 补的是“当且仅当”中原来没写的一个方向；标题按 branch1，并与 thm:6.2.6 末尾的指引句一致。
+- 单元 thm:6.7.1 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
+- 单元 thm:6.7.3 · 类型：冲突处理 · 改了什么：取 branch1（陈述补“Let $m\in\mathbb{Z}^+$”，并把模 $2^e$ 的四个平方根修正为 $\pm1,\pm(1+2^{e-1})$）；另采用 branch2 的三处措辞：“and each such pair has product $1$; hence …”、“$t$ has at least two distinct prime factors and separating one prime-power factor of $t$ from the rest gives …”、“These divisibility arguments cover the cases $x=1$ and $x=-1$ directly …”；branch2 的行内 `\tfrac`、`\pmod{4}` 未采用 · 理由：branch1 的修正是实质的；branch2 的措辞把“two distinct prime factors”这类不严谨处改准了，与 branch1 的改动不重叠。
+- 单元 thm:6.8.1 · 类型：冲突处理 · 改了什么：取 branch1（替代证明标题“via the polynomial root bound”）；branch2 的标题“via a primitive root”和一处断句未采用 · 理由：该替代证明用的是多项式根数上界，不用原根，branch2 的标题不准确。
+- 单元 def:6.8.1 · 类型：回滚 · 改了什么：branch2 只有描述性 label、`\index` 和行内 `\tfrac`，不采用 · 理由：见约定。
+- 单元 thm:6.8.2 · 类型：冲突处理 · 改了什么：取 branch1；branch2 只有行内 `\tfrac` · 理由：无排版差别。
+- 单元 thm:6.8.3 · 类型：冲突处理 · 改了什么：取 branch1；branch2 只有描述性 label、`\index` 和行内 `\tfrac` · 理由：branch2 没有实质修改。
+- 单元 thm:6.8.4 · 类型：回滚 · 改了什么：branch2 只有描述性 label、`\index`、行内 `\tfrac` 和 `\pmod` 加括号，不采用 · 理由：见约定。
+- 单元 def:6.9.1 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
+- 单元 thm:6.9.1 · 类型：冲突处理 · 改了什么：取 branch1（把乘积指标由 $t$ 改为 $s$，避免与 $t(m)$ 冲突，并写明两两不同余的理由）；另采用 branch2 补的“(Theorem~\ref{thm:3.4.1})”；branch2 的行内 `\tfrac` 和重新折行未采用 · 理由：branch2 仍用 $t$ 作乘积指标，与 $t(m)$ 冲突。
+- 单元 thm:6.9.3 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
+- 单元 def:6.9.2 · 类型：冲突处理 · 改了什么：取 branch1（“``Wieferich prime'' means a Wieferich prime to base $2$”）；branch2 对同一句的改写（“the term refers to …”）未采用 · 理由：两边意思相同，取 branch1。
+- 单元 thm:6.9.4 · 类型：冲突处理 · 改了什么：取 branch1（(e) 写明“group of $\mathbb{F}_p$”）；采用 branch2 的措辞修正（“is primitive modulo”改为“is a primitive root modulo”四处，长句拆分）与“hence part (f) follows from part (b) by taking $g=2$”；branch2 把证明末尾“The first two such primes are 1093 and 3511 … No primitive-root hypothesis …”移到证明之后并补上验证方法（“This finite assertion can be checked by testing each integer $2\le r\le3511$ for primality by trial division …”），按此写成证明之后的普通段落；`\pmod{p}` 加括号未采用 · 理由：“primitive modulo $p$”是不规范的说法；1093、3511 的说法不属于证明，branch2 补了可核验的依据。
+- 单元 remark@6614 · 类型：回滚 · 改了什么：remark 环境不保留，文字作为 thm:6.9.4 证明之后的段落 · 理由：终稿没有 remark 环境。
+- 单元 thm:6.9.5 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
+- 单元 def:6.10.1 · 类型：回滚 · 改了什么：同上 · 理由：见约定。
+- 单元 def:6.10.2 · 类型：回滚 · 改了什么：同上 · 理由：见约定。
+- 单元 def:6.10.3 · 类型：冲突处理 · 改了什么：取 branch1；branch2 只加了描述性 label 和 `\index` · 理由：branch2 没有实质修改。
+- 单元 def:6.10.4 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
+- 单元 thm:6.10.2 · 类型：冲突处理 · 改了什么：取 branch1 重写的证明（在 $\mathbb{F}_p$ 中求和、$P=0$ 情形、陈述中“every $f_i$ has constant term $0$”）；另采用 branch2 在陈述开头补的“Let $p$ be a prime, let $n\ge1$ be an integer, and let …”和“a primitive root $g$ (Theorem~\ref{thm:6.2.6})”；branch2 删去末尾 `\qedhere`、行内 `\tfrac` 未采用 · 理由：branch2 补的是陈述中没有声明的变量和引用，与 branch1 的改写不冲突。
+- 单元 thm:6.10.3 · 类型：冲突处理 · 改了什么：取 branch1（替代证明标题“via the pigeonhole principle”，$\mathbb{Z}_p$ 改 $\mathbb{F}_p$）；branch2 在替代证明前加的 remark（链接到 §12.2 的 Cauchy--Davenport 证明）改写为本单元末尾的一句：“A further alternative proof of Theorem~\ref{thm:6.10.3}, via the Cauchy--Davenport theorem, appears after Theorem~\ref{thm:12.2.1}.” · 理由：指引按约定改写，位置已在 branch1 中核对（该替代证明在 thm:12.2.1 之后）。
+- 单元 remark@6740 · 类型：回滚 · 改了什么：remark 环境和 `\hyperref` 不保留，改写为 thm:6.10.3 末尾的指引句 · 理由：同 remark@5270。
+- 单元 def:6.11.1 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
+- 单元 thm:6.11.1 · 类型：冲突处理 · 改了什么：取 branch1（删去“multiplicative”）；另采用 branch2 的两处改写（“hence, applying the factor step from the proof of Theorem~\ref{thm:3.6.2} $n$ times and comparing leading coefficients, we obtain”；“… of order precisely $d$. Indeed, … Conversely, …; its order $d$ …”）· 理由：branch2 的改写只是把长句理顺，与 branch1 的改动不重叠。
+- 单元 thm:6.11.3 · 类型：回滚 · 改了什么：branch2 只把 `M{\"o}bius` 改成 UTF-8（另有重新折行），不采用 · 理由：见约定。
+- 单元 thm:6.11.5 · 类型：回滚 · 改了什么：同上 · 理由：见约定。
+- 单元 thm:6.11.6 · 类型：冲突处理 · 改了什么：两边对同一句做了同样的修改（“we also have $\alpha^c=1$”），取 branch1 · 理由：两边一致。
+- 单元 def:6.11.2 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
+- 单元 thm:6.11.8 · 类型：冲突处理 · 改了什么：取 branch1（cases 环境中补“if”和标点）；branch2 把“By Theorem 6.11.7 (or Theorem 6.1.1(c) applied to $ab^{-1}$)”改述、并把 $p=2$ 一段重新断句，均未采用 · 理由：branch2 只是换一种说法，内容相同。
+- 单元 thm:6.11.9 · 类型：冲突处理 · 改了什么：取 branch1（写明根估计并补全 $(a^p-b^p)/(a+b)\ge1$ 的理由）；branch2 在证明开头加的两句导引（“For $n\ge3$, the absence of a primitive prime factor forces $\Phi_n(a,b)$ to equal the largest prime factor of $n$ …”）未采用 · 理由：branch1 已有“We first reduce this assumption to a condition involving a single cyclotomic value.”；branch2 的导引放在先处理 $n=1,2$ 的证明开头，次序不顺。
+- 单元 thm:6.11.10 · 类型：冲突处理 · 改了什么：取 branch1（“integer $n\ge1$”，`\clearpage`）；branch2 只有 `\pmod{2}`，另因 §7 导读使 `\section{Quadratic Residues}` 移出本单元 · 理由：branch2 没有实质修改；§7 导读属于第 4 批。

@@ -4764,6 +4764,10 @@ Both sides equal
 
 \section{Orders, Primitive Roots, and Multiplicative Structure Modulo \texorpdfstring{$m$}{m}}
 
+Multiplication of residue classes leads to orders, primitive roots, and the structure of unit groups. This section
+connects these ideas with Carmichael functions, finite-field arguments, and primitive prime factors. For group,
+subgroup, cyclic group, and element order, see Definitions~\ref{def:6.6.1}--\ref{def:6.6.3}.
+
 \subsection{The Order of an Element; Period Lengths of Base-\texorpdfstring{$m$}{m} Expansions}\label{subsec:6.1}
 
 \begin{definition}[order]\label{def:6.1.1} Let $n\in\mathbb{Z}^+$ and
@@ -4862,7 +4866,7 @@ Both sides equal
 		\item For $r\in\mathbb{Z}^+$, the Chinese remainder theorem and (c) give $a^{r} \equiv 1 \pmod{m}$ if and only if
 			      $\delta_{p_i^{\alpha_i}}(a) \mid r$ for all $i$, or equivalently
 			      $\lcm_i\big(\delta_{p_i^{\alpha_i}}(a)\big) \mid r$; the
-		      least positive such $r$ is $\delta_m(a)$.
+		      least positive such $r$ is $\delta_m(a)$.\qedhere
 	\end{enumerate}
 
 \end{proof}
@@ -4913,7 +4917,8 @@ Both sides equal
 		n'\in\mathbb{Z}^+,\quad \beta_i\in\mathbb{Z}_{\ge0},\quad \gcd(m,n')=1.
 	\]
 	Put $L=\max_{1\le i\le r}\left\lceil\beta_i/\alpha_i\right\rceil$ (with $L=0$ when every $\beta_i=0$), and put $P=\delta_{n'}(m)$, with $P=1$ if $n'=1$. Then the base-$m$ expansion of every $a/n$ with $a\in\mathbb{Z}$ and
-	$0\le a<n$ satisfies $d_{k+P}=d_k$ for every integer $k>L$.
+	$0\le a<n$ given by long division (the terminating one when $a/n$ has two expansions, Theorem~\ref{thm:4.1.3})
+	satisfies $d_{k+P}=d_k$ for every integer $k>L$.
 
 \end{theorem}
 
@@ -4973,7 +4978,8 @@ Both sides equal
 		\varphi(m)$, Theorem~\ref{thm:6.1.1}(b) shows that the powers $g^{0}, \ldots,
 		g^{\varphi(m) - 1}$ are pairwise incongruent and coprime to $m$. Since there are
 	$\varphi(m)$ of them, they represent every unit class exactly once and
-	hence form a reduced residue system (Definition~\ref{def:3.2.4}).
+	hence form a reduced residue system (Definition~\ref{def:3.2.4}: adjoining one representative of each
+	remaining class gives a complete residue system whose elements coprime to $m$ are exactly these powers).
 	($\Leftarrow$) Suppose they form a reduced residue system and put $D =
 		\delta_m(g)$. If $D < \varphi(m)$, then $g^{D} \equiv g^{0} \pmod{m}$
 	with $0 \le D \le \varphi(m) - 1$, contradicting pairwise
@@ -5015,6 +5021,9 @@ Both sides equal
 		\varphi(\varphi(n))$.
 
 \end{altproof}
+
+A further alternative proof of Theorem~\ref{thm:6.2.2}, via indices, appears after Theorem~\ref{thm:6.3.1}.
+
 \begin{theorem}[Lucas's primitive root test]\label{thm:6.2.3} For $n
 		\in \mathbb{Z}^+$ with $\gcd(n, g) = 1$, the integer $g$ is a primitive root
 	modulo $n$ if and only if $g^{\varphi(n)/p} \not\equiv 1 \pmod{n}$ for
@@ -5113,7 +5122,7 @@ Both sides equal
 	$\delta_{p^e}(g)=p^{k}(p-1)$ for some $0\le k\le e-1$. The lifting-the-exponent lemma applies to the pair $g^{p-1},1$: Fermat's little
 	theorem (Theorem~\ref{thm:3.3.2}) gives $p\mid(g^{p-1}-1)$, we have
 	$p\nmid g$, and
-	$v_p(g^{p-1}-1)=1$, which in particular gives $g^{p-1}\neq1$. Theorem~\ref{thm:4.8.3} then gives $v_p\big(g^{p^{k}(p-1)}-1\big)=1+k$, so
+	$v_p(g^{p-1}-1)=1$, which in particular implies $g^{p-1}\neq1$. Theorem~\ref{thm:4.8.3} then gives $v_p\big(g^{p^{k}(p-1)}-1\big)=1+k$, so
 	$g^{p^{k}(p-1)}\equiv1\pmod{p^e}$ if and only if $k+1\ge e$; the least such
 	$k$ is $e-1$, giving $\delta_{p^e}(g)=p^{e-1}(p-1)=\varphi(p^e)$.
 
@@ -5125,7 +5134,8 @@ Both sides equal
 
 \end{theorem}
 
-\begin{proof}
+\begin{proof} We first construct primitive roots for the listed moduli, lifting from odd
+	primes to their powers. Order bounds then rule out all remaining moduli.
 	We begin with Case 1, where $n = 1, 2, 4$. The integer $1$ is a primitive root
 	modulo $1$ and modulo $2$, while $3$ is a primitive root modulo $4$.
 
@@ -5296,6 +5306,10 @@ Both sides equal
 		2^{e-2}$ by Theorem~\ref{thm:6.1.1}(c), so $\delta_{2^e}(a) \le 2^{e-2} < 2^{e-1} = \varphi(2^e)$ and no primitive root modulo $2^{e}$ exists.
 
 \end{altproof}
+
+Further alternative arguments, for Case 3 via reduction modulo $8$ and for Case 4 via products of cyclic groups,
+appear after Theorem~\ref{thm:6.6.5}.
+
 \begin{theorem}\label{thm:6.2.7}
 	Suppose $m$ has a primitive root. For $d \in \mathbb{Z}^+$, there
 	is an element of order $d$ modulo $m$ if and only if $d \mid
@@ -5306,11 +5320,11 @@ Both sides equal
 
 \begin{proof} Let $g$ be a primitive root. By Theorem~\ref{thm:6.2.1}, every unit is congruent to $g^{k}$ for a unique $0 \le k <
 		\varphi(m)$, with $\delta_m(g^{k})
-		= \frac{\varphi(m)}{\gcd(\varphi(m), k)}$ by Theorem~\ref{thm:6.1.1}(d).
+		= \tfrac{\varphi(m)}{\gcd(\varphi(m), k)}$ by Theorem~\ref{thm:6.1.1}(d).
 	($\Rightarrow$) The Fermat--Euler theorem and Theorem~\ref{thm:6.1.1}(c) show that every
 	order divides $\varphi(m)$. ($\Leftarrow$) If $d \mid \varphi(m)$, then
 	$g^{k}$ has order $d$ if and only if $\gcd(\varphi(m), k) =
-		\frac{\varphi(m)}{d}$; writing $k = \frac{\varphi(m)}{d}j$ with
+		\tfrac{\varphi(m)}{d}$; writing $k = \tfrac{\varphi(m)}{d}j$ with
 	$0\le j<d$, we see that this holds if and only if $\gcd(j,d)=1$, giving exactly $\varphi(d)$ such
 	elements. Taking $d = \varphi(m)$ recovers Theorem~\ref{thm:6.2.2}.
 
@@ -5328,17 +5342,17 @@ Both sides equal
 
 \begin{proof} The defining congruence gives directly
 	\[
-		g(g-1)=g^2-g\equiv1\pmod p.
+		g(g-1)=g^2-g\equiv1\pmod{p}.
 	\]
 	Thus $g-1$ is a unit and represents $g^{-1}$ modulo $p$.
 	For every positive integer $k$,
-	we have $(g^{-1})^k\equiv1\pmod p$ if and only if $g^k\equiv1\pmod p$,
+	we have $(g^{-1})^k\equiv1\pmod{p}$ if and only if $g^k\equiv1\pmod{p}$,
 	so the two units have the same order. Consequently
 	\[
 		\delta_p(g-1)=\delta_p(g^{-1})=\delta_p(g)=p-1,
 	\]
 	and $g-1$ is a primitive root. If $p=3$, the only primitive-root
-	class is $2$, but $2^2\equiv1\not\equiv0\equiv2+1\pmod3$.
+	class is $2$, but $2^2\equiv1\not\equiv0\equiv2+1\pmod{3}$.
 	Since $p$ is odd, the existence hypothesis therefore forces $p\ge5$.
 
 \end{proof}
@@ -5401,7 +5415,7 @@ Both sides equal
 		      part (a) gives the identity.
 		\item By Theorem~\ref{thm:6.1.1}(d) with $a \equiv
 			      g^{\ind_{m,g}(a)}$ and $\delta_m(g) = \varphi(m)$,
-		      we get $\delta_m(a) = \frac{\varphi(m)}{\gcd(\varphi(m), \, \ind_{m,g}(a))}$.
+		      we get $\delta_m(a) = \frac{\varphi(m)}{\gcd(\varphi(m), \, \ind_{m,g}(a))}$.\qedhere
 	\end{enumerate}
 
 \end{proof}
@@ -5476,7 +5490,7 @@ Both sides equal
 	equals $\{\delta_{p_i^{e_i}}(b) \mid \gcd(b, p_i^{e_i})=1\}$: the forward
 	inclusion is immediate since $\gcd(a, m)=1$ implies
 	$\gcd(a, p_i^{e_i})=1$; for the reverse inclusion, given $b$ with
-	$\gcd(b, p_i^{e_i})=1$, the Chinese remainder theorem supplies
+	$\gcd(b, p_i^{e_i})=1$, the Chinese remainder theorem (Theorem~\ref{thm:3.4.1}) supplies
 	$a \in \mathbb{Z}^+$ with $a \equiv b \pmod{p_i^{e_i}}$ and $a
 		\equiv 1 \pmod{p_j^{e_j}}$ for all $j \neq i$; then $\gcd(a, m)=1$ and
 	$\delta_{p_i^{e_i}}(a) = \delta_{p_i^{e_i}}(b)$, so
@@ -5549,7 +5563,7 @@ Both sides equal
 \begin{proof} By Theorem~\ref{thm:6.1.1}(c), $a^{n-1} \equiv 1
 		\pmod{n}$ for all $a$ coprime to $n$ if and only if $\delta_n(a) \mid
 		(n-1)$ for all such $a$, that is, if and only if $\lambda(n) =
-		\lcm_{\gcd(a, n)=1}(\delta_n(a)) \mid (n-1)$.
+		\lcm_{\gcd(a, n)=1}(\delta_n(a)) \mid (n-1)$ (Theorem~\ref{thm:6.4.1}).
 
 \end{proof}
 \begin{theorem}[Korselt's criterion]\label{thm:6.5.2} A composite
@@ -5574,7 +5588,7 @@ Both sides equal
 	squarefree and hence $\gcd(p, n/p) = 1$, use the Chinese remainder
 	theorem to choose an integer $a$ with $a \equiv g \pmod{p}$ and $a
 		\equiv 1 \pmod{n/p}$. Then $\gcd(a, n) = 1$, so the defining property of the Carmichael number $n$ (Definition~\ref{def:6.5.1}) gives $a^{n-1} \equiv 1 \pmod{n}$, and reduction modulo $p$ yields
-	$g^{n-1} \equiv a^{n-1} \equiv 1 \pmod{p}$. As $\delta_p(g) = p-1$,
+	$g^{n-1} \equiv a^{n-1} \equiv 1 \pmod{p}$. Since $\delta_p(g) = p-1$,
 	Theorem~\ref{thm:6.1.1}(c) gives $(p-1) \mid (n-1)$. The integer $n$ must be odd. Indeed, if $n$ were even, then, since $n$ is squarefree
 	and composite, $n$ would not be a power of $2$ (the only even squarefree
 	power of $2$ is $2$ itself, which is prime), so $n$ would have an odd prime
@@ -5632,7 +5646,7 @@ Both sides equal
 \end{proof}
 \begin{definition}[homomorphism, kernel, coset, and commutative ring]\label{def:6.6.4}
 	A homomorphism between groups is a map preserving the operation; it is
-	an isomorphism if it is also a bijection, an endomorphism if source and
+	an isomorphism if it is also a bijection, an endomorphism if its source and
 	target coincide, and an automorphism if it is both an isomorphism and an endomorphism. The kernel of a
 	homomorphism is the preimage of the identity. For a subgroup $H\le G$
 	and $g\in G$, the left coset $gH$ is $\{gh\mid h\in H\}$.
@@ -5768,7 +5782,7 @@ Both sides equal
 		      $H$ is any subgroup of order $n$, Lagrange's theorem
 		      (Theorem~\ref{thm:6.6.2}) and Theorem~\ref{thm:6.1.1}(c) give $x^n=1$ for
 		      every $x\in H$, so $H$ is contained in the solution set, which also has
-		      $n$ elements; therefore $H$ equals it.
+		      $n$ elements; therefore $H$ equals it.\qedhere
 	\end{enumerate}
 
 \end{proof}
@@ -5800,8 +5814,8 @@ Both sides equal
 	coprime. Indeed, the order of an element $(x_1, \ldots, x_k)$ is the
 	$\lcm$ of the orders of its components, because
 	$(x_1,\ldots,x_k)^r$ is the identity exactly when $x_i^r=1$ for every
-	$i$, that is (Theorem~\ref{thm:6.1.1}(c), applied in each factor), exactly
-	when every component order divides $r$; so the largest
+	$i$, that is, by Theorem~\ref{thm:6.1.1}(c) applied in each factor, exactly
+	when the order of each component divides $r$; so the largest
 	order attained by any element is $\lcm(n_1, \ldots, n_k)$ (take each $x_i$ to be a generator of $C_{n_i}$); the product is
 	cyclic exactly when some element has order equal to the group order
 	$\prod_{i=1}^{k}n_i$, that is, when $\lcm(n_1, \ldots, n_k) =
@@ -5817,7 +5831,9 @@ Both sides equal
 	orders must be pairwise coprime; but $\varphi(p^{e})$ is even for every
 	odd prime $p$ and $\varphi(4) = 2$ is even, so at most one factor may
 	have even order, which forbids two distinct odd prime factors and
-	forbids an odd prime factor when $4 \mid m$. Combining the two
+	forbids an odd prime factor when $4 \mid m$. Conversely, for $m = 1, 2, 4, p^{e}, 2p^{e}$ every factor is
+	cyclic and at most one factor has order greater than $1$ (as $\varphi(2) = 1$), so the factor orders
+	are pairwise coprime. Combining the two
 	conditions, we see that $\ZmodUnits{m}$ is cyclic exactly when $m = 1, 2,
 		4, p^{e}$, or $2 p^{e}$ ($p$ an odd prime).
 
@@ -5857,7 +5873,7 @@ Both sides equal
 
 \end{proof}
 \begin{theorem}\label{thm:6.7.2} A finite abelian group $G$ in which
-	every element has order $1$ or $2$ has $|G| = 2^{k}$ for some
+	every element has order $1$ or $2$ satisfies $|G| = 2^{k}$ for some
 	$k\in\mathbb{Z}_{\ge0}$ and is isomorphic to $(C_2)^{k}$.
 
 \end{theorem}
@@ -5876,11 +5892,15 @@ Both sides equal
 	By Theorem~\ref{thm:6.6.2}, it has $|G|/|H|=2^{k-1}$ elements.
 	Since $(xH)^2=x^2H=H$, every element has order $1$ or $2$.
 	The induction hypothesis gives $Q\cong(C_2)^{k-1}$.
-	  Choose lifts $b_2,\ldots,b_k$ of generators $b_2H,\ldots,b_kH$ of $Q$.
-	  The map $(C_2)^k\to G$ given by $(\varepsilon_1,\ldots,\varepsilon_k)\mapsto b_1^{\varepsilon_1}\cdots b_k^{\varepsilon_k}$ is surjective: the lifted generators produce every coset of $H$, and multiplication by $b_1$ interchanges the two elements of each coset.
-	  Both groups have $2^k$ elements, so the surjection is bijective; consequently, the displayed representation is unique.
-	  The map is a homomorphism (as $G$ is
-	abelian), so $G \cong (C_2)^{k}$.
+	Choose lifts $b_2,\ldots,b_k$ of generators $b_2H,\ldots,b_kH$ of $Q$.
+	Every $b_i$, including $b_1$, satisfies $b_i^2=1$ by the hypothesis on $G$.
+	These relations allow the exponents to be read modulo $2$, and commutativity
+	allows the factors to be rearranged. Hence the map $(C_2)^k\to G$ given by
+	$(\varepsilon_1,\ldots,\varepsilon_k)\mapsto b_1^{\varepsilon_1}\cdots b_k^{\varepsilon_k}$
+	is a homomorphism. It is surjective because the lifted generators produce
+	every coset of $H$, and multiplication by $b_1$ interchanges the two elements
+	of each coset. Both groups have $2^k$ elements, so the map is bijective and
+	$G\cong(C_2)^k$.
 
 \end{proof}
 \begin{theorem}[Gauss's generalization of Wilson's theorem]\label{thm:6.7.3} Let $m\in\mathbb{Z}^+$ and let $T$ be a reduced residue system modulo $m$; then
@@ -5902,8 +5922,8 @@ Both sides equal
 		  For $m = 1, 2$,
 	we have $\prod_{a \in T} a \equiv 1 \equiv -1 \pmod{m}$. Now consider Case 2, in which no
 	primitive root exists. Let $G = \ZmodUnits{m}$ and $T_0 = \{x \in
-		G \mid x^{2} = 1\}$. Elements $b \notin T_0$ pair with $b^{-1} \neq b$
-	(product $1$), so $\prod_{x \in G} x = \prod_{x \in T_0} x$. Because $G$
+		G \mid x^{2} = 1\}$. Elements $b \notin T_0$ pair with $b^{-1} \neq b$, and each such pair has product $1$;
+	hence $\prod_{x \in G} x = \prod_{x \in T_0} x$. Because $G$
 	is abelian, $T_0$ is a subgroup: it contains $1$, each of its elements is
 	its own inverse, and $(xy)^2=x^2y^2=1$ for $x,y\in T_0$. Every element
 	of $T_0$ has order $1$ or $2$, so by
@@ -5914,8 +5934,8 @@ Both sides equal
 		v^{2^{k-1}}$, which is $1$ when $k \ge 2$ and $v$ when $k = 1$. By
 	Theorem~\ref{thm:6.2.6}, ``no primitive root exists'' means $m \notin \{1, 2,
 		4, p^{e}, 2p^{e}\}$; writing $m = 2^{c} t$ with $t$ odd, either $t = 1$
-	and then $c \ge 3$, or $t$ has two distinct prime factors and
-	separating them gives two coprime factors greater than $1$ with even totients
+	and then $c \ge 3$, or $t$ has at least two distinct prime factors and
+	separating one prime-power factor of $t$ from the rest gives two coprime factors greater than $1$ with even totients
 	(the factor $2^{c}$ may be attached to either of them), or $t = p^{e}$ and then $c \ge 2$
 	(as $m \neq p^{e}, 2p^{e}$), so $m = 2^{c} \cdot p^{e}$ with both
 	$\varphi(2^{c})$ and $\varphi(p^{e})$ even. Thus $m$ falls into one of
@@ -5933,8 +5953,8 @@ Both sides equal
 	If $x\equiv-1\pmod4$, write $x-1=2u$ with $u$ odd; the same
 	cancellation gives $2^{e-1}\mid x+1$, hence
 	$x\equiv-1,\ -1+2^{e-1}\pmod{2^e}$.
-	These divisibility arguments include $x=1$ and $x=-1$ directly,
-	without applying a nonzero-factor valuation formula to a zero factor.
+	These divisibility arguments cover the cases $x=1$ and $x=-1$ directly, without applying a valuation formula for
+	nonzero factors to a zero factor.
 	Since $e \ge 3$ gives $2^{e-1} \ge 4$, the four residues $1, -1,
 			1+2^{e-1}, -1+2^{e-1}$ are pairwise distinct modulo $2^{e}$, so $|T_0| =
 		4$, that is, $k = 2 \ge 2$. In Case 2b, there are two coprime factors $m_1, m_2 > 1$ with even
@@ -6154,7 +6174,7 @@ Finally, substituting $-t$ for $t$ in $tD(t)=e^{t}-1$, which preserves sums and 
 		h(x)$ this is $(x^{2}-1)^{2^{a-1}} \pmod{2^{a+1}}$.
 
 	Finally, consider a general $m$. Fix a prime power $p^{a} \parallel m$.
-	By the Chinese remainder theorem the reduction map $t(m) \to t(p^{a})$, $s \mapsto s \bmod
+	By the Chinese remainder theorem (Theorem~\ref{thm:3.4.1}) the reduction map $t(m) \to t(p^{a})$, $s \mapsto s \bmod
 		p^{a}$, is surjective and exactly $\varphi(m)/\varphi(p^{a})$-to-one.
 	Since $x - s \equiv x - (s \bmod p^{a}) \pmod{p^{a}}$, we have $f_m(x) \equiv
 		\prod_{s \in t(p^{a})}(x - s)^{\varphi(m)/\varphi(p^{a})} =
@@ -6261,14 +6281,14 @@ Finally, substituting $-t$ for $t$ in $tD(t)=e^{t}-1$, which preserves sums and 
 	\]
 	which proves (a) after subtracting $1$ and dividing by $p$.
 
-	Suppose that $g$ is primitive modulo $p$.
+	Suppose that $g$ is a primitive root modulo $p$.
 	  Its order modulo $p^2$ is a multiple of $p-1$ and divides $p(p-1)$, so it is either $p-1$ or $p(p-1)$.
 	  The first case is equivalent to $g^{p-1}\equiv1\pmod{p^2}$, which is equivalent to $q_p(g)\equiv0\pmod{p}$.
-	  Thus $g$ is primitive modulo $p^2$ if and only if $q_p(g)\not\equiv0\pmod{p}$.
-	  In the latter case, $v_p(g^{p-1}-1)=1$, and Theorem~\ref{thm:6.2.5} proves that $g$ is primitive modulo $p^e$ for every $e\ge2$.
-	  Conversely, if $g$ is primitive modulo $p^e$ for some $e\ge2$, then, since $g$ generates $\ZmodUnits{p^e}$ and the reduction homomorphism $\ZmodUnits{p^e}\to\ZmodUnits{p^2}$ is surjective (an integer coprime to $p$ represents a unit modulo both moduli),
-	  the image of $g$ generates $\ZmodUnits{p^2}$ and so has order $\varphi(p^2)$;
-	  hence $g$ is primitive modulo $p^2$ and $q_p(g)\not\equiv0\pmod{p}$.
+	  Thus $g$ is a primitive root modulo $p^2$ if and only if $q_p(g)\not\equiv0\pmod{p}$.
+	  In the latter case, $v_p(g^{p-1}-1)=1$, and Theorem~\ref{thm:6.2.5} proves that $g$ is a primitive root modulo $p^e$ for every $e\ge2$.
+	  Conversely, suppose that $g$ is a primitive root modulo $p^e$ for some $e\ge2$. Since $g$ generates $\ZmodUnits{p^e}$ and the reduction homomorphism $\ZmodUnits{p^e}\to\ZmodUnits{p^2}$ is surjective (an integer coprime to $p$ represents a unit modulo both moduli),
+	  the image of $g$ generates $\ZmodUnits{p^2}$ and so has order $\varphi(p^2)$.
+	  Hence $g$ is a primitive root modulo $p^2$ and $q_p(g)\not\equiv0\pmod{p}$.
 	  This proves (b) and makes explicit the role of the Fermat quotient in the lifting criterion in Theorem~\ref{thm:6.2.5}.
 
 	For $0\le k<p$, the binomial theorem gives
@@ -6304,11 +6324,19 @@ Finally, substituting $-t$ for $t$ in $tD(t)=e^{t}-1$, which preserves sums and 
 	\]
 	so every element of $\mathbb{F}_p$ occurs and $Q_p$ is surjective.
 	  By Theorem~\ref{thm:6.6.5}(a), its kernel has $\varphi(p^2)/p=p-1$ elements, and by definition it is precisely the solution set of $x^{p-1}\equiv1\pmod{p^2}$, proving (e).
-	  By Definition~\ref{def:6.9.2}, $p$ is a Wieferich prime to base $2$ if and only if $q_p(2)\equiv0\pmod{p}$; hence (f) is (b) with $g=2$.
-	  The first two such primes are $1093$ and $3511$.
-	  No primitive-root hypothesis is part of Definition~\ref{def:6.9.2}; the primitive-root interpretation in (f) applies when that additional hypothesis holds.
+	  By Definition~\ref{def:6.9.2}, $p$ is a Wieferich prime to base $2$ if and only if $q_p(2)\equiv0\pmod{p}$; hence part (f) follows from part (b) by taking $g=2$.
 
 \end{proof}
+
+The odd primes $p\le3511$ satisfying $2^{p-1}\equiv1\pmod{p^2}$
+are exactly $1093$ and $3511$, so these are the first two Wieferich primes
+to base $2$. This finite assertion can be checked by testing each integer
+$2\le r\le3511$ for primality by trial division through $\sqrt r$, then computing
+$2^{p-1}\bmod p^2$ by repeated squaring for every odd prime retained.
+No primitive-root hypothesis is part of Definition~\ref{def:6.9.2};
+the primitive-root interpretation in part (f) of Theorem~\ref{thm:6.9.4}
+applies when that additional hypothesis holds.
+
 \begin{theorem}[Lerch's formula, primitive-root form]\label{thm:6.9.5} Let $p$ be an odd prime, let $g$ be a primitive root modulo $p^2$, and, for each $a\in\{1,\ldots,p-1\}$, choose $r_a$ with $a\equiv g^{r_a}\pmod{p^2}$. Then
 	\[
 		W_p\equiv q_p(g)\sum_{a=1}^{p-1}r_a\pmod{p},
@@ -6377,7 +6405,8 @@ Finally, substituting $-t$ for $t$ in $tD(t)=e^{t}-1$, which preserves sums and 
 	$e\mid|G|$ by Lagrange's theorem (Theorem~\ref{thm:6.6.2}) applied to every element order. Thus $e=|G|$ and $h$ generates $G$. When $e=1$, the product defining $h$ is the identity and the same argument gives $|G|=1$.
 
 \end{proof}
-\begin{theorem}[Chevalley--Warning theorem]\label{thm:6.10.2} Let $f_1,
+\begin{theorem}[Chevalley--Warning theorem]\label{thm:6.10.2} Let $p$ be a prime,
+	let $n\ge1$ be an integer, and let $f_1,
 		\ldots, f_k \in \mathbb{F}_p[x_1, \ldots, x_n]$ satisfy
 	$\sum_{\substack{1\le i\le k\\ f_i\neq0}} \deg f_i < n$ (with the
 	empty sum equal to $0$), and let $Z = \{x \in
@@ -6390,7 +6419,7 @@ Finally, substituting $-t$ for $t$ in $tD(t)=e^{t}-1$, which preserves sums and 
 	For an integer $e\ge0$, the sum $\sum_{x\in\mathbb{F}_p}x^e$ is $-1$
 	if $e>0$ and $(p-1)\mid e$, and is $0$ otherwise. Indeed, in the first
 	case each nonzero $x$ has $x^e=1$, so the sum is $(p-1)\cdot1=-1$.
-	If $e>0$ and $(p-1)\nmid e$, a primitive root $g$ gives
+	If $e>0$ and $(p-1)\nmid e$, a primitive root $g$ (Theorem~\ref{thm:6.2.6}) gives
 	$\sum_{x\ne0}x^e=(g^{(p-1)e}-1)/(g^e-1)=0$.
 	For $e=0$, the monomial $x^0$ is the constant polynomial $1$,
 	so the sum is $p\cdot1=0$.
@@ -6434,6 +6463,10 @@ Finally, substituting $-t$ for $t$ in $tD(t)=e^{t}-1$, which preserves sums and 
 		\equiv 0 \pmod{p}$.
 
 \end{altproof}
+
+A further alternative proof of Theorem~\ref{thm:6.10.3}, via the Cauchy--Davenport theorem, appears after
+Theorem~\ref{thm:12.2.1}.
+
 \subsection{Orders and Primitive Prime Factors: Zsigmondy's Theorem and Cyclotomic Polynomials}
 
 \begin{definition}[cyclotomic polynomial]\label{def:6.11.1}
@@ -6450,17 +6483,16 @@ Finally, substituting $-t$ for $t$ in $tD(t)=e^{t}-1$, which preserves sums and 
 	$e^{2\pi i(k-l)/n}=1$, that is, $n\mid k-l$. By Theorem~\ref{thm:3.6.2},
 	applied over $\mathbb{C}$, there are no other roots. If $r_1,\ldots,r_j$
 	are distinct roots of a polynomial $f$ and $f=(x-r_1)\cdots(x-r_{j-1})q$,
-	then $q(r_j)=0$ because each $r_j-r_i$ is nonzero; hence the factor step
-	in the proof of Theorem~\ref{thm:3.6.2}, applied $n$ times, together with a
-	comparison of leading coefficients, gives
+	then $q(r_j)=0$ because each $r_j-r_i$ is nonzero; hence, applying the factor step
+	from the proof of Theorem~\ref{thm:3.6.2} $n$ times and comparing leading coefficients, we obtain
 	$x^n-1=\prod_{k=1}^{n}(x-\zeta_n^k)$. Every $n$-th root of unity
 	$\zeta$ has a well-defined order $d \mid n$
 	(Theorem~\ref{thm:6.1.1}(c), applied in the group $\mathbb{C}^{\times}$),
 	and the roots of $\Phi_d$ are exactly the $n$-th roots of unity of
-	order precisely $d$: each $\zeta_d^k$ with $\gcd(k,d)=1$ has order
-	$d/\gcd(d,k)=d$ by Theorem~\ref{thm:6.1.1}(d), and conversely a root of
+	order precisely $d$. Indeed, each $\zeta_d^k$ with $\gcd(k,d)=1$ has order
+	$d/\gcd(d,k)=d$ by Theorem~\ref{thm:6.1.1}(d). Conversely, a root of
 	order $d$ is a root of $x^d-1$, hence equals $\zeta_d^k$ for some
-	$1\le k\le d$ by the first part of the proof, and its order $d$
+	$1\le k\le d$ by the first part of the proof; its order $d$
 	forces $\gcd(k,d)=1$. Grouping the $n$ linear factors of $x^{n} - 1$
 	by the order of their roots gives $x^{n} - 1 = \prod_{d \mid n} \Phi_d(x)$.
 
@@ -6477,7 +6509,7 @@ Finally, substituting $-t$ for $t$ in $tD(t)=e^{t}-1$, which preserves sums and 
 	integer polynomial $x^{n} - 1$ by the monic integer polynomial $D$
 	using the usual algorithm keeps every coefficient integral at each step
 	(since the leading coefficient of $D$ is $1$, no denominators are ever
-	introduced), so the quotient $\Phi_n = \frac{x^{n} - 1}{D}$ lies in
+	introduced), so the quotient $\Phi_n = \tfrac{x^{n} - 1}{D}$ lies in
 	$\mathbb{Z}[x]$ and is monic; and
 	$\sum_{d \mid n}\varphi(d) = n$ (Theorem~\ref{thm:5.1.5}) gives $\deg \Phi_n =
 		\varphi(n)$.

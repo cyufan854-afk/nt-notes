@@ -1,9 +1,10 @@
 # 合并进度
 
-- 已完成批次：1、2（合并已完成；第 1 批的疑难复核由 Fable 进行中，第 2 批没有疑难条目）。用户要求不再逐批停下，一次做完第 2–6 批，最后统一交 Fable 复核。
-- 当前批次：3（§6），从 §6 导读（branch2 的 `sec:orders-primitive-roots-and-multiplicativ`）和 def:6.1.1 开始
+- 已完成批次：1、2、3（合并已完成；第 1 批的疑难复核由 Fable 进行中，第 2 批没有疑难条目，第 3 批 1 条）。用户要求不再逐批停下，一次做完第 2–6 批，最后统一交 Fable 复核。
+- 当前批次：4（§7），从 §7 导读（branch2 的 `sec:quadratic-residues`）和 §7 第一个单元开始
 - 本批计数（第 1 批）：处理 83 个单元（merge-plan 中本批至少一边改过的单元；另有 branch2 新增的 18 个说明文字、remark 或新环境单元，其中 2 个导读原样采用、16 个记入日志）；两边都改过 39 个；回滚 51（其中 19 个只是 branch2 加了描述性 label、`\index` 或 UTF-8 重音而未搬入；16 个是 branch2 新增单元的改写或不采用）、冲突处理 39、新的数学修改 0、自行优化 0；列入疑难 4 条（thm:2.5.4、def:3.2.1、thm:3.2.3、thm:3.4.5），占本批 83 个单元的 4.8%
 - 本批计数（第 2 批）：处理 78 个单元（merge-plan 中 §4–§5 至少一边改过的单元；另有 branch2 新增的 2 个导读（原样采用）和 3 个 remark（记入日志））；两边都改过 38 个；回滚 26（其中 19 个只是 branch2 加了描述性 label、`\index`、UTF-8 重音而未搬入；3 个是 remark 改写为普通段落）、冲突处理 38、新的数学修改 0、自行优化 1（thm:5.1.5 后补替代证明指引）；列入疑难 0 条
+- 本批计数（第 3 批）：处理 63 个单元（§6 至少一边改过的单元；另有 branch2 新增的 1 个导读（略改后采用）和 4 个 remark（记入日志））；两边都改过 29 个；回滚 35（其中 26 个只是 branch2 加了描述性 label、`\index`、UTF-8 或无排版差别的源码改动而未搬入；4 个是 remark 改写为指引句或普通段落）、冲突处理 29、新的数学修改 0、自行优化 0；列入疑难 1 条（thm:6.2.4），占 1.6%
 
 ## 约定（后续章节须遵守）
 
@@ -21,6 +22,8 @@
 - label 对照（baseline → branch1）已逐条核对：只有 `def:5.7.1`→`def:5.7.2`（branch1 在 §5.7 新增渐近记号定义 def:5.7.1）；`def:9.4.1` 两边是同一定义（只改了标题，plan 的“找不到”是误报）；branch1 新增的 def:4.2.2、thm:7.2.6、thm:7.4.4、thm:8.1.11、thm:9.1.10、thm:9.1.11、thm:9.2.3 都排在各自小节的最后，不引起改名。从 branch2 搬文字时，`\ref{def:5.7.1}`（average order）要改成 `def:5.7.2`；branch2 指向 `sec:asymptotic-notation` 的链接改为 Definition~\ref{def:5.7.1}。来源：合并
 - 渐近记号：终稿按 branch1 在 §5.7 的 Definition 5.7.1 定义（它已含 branch2 Notation 段落里那条隐含常数约定，措辞相同；§5.7 之前全文没有用到渐近记号，已查）。branch2 放在 Notation 末尾的 Asymptotic notation 段落不采用；第 2 批遇到 branch2 中指向 `sec:asymptotic-notation` 的链接，改为 Definition~\ref{def:5.7.1}。来源：合并
 - 第 2 批提醒：采用 §4 导读后，thm:3.6.2 单元末尾的 `\clearpage` 与 `\section{Digit Expansions…}` 标题会归入 §4 导读单元，这不是对 thm:3.6.2 的修改（thm:3.6.2 已在日志中）。来源：合并
+- 无排版差别的源码改动（行内 `\frac`→`\tfrac`、`\pmod p`→`\pmod{p}`）：只有这类改动的单边单元原样采用；同一单元另有不能搬入的 label/`\index` 时，自第 3 批起不再单独搬这些改动（单元保持 branch1）；两边都改过的单元一律不搬。注意 `\tfrac` 出现在行间公式或 `\displaystyle` 中时会改变排版，不属于此类。来源：合并
+- 环的定义：终稿保留在 Definition 6.6.4 里（branch2 另立的 `definition*`［ring conventions，`def:rings`］不采用）。第 5、6 批遇到 branch2 中 `\hyperref[def:rings]{…}`（如“commutative-ring convention”“ring conventions”）时改为 Definition~\ref{def:6.6.4}。来源：合并
 
 ## 未决事项
 
