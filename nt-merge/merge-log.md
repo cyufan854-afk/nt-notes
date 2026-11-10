@@ -314,3 +314,91 @@
 - 单元 def:7.11.3 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
 - 单元 thm:7.11.4 · 类型：回滚 · 改了什么：采用 branch2 补的“(Theorem~\ref{thm:7.11.2})”和对零项的说明“at $x=0$ and $x=1$ both sides vanish, since $\chi(0)=\lambda(0)=0$ for the nonprincipal $\chi,\lambda$”；描述性 label 和 `\index` 不搬入 · 理由：见约定；说明已核对。
 - 单元 thm:7.11.5 · 类型：冲突处理 · 改了什么：取 branch1（“let $g$ be a primitive root modulo $p$”，`\clearpage`）；branch2 在本单元的改动只是 §8 导读使 `\section{Quadratic Representations of Integers}` 标题归入该导读单元（第 5 批处理）· 理由：branch2 对本单元没有实质修改。
+
+## 第 5 批（§8–§9）
+
+### §8 Quadratic Representations of Integers
+
+- 单元 thm:8.1.1 · 类型：冲突处理 · 改了什么：取 branch1；branch2 只加了描述性 label 和 `\index` · 理由：branch2 没有实质修改。
+- 单元 thm:8.1.2 · 类型：冲突处理 · 改了什么：取 branch1（补“explicitly, $a=\big(\tfrac{p-1}{2}\big)!$ works by Theorem~\ref{thm:7.4.2}”，Thue 引理的不等式分写，替代证明标题“via Zagier's involution”“via descent”）；branch2 的替代证明标题“via an involution on triples”“via descent”（带逗号）未采用 · 理由：branch2 只改了标题，标题按 branch1。
+- 单元 thm:8.1.5 · 类型：冲突处理 · 改了什么：取 branch1（陈述改为“has even exponent in the prime factorization of $n$”，补 $m=1$ 的情形）；branch2 删去证明末尾的 `\qedhere` 未采用 · 理由：该处是普通段落结尾，有无 `\qedhere` 排版相同。
+- 单元 thm:8.1.7 · 类型：冲突处理 · 改了什么：取 branch1（替代证明标题“via square roots of $-1$ modulo $p$”）；branch2 的标题“via congruence and factorization”未采用 · 理由：标题按 branch1。
+- 单元 thm:8.1.8 · 类型：冲突处理 · 改了什么：取 branch1（四元数共轭对应共轭转置的显式验证）；branch2 只加了描述性 label 和 `\index`；branch2 在本定理后新增的 remark@9835 写成本单元证明之后的普通段落（见该条）· 理由：branch2 对本单元没有实质修改。
+- 单元 remark@9835 · 类型：回滚 · 改了什么：remark 环境不保留，文字作为 thm:8.1.8 证明之后的段落；`\hyperref[def:rings]{commutative-ring convention}` 按约定改为“the commutative-ring convention used elsewhere in these notes (Definition~\ref{def:6.6.4})” · 理由：终稿没有 remark 环境；Definition 6.6.4（branch1）已写明本证明是唯一例外，这里在例外出现处再提一句，两处互相对应。
+- 单元 thm:8.1.10 · 类型：回滚 · 改了什么：采用 branch2 补的“and factorization into primes (Theorem~\ref{thm:2.3.3})”；描述性 label 和 `\index` 不搬入 · 理由：补充说明了为何只需表示素数。
+- 单元 def:8.2.1 · 类型：冲突处理 · 改了什么：取 branch1；branch2 只加了描述性 label 和 `\index` · 理由：branch2 没有实质修改。
+- 单元 thm:8.2.2 · 类型：冲突处理 · 改了什么：融合两边：取 branch1（陈述写明“every nonzero nonunit of $\mathbb{Z}[i]$ factors into Gaussian primes, uniquely up to order and associates”，Canceling）；采用 branch2 对证明的两处修正：B{\'e}zout 一步写成“$u\pi+v\alpha=\delta$ for a greatest common divisor $\delta$; as $\delta$ is a unit, replacing $u,v$ by $\delta^{-1}u,\delta^{-1}v$ gives $u\pi+v\alpha=1$”，归纳一步写成“and the induction hypothesis applies to both factors”；branch2 在行间公式后补的“(the equality by Theorem~\ref{thm:8.2.1})”未采用 · 理由：两边改的位置不重叠；$\mathbb{Z}[i]$ 中的最大公因数只确定到单位，branch2 的写法补上了这一步；Theorem 8.2.1 只对 $\mathbb{Z}[i]$ 中的元素陈述，而该等式用到的是 $\mathbb{Q}(i)$ 中的 $\alpha/\beta-q$，引用并不严格对应，所以不加。
+- 单元 def:8.3.1 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
+- 单元 def:8.3.2 · 类型：冲突处理 · 改了什么：取 branch1；branch2 只加了描述性 label 和 `\index` · 理由：branch2 没有实质修改。
+- 单元 thm:8.3.1 · 类型：冲突处理 · 改了什么：同上 · 理由：同上。
+- 单元 thm:8.5.1 · 类型：冲突处理 · 改了什么：同上 · 理由：同上。
+- 单元 def:8.6.1 · 类型：冲突处理 · 改了什么：同上 · 理由：同上。
+- 单元 def:8.6.2 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
+- 单元 def:8.6.3 · 类型：回滚 · 改了什么：同上 · 理由：见约定。
+- 单元 thm:8.6.1 · 类型：冲突处理 · 改了什么：取 branch1（“maps primitive pairs bijectively to primitive pairs … each by the same number of pairs $(x,y)$, and representations by primitive pairs correspond”）；branch2 对同一句的补充（“for each $n$, the pairs $(x,y)$ with $f(x,y)=n$ correspond bijectively to those with $g(x,y)=n$”）未采用 · 理由：两边对“same multiplicities”做了同样的澄清，取 branch1。
+- 单元 thm:8.6.3 · 类型：冲突处理 · 改了什么：融合两边：取 branch1（陈述“For every negative discriminant $D$”，证明中先算出 $g=(c,2cn-b,cn^2-bn+a)$ 再由 $a'=a$、$g(1,0)=c$ 得 $c=a$）；采用 branch2 对边界情形的修正：“the only possibilities are $n=0$, or a boundary interchange: $b=-a$ and $b'=a$ ($n=1$), or $b=a$ and $b'=-a$ ($n=-1$). The boundary rule ($b\ge0$ and $b'\ge0$ when the absolute value equals $a$) excludes the negative endpoint in either case”；branch2 对 $c=a$ 的另一种补法（“Since $(0,1)^{\mathsf{T}}$ is a minimal vector …”）和末段的措辞未采用 · 理由：两边都补了 $c=a$ 这一步，取 branch1；边界情形原文只写了 $n=1$ 一种，已核对 $b'=b+2an$ 下 $n=-1$ 给出 $b=a$、$b'=-a$，branch2 的写法补全了这一情形。
+- 单元 thm:8.6.4 · 类型：冲突处理 · 改了什么：取 branch1；branch2 只把 `\leg` 改成 `\legs` · 理由：branch2 没有实质修改。
+- 单元 thm:8.6.5 · 类型：冲突处理 · 改了什么：取 branch1（陈述补“satisfy $D\equiv0$ or $1\pmod{4}$”和三处“for some $x,y\in\mathbb{Z}$”）；branch2 只有 `\legs` 和 `\pmod` 加括号 · 理由：branch2 没有实质修改。
+- 单元 thm:8.6.6 · 类型：冲突处理 · 改了什么：取 branch1（“for some $x,y\in\mathbb{Z}$”）；branch2 删去证明末尾的 `\qedhere` 未采用 · 理由：该处是普通段落结尾，有无 `\qedhere` 排版相同。
+- 单元 thm:8.6.7 · 类型：冲突处理 · 改了什么：取 branch1（$\omega$ 改记 $\omega_7$，补 $m=1$ 时 $1=f(1,0)$）；branch2 只有 `\legs`、`\pmod{7}` 和重新折行 · 理由：branch2 没有实质修改。
+- 单元 thm:8.6.8 · 类型：回滚 · 改了什么：branch2 只把 `\leg` 改成 `\legs`，不采用 · 理由：见约定。
+- 单元 def:8.7.1 · 类型：冲突处理 · 改了什么：取 branch1；branch2 只加了描述性 label 和 `\index` · 理由：branch2 没有实质修改。
+- 单元 thm:8.7.1 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
+- 单元 def:8.7.2 · 类型：冲突处理 · 改了什么：取 branch1（size function 由 $\delta$ 改记 $\nu$）；branch2 把“(Definition~\ref{def:6.6.4})”改成指向 `def:rings` 的链接，按约定这类链接就改回 Definition~\ref{def:6.6.4}，与原文相同 · 理由：branch2 没有实质修改。
+- 单元 thm:8.7.2 · 类型：冲突处理 · 改了什么：取 branch1（$\delta$ 改记 $\nu$）；branch2 只有 `\pmod{2}` 和重新折行 · 理由：branch2 没有实质修改。
+- 单元 def:8.7.3 · 类型：回滚 · 改了什么：branch2 只有描述性 label、`\index` 和 `\pmod` 加括号，不采用 · 理由：见约定。
+- 单元 thm:8.7.3 · 类型：回滚 · 改了什么：branch2 只有描述性 label、`\index` 和 `\legs`，不搬入 · 理由：见约定。
+- 单元 thm:8.7.4 · 类型：回滚 · 改了什么：采用 branch2 的措辞“combines the two inverses”；描述性 label、`\index`、`\legs` 和 `\pmod` 加括号不搬入 · 理由：见约定。
+- 单元 def:8.7.4 · 类型：回滚 · 改了什么：采用 branch2 的措辞“We use the convention $(+\infty)+k=+\infty$, including the case $k=+\infty$.”；描述性 label、`\index` 和 `\legs` 不搬入 · 理由：见约定。
+- 单元 thm:8.7.5 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
+- 单元 def:8.7.5 · 类型：冲突处理 · 改了什么：两边做了同样的引用修正（Definition 8.7.1 改为 Definition~\ref{def:8.7.4}），取 branch1；branch2 另有 `\legs` · 理由：两边一致。
+- 单元 thm:8.7.6 · 类型：回滚 · 改了什么：采用 branch2 补的“(Theorem~\ref{thm:8.7.5})”；描述性 label 和 `\index` 不搬入 · 理由：见约定。
+- 单元 thm:8.7.7 · 类型：回滚 · 改了什么：采用 branch2 补的“(Theorem~\ref{thm:8.7.5})”和“(for $\beta$, by Definition~\ref{def:8.7.5})”；描述性 label 和 `\index` 不搬入 · 理由：两处引用已核对（乘积律；Definition 8.7.5 写明 $w_p(\beta)=0$）。
+- 单元 thm:8.7.8 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
+- 单元 def:8.8.1 · 类型：回滚 · 改了什么：同上 · 理由：见约定。
+- 单元 thm:8.8.1 · 类型：回滚 · 改了什么：同上 · 理由：见约定。
+- 单元 thm:8.8.2 · 类型：回滚 · 改了什么：采用 branch2 的两处改写：单位与范数的关系写成“the units are exactly the elements of norm $1$, since $N(\alpha)=\alpha\bar\alpha$ and the norm is multiplicative, Theorem~\ref{thm:8.8.1}”，“…divides some prime in the other, and the two primes are associates”；描述性 label、`\index` 和重新折行不搬入 · 理由：Theorem 8.8.1 只列出了单位，没有直接说“单位即范数为 $1$ 的元素”，branch2 补出了理由。
+- 单元 thm:8.8.3 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
+- 单元 thm:8.8.4 · 类型：回滚 · 改了什么：采用 branch2 补的冠词（“$1-\omega$ is a prime of norm $3$”）；描述性 label、`\index`、`\pmod` 加括号和重新折行不搬入 · 理由：见约定。
+- 单元 def:8.8.2 · 类型：回滚 · 改了什么：branch2 只有描述性 label、`\index` 和 `\pmod\alpha`→`\pmod{\alpha}`，不采用 · 理由：见约定（无排版差别）。
+- 单元 thm:8.8.5 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
+- 单元 thm:8.8.6 · 类型：回滚 · 改了什么：branch2 只有描述性 label、`\index` 和 UTF-8 重音，不搬入 · 理由：见约定。
+- 单元 thm:8.8.7 · 类型：冲突处理 · 改了什么：取 branch1（canceling）；另采用 branch2 的措辞“The pairwise differences among $1,\omega,\omega^2$ are unit multiples of $1-\omega$, since …”；`\pmod{\pi}` 和重新折行未采用 · 理由：两边改的位置不重叠。
+- 单元 def:8.8.3 · 类型：回滚 · 改了什么：branch2 只有描述性 label、`\index` 和 `\pmod\pi`→`\pmod{\pi}`，不采用 · 理由：见约定（无排版差别）。
+- 单元 thm:8.8.8 · 类型：冲突处理 · 改了什么：取 branch1（陈述开头补“Let $\pi\nmid3$ be prime in $E$ and put $q=N(\pi)$, as in Definition~\ref{def:8.8.3}.”，`\clearpage`）；branch2 只有重新折行；采用 §9 导读后，`\section{Prime Numbers: …}` 标题归入该导读单元，这不是对本单元的修改 · 理由：branch2 没有实质修改。
+
+### §9 Prime Numbers: Primality Tests, Factorization, and Distribution
+
+- 单元 thm:9.1.1 · 类型：回滚 · 改了什么：采用 branch2 补的“with $p$ an odd prime, $k\ge1$”；branch2 的 `\index` 不搬入 · 理由：补全了 $n=p^kn'$ 中 $p$、$k$ 的条件。
+- 单元 thm:9.1.2 · 类型：冲突处理 · 改了什么：融合两边：取 branch1 在证明开头补的 $\gcd(3,\mathcal{F}_k)=1$ 的论证；采用 branch2 补的“by quadratic reciprocity (Theorem~\ref{thm:7.5.1})”；`\legs` 不采用 · 理由：两边改的位置不重叠。
+- 单元 def:9.1.1 · 类型：回滚 · 改了什么：branch2 只有描述性 label、`\index` 和 `\legs`，不搬入 · 理由：见约定。
+- 单元 thm:9.1.3 · 类型：回滚 · 改了什么：branch2 只把 `\leg` 改成 `\legs`，不采用 · 理由：见约定。
+- 单元 thm:9.1.4 · 类型：冲突处理 · 改了什么：取 branch1（“classes $b\in\ZmodUnits{N}$”）；branch2 只有行内 `\tfrac` · 理由：无排版差别。
+- 单元 thm:9.1.5 · 类型：回滚 · 改了什么：采用 branch2 补的“by”（“…consists of non-residues, by Theorem~\ref{thm:7.2.2}”）；`\legs` 不采用 · 理由：见约定。
+- 单元 thm:9.1.6 · 类型：回滚 · 改了什么：采用 branch2 补的“Theorem~\ref{thm:7.2.2}”和“(Theorem~\ref{thm:7.1.2})”；描述性 label、`\index` 和 `\legs` 不搬入 · 理由：见约定；此处 $n$ 已设为素数，两处引用适用。
+- 单元 thm:9.1.6 · 类型：自行优化 · 改了什么：在本单元证明之后加一句“An alternative proof of sufficiency in Theorem~\ref{thm:9.1.6}, via Pocklington's criterion, appears after Theorem~\ref{thm:9.1.9}.” · 理由：该替代证明在 thm:9.1.9 之后（两边都放在那里），Introduction 写明替代证明不紧跟原定理时原定理后要有指引；两边都没有加。
+- 单元 thm:9.1.7 · 类型：冲突处理 · 改了什么：取 branch1；branch2 只把 `\leg` 改成 `\legs` · 理由：branch2 没有实质修改。
+- 单元 thm:9.1.8 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
+- 单元 thm:9.1.9 · 类型：冲突处理 · 改了什么：取 branch1（把 $q^k\mid d$ 的理由写成 $d=q^js$ 的分析，替代证明标题“via Pocklington's criterion”）；branch2 的标题“via the order criterion”和重新折行未采用 · 理由：标题按 branch1。
+- 单元 thm:9.2.1 · 类型：回滚 · 改了什么：branch2 只把 `\leg` 改成 `\legs`，不采用 · 理由：见约定。
+- 单元 thm:9.2.2 · 类型：冲突处理 · 改了什么：取 branch1（替代证明标题“via the order of $2$ modulo $q$”）；branch2 的标题“via the order of 2”和 `\legs` 未采用 · 理由：标题按 branch1。
+- 单元 def:9.3.1 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
+- 单元 thm:9.3.2 · 类型：冲突处理 · 改了什么：融合两边：取 branch1（$R$ 改为 $R_q$ 的写法，替代证明标题“via the rings $R_n(3)$”及其中的改写）；采用 branch2 在证明开头加的两句概述（“Divisibility forces an element of order $2^p$ in a finite ring, ruling out a small prime factor of $M_p$. Conversely, when $M_p$ is prime, Frobenius conjugation in a quadratic field yields the required divisibility.”）和“$M\equiv7\pmod{8}$ and $M\equiv1\pmod{3}$ (so in particular $M\equiv3\pmod{4}$)”；描述性 label、`\index`、`\legs` 不搬入 · 理由：两边改的位置不重叠；概述与证明的两部分对应。
+- 单元 def:9.4.1 · 类型：冲突处理 · 改了什么：取 branch1；branch2 只加了描述性 label 和 `\index` · 理由：branch2 没有实质修改。
+- 单元 thm:9.5.1 · 类型：冲突处理 · 改了什么：取 branch1（“good value $t$”的说法，$s^2<t^2$）；branch2 只有行内 `\tfrac` 和重新折行 · 理由：无排版差别。
+- 单元 def:9.5.1 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
+- 单元 def:9.6.1 · 类型：冲突处理 · 改了什么：取 branch1（“For real $x\ge0$”，Theorem 2.1.2 的替代证明标题“via squarefree decomposition”）；branch2 的标题“via squarefree parts”未采用 · 理由：标题按 branch1。thm:2.1.2 末尾的指引句（第 1 批按 branch2 的说法写成“via squarefree parts”）随之改为“via squarefree decomposition”，见下条。
+- 单元 thm:2.1.2 · 类型：冲突处理 · 改了什么：（第 5 批补改）末尾指引句中“via squarefree parts after Definition~\ref{def:9.6.1}”改为“via squarefree decomposition after Definition~\ref{def:9.6.1}” · 理由：指引句要与 def:9.6.1 中替代证明的标题一致（标题按 branch1，见上条）。
+- 单元 thm:9.6.1 · 类型：冲突处理 · 改了什么：取 branch1（重写 $\pi(n)\ge2$ 的理由）；branch2 的措辞“a distinct pair of this form”未采用 · 理由：只是措辞。
+- 单元 thm:9.6.2 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
+- 单元 thm:9.6.3 · 类型：冲突处理 · 改了什么：取 branch1（陈述改为“As $n\to\infty$ through positive integers, $\tfrac{\pi(n)}{n}\to0$.”）；branch2 对容斥误差一句的改写未采用 · 理由：只是措辞。
+- 单元 thm:9.6.4 · 类型：冲突处理 · 改了什么：取 branch1（$v_p\bigl(\tbinom{2n}{n}\bigr)$ 的写法，“induction on $n\in\mathbb{Z}^+$”）；另采用 branch2 补的冠词（“since such a $p$ divides”）；行内 `\tfrac` 未采用 · 理由：两边改的位置不重叠。
+- 单元 thm:9.6.5 · 类型：冲突处理 · 改了什么：融合两边：取 branch1（$v_p\bigl(\binom{2n}{n}\bigr)$ 的写法）；采用 branch2 对证明的补充：开头一句思路概述，$F(512)$ 的三行计算（写出 $32\ln1024=320\ln2$），$F'(x)$ 的中间两步（$u(2x)\le u(1024)=(10\ln2+2)/32$），“contradicting $F(n)<0$ whenever $n\ge512$”，以及素数链中各数为素数、相邻比小于 $2$ 的验证说明 · 理由：两边改的位置不重叠；补充的计算已核对（$F(512)=\tfrac{64}{3}\ln2-\ln1025>\tfrac{31}{3}\ln2$；$\tfrac23-\tfrac{10}{32}=\tfrac{17}{48}$；$631<26^2$，所需试除的素数不超过 $23$）。
+- 单元 thm:9.6.6 · 类型：冲突处理 · 改了什么：两边对同一处补了“等号不可能成立”的理由（branch1：$2p_{n+1}$ 是大于 $2$ 的偶数；branch2：$2p_{n+1}$ 不是素数），取 branch1 · 理由：两边意思相同。
+- 单元 thm:9.6.8 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
+- 单元 thm:9.6.9 · 类型：回滚 · 改了什么：branch2 的描述性 label、`\index` 和 `\frac`→`\tfrac` 都不采用 · 理由：其中一处在 `\displaystyle` 求和中，会把分数排小（与 thm:5.7.1 的处理一致）；其余无排版差别。
+- 单元 thm:9.6.10 · 类型：回滚 · 改了什么：同上 · 理由：同上。
+- 单元 def:9.7.1 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
+- 单元 thm:9.7.1 · 类型：回滚 · 改了什么：branch2 的描述性 label、`\index`、UTF-8 重音和 `\displaystyle` 中的 `\tfrac` 都不采用 · 理由：同 thm:9.6.9。
+- 单元 thm:9.7.2 · 类型：冲突处理 · 改了什么：取 branch1（误差写成显式界 $\le2^{\pi(z)}$，$\theta_d$，$z=c\ln x$ 中 $0<c<1/\ln2$）；branch2 对同一句的措辞修改与 `\displaystyle` 中的 `\tfrac` 未采用 · 理由：两边改的是同一处，branch1 的改写更完整。
+- 单元 thm:9.7.3 · 类型：冲突处理 · 改了什么：取 branch1；branch2 在本单元的改动只是 §10 导读使 `\section{Diophantine Approximation and Lattice Points}` 标题归入该导读单元（第 6 批处理）· 理由：branch2 对本单元没有实质修改。

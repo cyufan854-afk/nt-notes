@@ -1,11 +1,12 @@
 # 合并进度
 
-- 已完成批次：1、2、3、4（合并已完成；第 1 批的疑难复核由 Fable 进行中，第 2 批没有疑难条目，第 3 批 1 条，第 4 批没有）。用户要求不再逐批停下，一次做完第 2–6 批，最后统一交 Fable 复核。
-- 当前批次：5（§8–§9），从 §8 导读（branch2 的 `sec:quadratic-representations-of-integers`）和 §8 第一个单元开始
+- 已完成批次：1、2、3、4、5（合并已完成；第 1 批的疑难复核由 Fable 进行中，第 2 批没有疑难条目，第 3 批 1 条，第 4、5 批没有）。用户要求不再逐批停下，一次做完第 2–6 批，最后统一交 Fable 复核。
+- 当前批次：6（§10–§12 与文末），从 §10 导读（branch2 的 `sec:diophantine-approximation-and-lattice-po`）和 §10 第一个单元开始
 - 本批计数（第 1 批）：处理 83 个单元（merge-plan 中本批至少一边改过的单元；另有 branch2 新增的 18 个说明文字、remark 或新环境单元，其中 2 个导读原样采用、16 个记入日志）；两边都改过 39 个；回滚 51（其中 19 个只是 branch2 加了描述性 label、`\index` 或 UTF-8 重音而未搬入；16 个是 branch2 新增单元的改写或不采用）、冲突处理 39、新的数学修改 0、自行优化 0；列入疑难 4 条（thm:2.5.4、def:3.2.1、thm:3.2.3、thm:3.4.5），占本批 83 个单元的 4.8%
 - 本批计数（第 2 批）：处理 78 个单元（merge-plan 中 §4–§5 至少一边改过的单元；另有 branch2 新增的 2 个导读（原样采用）和 3 个 remark（记入日志））；两边都改过 38 个；回滚 26（其中 19 个只是 branch2 加了描述性 label、`\index`、UTF-8 重音而未搬入；3 个是 remark 改写为普通段落）、冲突处理 38、新的数学修改 0、自行优化 1（thm:5.1.5 后补替代证明指引）；列入疑难 0 条
 - 本批计数（第 3 批）：处理 63 个单元（§6 至少一边改过的单元；另有 branch2 新增的 1 个导读（略改后采用）和 4 个 remark（记入日志））；两边都改过 29 个；回滚 35（其中 26 个只是 branch2 加了描述性 label、`\index`、UTF-8 或无排版差别的源码改动而未搬入；4 个是 remark 改写为指引句或普通段落）、冲突处理 29、新的数学修改 0、自行优化 0；列入疑难 1 条（thm:6.2.4），占 1.6%
 - 本批计数（第 4 批）：处理 66 个单元（§7 至少一边改过的单元；另有 branch2 新增的 1 个导读（略改后采用）和 8 个 remark / proposition / example 单元（记入日志））；两边都改过 28 个；回滚 39（其中 18 个只是 branch2 加了描述性 label、`\index`、`\legs` 或行内 `\tfrac` 而未搬入；9 个是 branch2 新增单元的改写或不采用；1 个是 thm:7.4.2，两边都没改，收入 remark@7684 的段落）、冲突处理 28、新的数学修改 0、自行优化 0；列入疑难 0 条
+- 本批计数（第 5 批）：处理 86 个单元（§8–§9 至少一边改过的单元；另有 branch2 新增的 2 个导读（原样采用）和 1 个 remark（记入日志））；两边都改过 39 个；回滚 39（其中 28 个只是 branch2 加了描述性 label、`\index`、`\legs`、UTF-8 或无排版差别的源码改动而未搬入，含 3 个单元里 `\displaystyle` 中的 `\tfrac`；1 个是 remark 改写为普通段落）、冲突处理 40（39 个两边都改过的单元，另 1 条是随 def:9.6.1 的标题补改 thm:2.1.2 的指引句）、新的数学修改 0、自行优化 1（thm:9.1.6 后补替代证明指引）；列入疑难 0 条
 
 ## 约定（后续章节须遵守）
 
@@ -28,6 +29,8 @@
 - 定理引用：branch2 补的“(Theorem~\ref{…})”“by Theorem~\ref{…}”一类引用，核对目标在终稿中所指一致后采用（branch2 的引用沿用 baseline 的 label，除 `def:5.7.1`→`def:5.7.2` 外与终稿相同）。来源：合并
 - Gauss 引理（thm:7.3.1）中的计数记作 $\mu$（branch1，附“not the M{\"o}bius function”说明），branch2 改名的 $N_{-}$ 不采用；thm:7.3.2、thm:7.5.1 的格点替代证明随之用 $\mu$。Notation at a Glance 不加 branch2 的 $N_{-}$ 一行（原未决事项，第 4 批定下）。后文若遇到 branch2 的 $N_{-}$ 一律改回 $\mu$。来源：合并
 - 第 5 批提醒：采用 §8 导读后，thm:7.11.5 单元末尾的 `\clearpage` 与 `\section{Quadratic Representations of Integers}` 标题会归入 §8 导读单元，这不是对 thm:7.11.5 的修改（thm:7.11.5 已在日志中）。来源：合并
+- 第 6 批提醒：采用 §10 导读后，thm:9.7.3 单元末尾的 `\section{Diophantine Approximation and Lattice Points}` 标题会归入 §10 导读单元，这不是对 thm:9.7.3 的修改（thm:9.7.3 已在日志中）。来源：合并
+- 替代证明标题与指引句一致：替代证明标题按 branch1 定下后，原定理后的指引句要用同样的说法（第 5 批据此把 thm:2.1.2 指引句中的“via squarefree parts”改为“via squarefree decomposition”）。来源：合并
 - 环的定义：终稿保留在 Definition 6.6.4 里（branch2 另立的 `definition*`［ring conventions，`def:rings`］不采用）。第 5、6 批遇到 branch2 中 `\hyperref[def:rings]{…}`（如“commutative-ring convention”“ring conventions”）时改为 Definition~\ref{def:6.6.4}。来源：合并
 
 ## 未决事项

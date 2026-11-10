@@ -337,7 +337,7 @@ and therefore $n$ is composite.
 
 Alternative proofs of Theorem~\ref{thm:2.1.2} appear later: via Fermat numbers after
 Theorem~\ref{thm:2.4.1}, once their pairwise coprimality is available; via the Euler
-product after Theorem~\ref{thm:5.7.3}; and via squarefree parts after Definition~\ref{def:9.6.1}.
+product after Theorem~\ref{thm:5.7.3}; and via squarefree decomposition after Definition~\ref{def:9.6.1}.
 
 \begin{theorem}\label{thm:2.1.3}
 	There are infinitely many primes of the form $4k+3$ ($k\in\mathbb{Z}_{\ge0}$), and infinitely many
@@ -9465,6 +9465,9 @@ $1/2$.
 
 \section{Quadratic Representations of Integers}
 
+Representations by quadratic forms connect congruences with the arithmetic of quadratic rings. Two- and four-square
+identities, factorization, and reduction of forms offer complementary approaches.
+
 \subsection{Sums of Two Squares and Uniqueness of the Representation}
 
 \begin{theorem}[Thue's lemma]\label{thm:8.1.1} Let $p$ be a prime
@@ -9719,6 +9722,11 @@ $1/2$.
 	particular, a product of sums of four squares is a sum of four squares.
 
 \end{proof}
+
+The quaternions and $2\times2$ complex matrices used in this proof have
+associative, noncommutative multiplication. They form the sole exception
+to the commutative-ring convention used elsewhere in these notes
+(Definition~\ref{def:6.6.4}).
 \begin{theorem}\label{thm:8.1.9} For every odd prime $p$ there
 	exist integers $x, y$ and $m$ with $1 \le m < p$ such that $x^2 + y^2 + 1 = mp$.
 
@@ -9742,7 +9750,8 @@ $1/2$.
 
 \end{theorem}
 
-\begin{proof} By Theorem~\ref{thm:8.1.8} it suffices to represent
+\begin{proof} By Theorem~\ref{thm:8.1.8} and factorization into primes
+	(Theorem~\ref{thm:2.3.3}), it suffices to represent
 	an odd prime $p$ (as $0, 1, 2$ are sums of four squares). Let $m$ be
 	the least positive integer with $mp = x_1^2 + x_2^2 + x_3^2 + x_4^2$;
 	by Theorem~\ref{thm:8.1.9}, $1 \le m < p$. We claim that $m = 1$. Suppose $m > 1$.
@@ -9967,7 +9976,9 @@ $1/2$.
 	To prove the converse, let $\pi$ be irreducible and suppose
 	$\pi\mid\alpha\beta$. If $\pi\nmid\alpha$, then every common divisor of
 	$\pi$ and $\alpha$ is a unit, so $\gcd(\pi, \alpha)=1$. By B{\'e}zout's identity there
-	exist $u,v\in\mathbb{Z}[i]$ with $u\pi+v\alpha=1$; multiplying by
+	exist $u,v\in\mathbb{Z}[i]$ with $u\pi+v\alpha=\delta$ for a greatest common divisor
+	$\delta$; as $\delta$ is a unit, replacing $u,v$ by $\delta^{-1}u,\delta^{-1}v$ gives
+	$u\pi+v\alpha=1$; multiplying by
 	$\beta$ gives $u\pi\beta+v\alpha\beta=\beta$, and both terms on the
 	left are divisible by $\pi$, so $\pi\mid\beta$. Hence every
 	irreducible is prime.
@@ -9975,7 +9986,7 @@ $1/2$.
 	Existence of factorization now follows by induction on the norm: if
 	$\alpha$ is a nonzero nonunit and not irreducible, write
 	$\alpha=\beta\gamma$ with both factors nonunits; then
-	$1<N(\beta),N(\gamma)<N(\alpha)$ and the induction is complete. For
+	$1<N(\beta),N(\gamma)<N(\alpha)$, and the induction hypothesis applies to both factors. For
 	uniqueness, if $\alpha=\pi_1\cdots\pi_r=\rho_1\cdots\rho_s$ are two
 	factorizations into irreducibles, then $\pi_1\mid\rho_1\cdots\rho_s$,
 	so, by the prime property of irreducibles just proved, $\pi_1$ divides some $\rho_j$; since both are
@@ -10260,40 +10271,41 @@ $1/2$.
 
 \end{proof}
 \begin{theorem}\label{thm:8.6.2} Every positive-definite form $f$ is properly equivalent to a
-	reduced form of the same discriminant.
+  reduced form of the same discriminant.
 
 \end{theorem}
 
 \begin{proof} Write $f=(a,b,c)$ and $D=b^2-4ac<0$. For
-	$(x,y)\neq(0,0)$, completing the square gives
-	$4a\,f(x,y)=(2ax+by)^2-Dy^2\ge|D|y^2$ (as $-D=|D|>0$); in particular
-	$f(x,0)=ax^2\ge a$ for $x\neq0$, and for $y\neq0$,
-	we have $f(x,y)\ge|D|y^2/(4a)\ge|D|/(4a)$. Thus for any bound $C$, all
-	$(x,y)$ with $f(x,y)\le C$ have $|y|$ bounded (from the second
-	inequality) and, for each such $y$, the inequality $|2ax+by|\le\sqrt{4aC}$ restricts
-	$x$ to a finite set of values; so only finitely many lattice points
-	satisfy $f(x,y)\le C$. The set of primitive values is nonempty (it contains $f(1,0)=a$). Since it has only finitely many elements below any bound, it has a minimum, say $m=f(x_0,y_0)$ with
-	$\gcd(x_0, y_0)=1$. By B{\'e}zout's identity, choose $x_1,y_1$ with $x_0y_1-x_1y_0=1$;
-	the substitution $(x,y)\mapsto(x_0x+x_1y,\,y_0x+y_1y)$ has
-	determinant $x_0y_1-x_1y_0=1$, so it defines a proper equivalence to
-	$g(x,y)=f(x_0x+x_1y,\,y_0x+y_1y)=(a',b',c')$ with $a'=f(x_0,y_0)=m$
-	and $c'=f(x_1,y_1)$. Since $(x_1,y_1)$ is primitive (it is a column of a
-	determinant-$1$ matrix, so any common divisor of $x_1$ and $y_1$ would
-	divide the determinant $1$), we have $c'\ge m=a'$ by minimality of $m$. Now apply the
-	proper equivalence $(x,y)\mapsto(x+ny,y)$ (determinant $1$ for any
-	$n\in\mathbb{Z}$), which sends $(a',b',c')$ to $(a',\,b'+2a'n,\,c'')$
-	for a suitable integer $c''=g(n,1)$; choose $n$ so that
-	$-a'<b'+2a'n\le a'$ (which is possible since consecutive choices of $n$ shift
-	$b'$ by $2a'$). Write the resulting form as $(a,b,c)$ with $|b|\le
-		a$. Since $(n,1)$ is primitive, $c=g(n,1)\ge m=a$ by minimality of
-	$m$ (note that $a=a'=m$ is unchanged by this substitution). Hence $|b|\le
-		a\le c$; the normalization $-a'<b'+2a'n\le a'$ already gives $b\ge0$ whenever $|b|=a$ (then
-	$b=a$). If the remaining boundary case $a=c$ with $b<0$ occurs, apply the proper equivalence
-	$(x,y)\mapsto(-y,x)$ (determinant $1$), which sends $(a,b,c)=(a,b,a)$ to $(a,-b,a)$, replacing
-	$b$ by $-b>0$ without changing $a$ or $c$; the result meets Definition~\ref{def:8.6.3}. This is a reduced
-	form properly equivalent to $f$.
-
+  $(x,y)\neq(0,0)$, completing the square gives
+  $4a\,f(x,y)=(2ax+by)^2-Dy^2\ge|D|y^2$ (as $-D=|D|>0$); in particular
+  $f(x,0)=ax^2\ge a$ for $x\neq0$, and for $y\neq0$,
+  we have $f(x,y)\ge|D|y^2/(4a)\ge|D|/(4a)$. Thus for any bound $C$, all
+  $(x,y)$ with $f(x,y)\le C$ have $|y|$ bounded (from the second
+  inequality) and, for each such $y$, the inequality $|2ax+by|\le\sqrt{4aC}$ restricts
+  $x$ to a finite set of values; so only finitely many lattice points
+  satisfy $f(x,y)\le C$. The set of primitive values is nonempty (it contains $f(1,0)=a$). Since it has only
+  finitely many elements below any bound, it has a minimum, say $m=f(x_0,y_0)$ with
+  $\gcd(x_0, y_0)=1$. By Bézout's identity, choose $x_1,y_1$ with $x_0y_1-x_1y_0=1$;
+  the substitution $(x,y)\mapsto(x_0x+x_1y,\,y_0x+y_1y)$ has
+  determinant $x_0y_1-x_1y_0=1$, so it defines a proper equivalence to
+  $g(x,y)=f(x_0x+x_1y,\,y_0x+y_1y)=(a',b',c')$ with $a'=f(x_0,y_0)=m$
+  and $c'=f(x_1,y_1)$. Since $(x_1,y_1)$ is primitive (it is a column of a
+  determinant-$1$ matrix, so any common divisor of $x_1$ and $y_1$ would
+  divide the determinant $1$), we have $c'\ge m=a'$ by minimality of $m$. Now apply the
+  proper equivalence $(x,y)\mapsto(x+ny,y)$ (determinant $1$ for any
+  $n\in\mathbb{Z}$), which sends $(a',b',c')$ to $(a',\,b'+2a'n,\,c'')$
+  for a suitable integer $c''=g(n,1)$; choose $n$ so that
+  $-a'<b'+2a'n\le a'$ (which is possible since consecutive choices of $n$ shift
+  $b'$ by $2a'$). Write the resulting form as $(a,b,c)$ with $|b|\le a$. Since $(n,1)$ is primitive,
+  $c=g(n,1)\ge m=a$ by minimality of
+  $m$ (note that $a=a'=m$ is unchanged by this substitution). Hence $|b|\le a\le c$; the normalization
+  $-a'<b'+2a'n\le a'$ already gives $b\ge0$ whenever $|b|=a$ (then
+  $b=a$). If the remaining boundary case $a=c$ with $b<0$ occurs, apply the proper equivalence
+  $(x,y)\mapsto(-y,x)$ (determinant $1$), which sends $(a,b,c)=(a,b,a)$ to $(a,-b,a)$, replacing
+  $b$ by $-b>0$ without changing $a$ or $c$; the result satisfies Definition~\ref{def:8.6.3}. This is a reduced
+  form properly equivalent to $f$.
 \end{proof}
+
 \begin{theorem}\label{thm:8.6.3}
 	For every negative discriminant $D$, each proper-equivalence class of positive-definite forms of discriminant $D$ contains exactly one reduced form. Consequently, only finitely many reduced forms have discriminant $D$, and $h(D)$ equals the number of primitive reduced forms of discriminant $D$.
 
@@ -10333,8 +10345,8 @@ $1/2$.
 	Now let $g=(a',b',c')$ be a reduced form properly equivalent to $f$.
 	  By Theorem~\ref{thm:8.6.1}(a), a proper equivalence is a bijection of $\mathbb{Z}^2$ carrying primitive pairs to primitive pairs and satisfying $g=f\circ T$, so $f$ and $g$ represent the same integers, with primitivity preserved; in particular, their least positive values agree and $a'=a$.
 	  If the equivalence sends $(1,0)$ to $\pm(1,0)$, composition with $\pm I$ makes its first column $(1,0)^{\mathsf{T}}$; its matrix is then $\begin{pmatrix}1&n\\0&1\end{pmatrix}$, and $b'=b+2an$.
-	  Since $|b|,|b'|\le a$, the only possibilities are $n=0$, or a boundary interchange between $b=-a$ and $b'=a$.
-	  The boundary rule excludes the negative choice, so $b'=b$ and then $c'=c$ from $b^2-4ac=D$.
+	  Since $|b|,|b'|\le a$, the only possibilities are $n=0$, or a boundary interchange: $b=-a$ and $b'=a$ ($n=1$), or $b=a$ and $b'=-a$ ($n=-1$).
+	  The boundary rule ($b\ge0$ and $b'\ge0$ when the absolute value equals $a$) excludes the negative endpoint in either case, so $b'=b$ and then $c'=c$ from $b^2-4ac=D$.
 
 	It remains to consider an equivalence whose first column is an
 	additional minimal vector. Except for the last pair when
@@ -10795,7 +10807,7 @@ $1/2$.
 		R_{mn}(d)\longrightarrow R_m(d)\times R_n(d).
 	\]
 	The coordinate formulas show that it preserves sums, products, and the identity. A unit maps to units in both components. Conversely,
-	the Chinese remainder theorem combines their two inverses into an
+	the Chinese remainder theorem combines the two inverses into an
 	inverse modulo $mn$.
 	This proves multiplicativity. Cases with $m=1$ or $n=1$ follow
 	from the definition of $\psi_d(1)$.
@@ -10821,7 +10833,7 @@ $1/2$.
 	\]
 	with $v_p(0)=+\infty$. Thus $w_p(0)=+\infty$, and for nonzero
 	$\gamma$ the value is the largest $k\ge0$ such that $p^k$ divides
-	both coordinates. We use $(+\infty)+k=+\infty$, including $k=+\infty$.
+	both coordinates. We use the convention $(+\infty)+k=+\infty$, including the case $k=+\infty$.
 	For a nonzero rational integer $m$, this gives
 	$w_p(m)=v_p(m)$.
 
@@ -10900,7 +10912,7 @@ $1/2$.
 	\]
 	Modulo $p$, the sum is $m\beta^{m-1}$, which is nonzero because
 	$p\nmid m$ and $\beta$ is a unit. Hence $w_p(S)=0$.
-	The product law proves the formula and shows that
+	The product law (Theorem~\ref{thm:8.7.5}) proves the formula and shows that
 	$\alpha^m-\beta^m\neq0$.
 
 \end{proof}
@@ -10922,7 +10934,7 @@ $1/2$.
 		=ph\beta^{p-1}
 		+\sum_{j=2}^{p-1}\binom pj h^j\beta^{p-j}+h^p.
 	\]
-	The first term has valuation $r+1$.
+	The first term has valuation $r+1$ (Theorem~\ref{thm:8.7.5}).
 	For $2\le j\le p-1$, the coefficient $\binom pj$ is divisible
 	by $p$, so the corresponding term is divisible by $p^{1+jr}$,
 	and $1+jr\ge r+2$.
@@ -10933,7 +10945,7 @@ $1/2$.
 		=p^{r+1}\bigl(\gamma\beta^{p-1}+p\eta\bigr).
 	\]
 	The element in parentheses is nonzero modulo $p$, since both
-	$\gamma$ and $\beta$ are nonzero there and the residue ring is a
+	$\gamma$ and $\beta$ are nonzero there (for $\beta$, by Definition~\ref{def:8.7.5}) and the residue ring is a
 	field. Its valuation is $0$, proving the formula.
 
 \end{proof}
@@ -11058,8 +11070,9 @@ $1/2$.
 
 	Existence of factorization follows by induction on the norm. A reducible
 	nonzero nonunit factors into two nonunits, each with norm strictly between
-	$1$ and the original norm (by Theorem~\ref{thm:8.8.1}, the units are exactly the elements of norm $1$). For uniqueness, a prime in one factorization
-	divides some prime in the other. The two primes are associates.
+	$1$ and the original norm (the units are exactly the elements of norm $1$, since $N(\alpha)=\alpha\bar\alpha$ and
+	the norm is multiplicative, Theorem~\ref{thm:8.8.1}). For uniqueness, a prime in one factorization
+	divides some prime in the other, and the two primes are associates.
 	Cancel them and repeat to match all factors, with the remaining unit
 	absorbed into the unit factor; once one side has no primes left, neither does the other, since a prime cannot divide a unit.
 
@@ -11092,7 +11105,7 @@ $1/2$.
 \begin{theorem}[rational primes in the Eisenstein integers]\label{thm:8.8.4}
 	The rational primes factor in $E$ as follows:
 	\begin{enumerate}[label={\alph*)}]
-		\item $3=-\omega^2(1-\omega)^2$, where $1-\omega$ is prime of norm $3$.
+		\item $3=-\omega^2(1-\omega)^2$, where $1-\omega$ is a prime of norm $3$.
 		\item If $p\equiv1\pmod3$, then $p=\pi\bar\pi$ for nonassociate primes
 		      $\pi,\bar\pi$ with $N(\pi)=p$.
 		\item If $p\equiv2\pmod3$, then $p$ is prime in $E$, with $N(p)=p^2$.
@@ -11227,8 +11240,8 @@ $1/2$.
 	permutes its $q-1$ nonzero classes. Multiplying all these classes and
 	canceling their nonzero product proves $[\alpha]^{q-1}=1$.
 
-	The differences between $1,\omega,\omega^2$ are unit multiples of
-	$1-\omega$: use $1+\omega=-\omega^2$ and
+	The pairwise differences among $1,\omega,\omega^2$ are unit multiples of
+	$1-\omega$, since $1+\omega=-\omega^2$ and
 	$\omega^2-\omega=\omega(\omega-1)$. Since
 	$3=-\omega^2(1-\omega)^2$, the condition $\pi\nmid3$ ensures that
 	none of these differences vanishes modulo $\pi$. Thus $[\omega]$ has
@@ -11294,6 +11307,9 @@ $1/2$.
 
 \section{Prime Numbers: Primality Tests, Factorization, and Distribution}
 
+Orders and congruences yield primality criteria and factorization methods. Elementary product estimates and
+analytic sums then give information about the distribution of primes.
+
 \subsection{Quadratic-Residue and Order-Based Primality Criteria}
 
 \begin{theorem}[Miller--Rabin criterion for $n\equiv3\pmod{4}$]\label{thm:9.1.1} Let $n>1$ be an integer with $n\equiv3\pmod{4}$. If $n$ is prime,
@@ -11315,7 +11331,7 @@ $1/2$.
 	$p^{k-1}\nmid(n-1)$ for $k\ge2$, meaning
 	$a^{n-1}\not\equiv1\pmod{n}$; consequently $a^{(n-1)/2}$ cannot
 	be $\pm1$ modulo $n$, since squaring either value would force
-	$a^{n-1}\equiv1$. If $n=p^{k}n'$ with $\gcd(p, n')=1$ and $n'>1$, choose
+	$a^{n-1}\equiv1$. If $n=p^{k}n'$ with $p$ an odd prime, $k\ge1$, $\gcd(p, n')=1$ and $n'>1$, choose
 	(by the Chinese remainder theorem, Theorem~\ref{thm:3.4.1})
 	$a$ with $a\equiv-1\pmod{p^{k}}$ and $a\equiv1\pmod{n'}$; since
 	$(n-1)/2$ is odd, $a^{(n-1)/2}\equiv-1\pmod{p^{k}}$ and
@@ -11340,8 +11356,8 @@ $1/2$.
 	  By Lagrange's theorem for finite groups (Theorem~\ref{thm:6.6.2}) this order divides $\varphi(\mathcal{F}_k)$, so $\mathcal{F}_k-1\le\varphi(\mathcal{F}_k)\le \mathcal{F}_k-1$, giving $\varphi(\mathcal{F}_k)=\mathcal{F}_k-1$.
 	  Since $\varphi(n)=n-1$ forces $n$ to be prime (a composite $n$ has a divisor $p$ with $1<p<n$, which is not coprime to $n$, so $\varphi(n)\le n-2$), the number $\mathcal{F}_k$ is prime.
 	  Conversely, if $\mathcal{F}_k$ is prime, then
-	$\mathcal{F}_k\equiv1\pmod{4}$, so by reciprocity
-	$\leg{3}{\mathcal{F}_k}=\leg{\mathcal{F}_k}{3}$; since
+	$\mathcal{F}_k\equiv1\pmod{4}$, so by quadratic reciprocity
+	(Theorem~\ref{thm:7.5.1}) $\leg{3}{\mathcal{F}_k}=\leg{\mathcal{F}_k}{3}$; since
 	$2^{2^{k}}\equiv1\pmod{3}$, we have $\mathcal{F}_k\equiv2\pmod{3}$, so
 	$\leg{\mathcal{F}_k}{3}=\leg{2}{3}=-1$, and by
 	Euler's criterion (Theorem~\ref{thm:7.1.2}) $3^{(\mathcal{F}_k-1)/2}\equiv-1\pmod{\mathcal{F}_k}$.
@@ -11407,7 +11423,7 @@ $1/2$.
 	prime. Since $N$ is composite, $m>1$, and squarefreeness gives $\gcd(p,
 		m)=1$; moreover $m$ is odd, hence $m\ge3$ and $1\not\equiv-1\pmod{m}$.
 	Choose $u$ with $\leg{u}{p}=-1$ (half of $\ZmodUnits{p}$ consists
-	of non-residues, Theorem~\ref{thm:7.2.2}) and, by the Chinese remainder theorem, an
+	of non-residues, by Theorem~\ref{thm:7.2.2}) and, by the Chinese remainder theorem, an
 	integer $b$ with $b\equiv u\pmod{p}$ and $b\equiv1\pmod{m}$. Then
 	$\gcd(b, p)=\gcd(u, p)=1$ and $\gcd(b, m)=1$, so $\gcd(b, N)=1$ and the
 	Jacobi symbol is defined:
@@ -11426,8 +11442,8 @@ $1/2$.
 \end{theorem}
 
 \begin{proof} For necessity, suppose that $n$ is prime. It then has
-	a quadratic non-residue $a$ (exactly half the elements of $\ZmodUnits{n}$ are non-residues),
-	and Euler's criterion gives $a^{(n-1)/2}\equiv\leg{a}{n}=-1\pmod{n}$,
+	a quadratic non-residue $a$ (exactly half the elements of $\ZmodUnits{n}$ are non-residues, Theorem~\ref{thm:7.2.2}),
+	and Euler's criterion (Theorem~\ref{thm:7.1.2}) gives $a^{(n-1)/2}\equiv\leg{a}{n}=-1\pmod{n}$,
 	so a suitable $a$ exists. Conversely, suppose
 	$a^{(n-1)/2}\equiv-1\pmod{n}$ for some $a$; then
 	$\gcd(a, n)=1$, since $\gcd(a,n)$ divides both $a^{(n-1)/2}$ and $a^{(n-1)/2}+1$. Let $P$ be a prime factor of $n$ and $d$ the order of
@@ -11442,6 +11458,9 @@ $1/2$.
 	is prime.
 
 \end{proof}
+
+An alternative proof of sufficiency in Theorem~\ref{thm:9.1.6}, via Pocklington's criterion,
+appears after Theorem~\ref{thm:9.1.9}.
 \begin{theorem}\label{thm:9.1.7} Let
 	$n>1$ be odd and composite. The set of Euler liars
 	$E(n)=\{a\in\ZmodUnits{n} \mid a^{(n-1)/2}\equiv\leg{a}{n}\pmod{n}\}$ (where $\leg{a}{n}$ is the Jacobi
@@ -11677,7 +11696,11 @@ $1/2$.
 
 \end{theorem}
 
-\begin{proof} First suppose that $M\mid S_{p-2}$, where $M=M_p$.
+\begin{proof} Divisibility forces an element of order $2^p$ in a finite ring,
+	ruling out a small prime factor of $M_p$. Conversely, when $M_p$ is prime,
+	Frobenius conjugation in a quadratic field yields the required divisibility.
+
+	First suppose that $M\mid S_{p-2}$, where $M=M_p$.
 	By Theorem~\ref{thm:9.3.1},
 	$\omega^{2^{p-2}}+\bar\omega^{2^{p-2}}\equiv0\pmod{M}$ in
 	$\mathbb{Z}[\sqrt{3}]$. Multiplying by $\omega^{2^{p-2}}$ and using
@@ -11699,8 +11722,8 @@ $1/2$.
 	Therefore $2^{p}\le|R_q^{\times}|\le q^2-1\le M-1=2^{p}-2$, a contradiction. So $M$ is prime.
 
 	Conversely, suppose that $M$ is prime. Since
-	$p\ge3$ is odd, we have $M\equiv7\pmod{8}$, $M\equiv1\pmod{3}$, and
-	$M\equiv3\pmod{4}$; the supplementary law (Theorem~\ref{thm:7.2.5}(f)) and
+	$p\ge3$ is odd, we have $M\equiv7\pmod{8}$ and $M\equiv1\pmod{3}$
+	(so in particular $M\equiv3\pmod{4}$); the supplementary law (Theorem~\ref{thm:7.2.5}(f)) and
 	quadratic reciprocity (Theorem~\ref{thm:7.5.1})
 	give $\leg{2}{M}=1$ and $\leg{3}{M}=-1$. Hence
 	$3$ is a quadratic non-residue modulo $M$. By
@@ -12048,7 +12071,7 @@ $1/2$.
 	and when $n=3$, it is $2\cdot3=6<64=4^3$. If $n\ge4$ is even, it is not
 	prime, so $\prod_{p\le n}p=\prod_{p\le n-1}p<4^{n-1}<4^{n}$ by induction. If
 	$n=2m+1$ is odd, every prime $p$ with $m+1<p\le 2m+1$ divides
-	$\binom{2m+1}{m}=\frac{(2m+1)!}{m!\,(m+1)!}$, since such $p$ divides
+	$\binom{2m+1}{m}=\frac{(2m+1)!}{m!\,(m+1)!}$, since such a $p$ divides
 	the numerator $(2m+1)!$ but neither $m!$ nor $(m+1)!$ (as $p>m+1$);
 	hence $\prod_{m+1<p\le 2m+1}p\le\binom{2m+1}{m}$. Since
 	$\binom{2m+1}{m}$ and $\binom{2m+1}{m+1}$ are two equal terms in
@@ -12064,7 +12087,11 @@ $1/2$.
 
 \end{theorem}
 
-\begin{proof} Suppose that, for some $n\ge5$, there is no prime in
+\begin{proof} We compare upper and lower bounds for $\binom{2n}{n}$ to rule out
+	a prime-free interval when $n\ge512$, then handle smaller $n$ by an explicit
+	prime chain.
+
+	Suppose that, for some $n\ge5$, there is no prime in
 	$(n,2n]$. Factor $\binom{2n}{n}=\prod_{p\in\Primes} p^{v_p\bigl(\binom{2n}{n}\bigr)}$: primes $p>2n$ do
 	not occur, none in $(\tfrac{2n}{3},n]$ occur by Theorem~\ref{thm:9.6.4}(c),
 	and none in $(n,2n]$ by assumption, so only $p\le\tfrac{2n}{3}$ occur.
@@ -12076,25 +12103,35 @@ $1/2$.
 	$\binom{2n}{n}\ge\tfrac{4^n}{2n+1}$ from Theorem~\ref{thm:9.6.4}(a),
 	$4^{n/3}<(2n+1)(2n)^{\sqrt{2n}}$, that is, $\tfrac{2n}{3}\ln2<\ln(2n+1)+\sqrt{2n}\,\ln(2n)$. Put
 	$F(x)=\tfrac{2x}{3}\ln2-\ln(2x+1)-\sqrt{2x}\,\ln(2x)$.
-	We use the threshold $512$. Since $\sqrt{1024}=32$ and $1025<2^{11}$,
+	We use the threshold $512$. Since $\sqrt{1024}=32$,
+	$32\ln1024=320\ln2$, and $1025<2^{11}$,
 	\[
-		F(512)=\frac{64}{3}\ln2-\ln1025
-		>\frac{31}{3}\ln2>0.
+		\begin{aligned}
+		F(512)&=\frac{1024}{3}\ln2-\ln1025-32\ln1024\\
+		&=\frac{64}{3}\ln2-\ln1025\\
+		&>\left(\frac{64}{3}-11\right)\ln2=\frac{31}{3}\ln2>0.
+		\end{aligned}
 	\]
 	The function $u(t)=(\ln t+2)/\sqrt t$ has
 	$u'(t)=-\ln t/(2t^{3/2})<0$ for $t>1$. Therefore, for $x\ge512$,
 	\[
 		\begin{aligned}
 		F'(x)&=\frac23\ln2-u(2x)-\frac{2}{2x+1}\\
-		&\ge\frac{17}{48}\ln2-\frac1{16}-\frac2{1025}
+		&\ge\frac23\ln2-u(1024)-\frac2{1025}\\
+		&=\frac23\ln2-\frac{10\ln2+2}{32}-\frac2{1025}\\
+		&=\frac{17}{48}\ln2-\frac1{16}-\frac2{1025}
 		>\frac{17}{96}-\frac18=\frac5{96}>0,
 		\end{aligned}
 	\]
 	where $\ln2=\int_1^2dt/t>1/2$ and $2/1025<1/16$.
-	Hence $F(x)>0$ for every $x\ge512$, contradicting $F(n)<0$.
+	Hence $F(x)>0$ for every $x\ge512$, contradicting $F(n)<0$ whenever
+	$n\ge512$.
 	For the remaining $n\le511$, use the primes
 	$2,3,5,7,13,23,43,83,163,317,631$, each less than twice its
-	predecessor. For $n=1$, the prime $2\in(1,2]$ works directly. For $2\le n<631$, let $p$ be the smallest listed prime with $p>n$ and let $q$ be its predecessor in the list (which exists, since then $p\ge3$); then $q\le n$ (as $p$ is the smallest listed prime exceeding $n$) and $p<2q\le 2n$, so $p\in(n,2n]$. Since $511<631$, every $n\le511$ is covered. Hence the
+	predecessor. Primality of each entry is checked by trial division by the
+	primes up to its square root (none exceeds $23$, since $631<26^2$), and
+	the adjacent inequalities follow by direct comparison.
+	For $n=1$, the prime $2\in(1,2]$ works directly. For $2\le n<631$, let $p$ be the smallest listed prime with $p>n$ and let $q$ be its predecessor in the list (which exists, since then $p\ge3$); then $q\le n$ (as $p$ is the smallest listed prime exceeding $n$) and $p<2q\le 2n$, so $p\in(n,2n]$. Since $511<631$, every $n\le511$ is covered. Hence the
 	postulate holds for all $n\ge1$.
 
 \end{proof}
