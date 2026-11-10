@@ -599,7 +599,7 @@
 - 单元 （文末）· 类型：自行优化 · 改了什么：文末加 `\clearpage`、`\phantomsection`、`\addcontentsline{toc}{section}{Index of Terms}`、`\printindex`（与 branch2 相同）· 理由：同上。
 - 单元 （全书索引）· 类型：回滚 · 改了什么：搬入 branch2 的全部 256 条 `\index{…}`，按 branch2 所附的定理/定义 label 放到终稿同一 label 之后（`def:5.7.1`→`def:5.7.2`，branch2 `definition*` 的 `def:unit`→def:3.5.1、`def:rings`→def:6.6.4）；条目中的 UTF-8 重音改为 ASCII 写法 · 理由：作者决定采用索引（原约定不搬入）。
 - 单元 （全书 Legendre 符号）· 类型：回滚 · 改了什么：按 branch2 的规则，行内公式中的 `\leg`/`\pleg` 一律改为 `\legs`/`\plegs`（253 处），行间公式保留 `\leg`（58 处）· 理由：作者决定采用行内小号符号。
-- 单元 （全书 QED）· 类型：自行优化 · 改了什么：删去 `\end{proof}`、`\end{altproof}`、`\end{theorem}`、`\end{definition}` 前的空行（913 处），使 □ 落在证明最后一行行末，不再单独成行（已渲染核对）· 理由：作者决定修改 QED 位置。
+- 单元 （全书 QED）· 类型：自行优化 · 改了什么：删去 `\end{proof}`、`\end{altproof}`、`\end{theorem}`、`\end{definition}` 前的空行（913 处；thm:7.7.2 证明末原有两行空行，第一遍只删了一行，渲染检查时发现后补删），使 □ 落在证明最后一行行末，不再单独成行（已渲染核对）· 理由：作者决定修改 QED 位置。
 - 单元 thm:7.5.1 · 类型：回滚 · 改了什么：搬入 branch2 的 TikZ 格点图（$p=7,q=11$），放在主证明之后的 figure 中；branch2 的 `\label{fig:…}` 不搬入（label 须与 branch1 相同），正文改为“(the figure after this proof shows the case $p=7$, $q=11$)” · 理由：作者决定加图。
 - 单元 thm:11.1.1、thm:11.1.2 · 类型：自行优化 · 改了什么：有理根定理中的既约分数 $p/q$ 改记 $r/s$ · 理由：全书约定 $p$ 表示素数（ernie 4.1）。
 - 单元 thm:11.2.1 · 类型：自行优化 · 改了什么：证明中 $G=\tfrac ab G_0$、$H=\tfrac cd H_0$ 改记 $\tfrac rs$、$\tfrac tu$（及其后各式）· 理由：避免与 content $c(\cdot)$ 同字母（ernie 4.1）。
