@@ -1152,8 +1152,9 @@ theorem lead to exponent reduction, binomial congruences, and polynomial root bo
 	dividing by $d$ yields $a' r + m' s = 1$, whence $\gcd(a', m') = 1$.
 	Dividing $ax - b = my$ through by $d$ shows that
 	$ax \equiv b \pmod{m}$ holds if and only if $a' x \equiv b'
-		\pmod{m'}$. Since $\gcd(a', m') = 1$, the inverse $u$ of the statement exists
-	(Theorem~\ref{thm:3.2.1}) and satisfies $a' u \equiv 1 \pmod{m'}$, so the reduced congruence is
+		\pmod{m'}$. Since $\gcd(a', m') = 1$, an inverse of $a'$ modulo $m'$ exists
+	(Theorem~\ref{thm:3.2.1}); let $u$ be any such inverse, as in the statement. Then
+	$a' u \equiv 1 \pmod{m'}$, so the reduced congruence is
 	equivalent to $x \equiv b'u \pmod{m'}$. Thus $x_1=b'u$ is a solution,
 	and all integer solutions are $x=x_1+m'v$ with $v\in\mathbb{Z}$.
 	Write $v=qd+t$ with $0\le t<d$. Since $dm'=m$, this gives
