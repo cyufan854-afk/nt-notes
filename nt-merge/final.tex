@@ -13277,11 +13277,18 @@ perspective, connecting Diophantine questions with area and convexity.
 	relative interior of the sides $vu$ or $vw$, since a vertex there would
 	make the boundary meet itself, contrary to simplicity. Every point of
 	the open segment $vz$ lies strictly on $v$'s side of the line through $z$
-	parallel to $uw$. If a polygon edge met this segment, it could not leave
-	$T$ across the boundary sides $vu$ or $vw$. Since height above $uw$
-	varies linearly along an edge, that edge would therefore have an
-	endpoint in $T$ at greater distance from $uw$ than $z$, contradicting
-	maximality. Thus the open segment $vz$ meets no boundary edge. It starts
+	parallel to $uw$ and, since $z$ lies on neither $vu$ nor $vw$, none of
+	these points lies on $vu$ or $vw$. Suppose that a polygon edge $e$ met
+	this segment at a point $x$. Then $e$ is neither $vu$ nor $vw$, so, as
+	before, $e$ avoids $v$ and meets $vu\cup vw$ at most in $u$ and $w$.
+	Let $h$ denote the signed distance from the line $uw$, positive on the
+	side of $v$. It varies linearly along $e$, so we may follow $e$ from $x$
+	in a direction in which $h$ does not decrease. Every point $y$ reached
+	satisfies $h(y)\ge h(x)>h(z)\ge0$, so $y$ is not on the line $uw$; in
+	particular, $y$ is neither $u$ nor $w$. Hence this part of $e$ never
+	reaches the boundary of $T$. It therefore stays in $T$ and ends at an
+	endpoint of $e$, which is a polygon vertex in $T$ other than $u,v,w$ and
+	farther from the line $uw$ than $z$, contradicting maximality. Thus the open segment $vz$ meets no boundary edge. It starts
 	inside the interior angle at $v$, so it lies entirely inside the polygon,
 	and $vz$ is an interior diagonal. Thus induction on the number of
 	vertices reduces the polygon to triangles.
