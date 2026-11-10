@@ -336,6 +336,7 @@
 - 单元 def:8.6.2 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
 - 单元 def:8.6.3 · 类型：回滚 · 改了什么：同上 · 理由：见约定。
 - 单元 thm:8.6.1 · 类型：冲突处理 · 改了什么：取 branch1（“maps primitive pairs bijectively to primitive pairs … each by the same number of pairs $(x,y)$, and representations by primitive pairs correspond”）；branch2 对同一句的补充（“for each $n$, the pairs $(x,y)$ with $f(x,y)=n$ correspond bijectively to those with $g(x,y)=n$”）未采用 · 理由：两边对“same multiplicities”做了同样的澄清，取 branch1。
+- 单元 thm:8.6.2 · 类型：回滚 · 改了什么：采用 branch2 的措辞“the result satisfies Definition~\ref{def:8.6.3}”（原为 meets）；branch2 写成 UTF-8 的 Bézout 改回 `B{\'e}zout` · 理由：重音写法见约定。
 - 单元 thm:8.6.3 · 类型：冲突处理 · 改了什么：融合两边：取 branch1（陈述“For every negative discriminant $D$”，证明中先算出 $g=(c,2cn-b,cn^2-bn+a)$ 再由 $a'=a$、$g(1,0)=c$ 得 $c=a$）；采用 branch2 对边界情形的修正：“the only possibilities are $n=0$, or a boundary interchange: $b=-a$ and $b'=a$ ($n=1$), or $b=a$ and $b'=-a$ ($n=-1$). The boundary rule ($b\ge0$ and $b'\ge0$ when the absolute value equals $a$) excludes the negative endpoint in either case”；branch2 对 $c=a$ 的另一种补法（“Since $(0,1)^{\mathsf{T}}$ is a minimal vector …”）和末段的措辞未采用 · 理由：两边都补了 $c=a$ 这一步，取 branch1；边界情形原文只写了 $n=1$ 一种，已核对 $b'=b+2an$ 下 $n=-1$ 给出 $b=a$、$b'=-a$，branch2 的写法补全了这一情形。
 - 单元 thm:8.6.4 · 类型：冲突处理 · 改了什么：取 branch1；branch2 只把 `\leg` 改成 `\legs` · 理由：branch2 没有实质修改。
 - 单元 thm:8.6.5 · 类型：冲突处理 · 改了什么：取 branch1（陈述补“satisfy $D\equiv0$ or $1\pmod{4}$”和三处“for some $x,y\in\mathbb{Z}$”）；branch2 只有 `\legs` 和 `\pmod` 加括号 · 理由：branch2 没有实质修改。
@@ -393,7 +394,7 @@
 - 单元 thm:9.6.2 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
 - 单元 thm:9.6.3 · 类型：冲突处理 · 改了什么：取 branch1（陈述改为“As $n\to\infty$ through positive integers, $\tfrac{\pi(n)}{n}\to0$.”）；branch2 对容斥误差一句的改写未采用 · 理由：只是措辞。
 - 单元 thm:9.6.4 · 类型：冲突处理 · 改了什么：取 branch1（$v_p\bigl(\tbinom{2n}{n}\bigr)$ 的写法，“induction on $n\in\mathbb{Z}^+$”）；另采用 branch2 补的冠词（“since such a $p$ divides”）；行内 `\tfrac` 未采用 · 理由：两边改的位置不重叠。
-- 单元 thm:9.6.5 · 类型：冲突处理 · 改了什么：融合两边：取 branch1（$v_p\bigl(\binom{2n}{n}\bigr)$ 的写法）；采用 branch2 对证明的补充：开头一句思路概述，$F(512)$ 的三行计算（写出 $32\ln1024=320\ln2$），$F'(x)$ 的中间两步（$u(2x)\le u(1024)=(10\ln2+2)/32$），“contradicting $F(n)<0$ whenever $n\ge512$”，以及素数链中各数为素数、相邻比小于 $2$ 的验证说明 · 理由：两边改的位置不重叠；补充的计算已核对（$F(512)=\tfrac{64}{3}\ln2-\ln1025>\tfrac{31}{3}\ln2$；$\tfrac23-\tfrac{10}{32}=\tfrac{17}{48}$；$631<26^2$，所需试除的素数不超过 $23$）。
+- 单元 thm:9.6.5 · 类型：冲突处理 · 改了什么：融合两边：取 branch1（$v_p\bigl(\binom{2n}{n}\bigr)$ 的写法）；采用 branch2 对证明的补充：开头一句思路概述，$F(512)$ 的三行计算（写出 $32\ln1024=320\ln2$），$F'(x)$ 的中间两步（$u(2x)\le u(1024)=(10\ln2+2)/32$），“contradicting $F(n)<0$ whenever $n\ge512$”，以及素数链中各数为素数、相邻比小于 $2$ 的验证说明；补充后素数表 $2,3,\ldots,631$ 落在行尾溢出版心（32pt），把它拆成逐个的行内公式（$2$, $3$, …, $631$），内容不变 · 理由：两边改的位置不重叠；补充的计算已核对（$F(512)=\tfrac{64}{3}\ln2-\ln1025>\tfrac{31}{3}\ln2$；$\tfrac23-\tfrac{10}{32}=\tfrac{17}{48}$；$631<26^2$，所需试除的素数不超过 $23$）。
 - 单元 thm:9.6.6 · 类型：冲突处理 · 改了什么：两边对同一处补了“等号不可能成立”的理由（branch1：$2p_{n+1}$ 是大于 $2$ 的偶数；branch2：$2p_{n+1}$ 不是素数），取 branch1 · 理由：两边意思相同。
 - 单元 thm:9.6.8 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
 - 单元 thm:9.6.9 · 类型：回滚 · 改了什么：branch2 的描述性 label、`\index` 和 `\frac`→`\tfrac` 都不采用 · 理由：其中一处在 `\displaystyle` 求和中，会把分数排小（与 thm:5.7.1 的处理一致）；其余无排版差别。

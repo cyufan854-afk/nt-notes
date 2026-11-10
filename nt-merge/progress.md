@@ -2,18 +2,19 @@
 
 - 已完成批次：1–6，全书合并完成（第 1 批的疑难复核由 Fable 进行中；第 2、4、5 批没有疑难条目，第 3 批 1 条，第 6 批 1 条）。用户要求不再逐批停下，一次做完第 2–6 批，最后统一交 Fable 复核。
 - 当前批次：无（合并已全部完成；待 Fable 复核 escalate.md 中各批的 [待复核] 条目）
+- 完成标准核对（第 6 批后）：`verify --compile` 通过（210 页，无未定义引用、无重复 label、无溢出版心）；`audit` 通过（需要说明的单元 258 个，日志未提到 0 个，`merge-audit.md` 已保留）；escalate.md 尚有 6 条 [待复核]（第 1 批 4 条、第 3 批 1 条、第 6 批 1 条），复核后再处理“未决事项”中涉及复核单元的部分。
 - 本批计数（第 1 批）：处理 83 个单元（merge-plan 中本批至少一边改过的单元；另有 branch2 新增的 18 个说明文字、remark 或新环境单元，其中 2 个导读原样采用、16 个记入日志）；两边都改过 39 个；回滚 51（其中 19 个只是 branch2 加了描述性 label、`\index` 或 UTF-8 重音而未搬入；16 个是 branch2 新增单元的改写或不采用）、冲突处理 39、新的数学修改 0、自行优化 0；列入疑难 4 条（thm:2.5.4、def:3.2.1、thm:3.2.3、thm:3.4.5），占本批 83 个单元的 4.8%
 - 本批计数（第 2 批）：处理 78 个单元（merge-plan 中 §4–§5 至少一边改过的单元；另有 branch2 新增的 2 个导读（原样采用）和 3 个 remark（记入日志））；两边都改过 38 个；回滚 26（其中 19 个只是 branch2 加了描述性 label、`\index`、UTF-8 重音而未搬入；3 个是 remark 改写为普通段落）、冲突处理 38、新的数学修改 0、自行优化 1（thm:5.1.5 后补替代证明指引）；列入疑难 0 条
-- 本批计数（第 3 批）：处理 63 个单元（§6 至少一边改过的单元；另有 branch2 新增的 1 个导读（略改后采用）和 4 个 remark（记入日志））；两边都改过 29 个；回滚 35（其中 26 个只是 branch2 加了描述性 label、`\index`、UTF-8 或无排版差别的源码改动而未搬入；4 个是 remark 改写为指引句或普通段落）、冲突处理 29、新的数学修改 0、自行优化 0；列入疑难 1 条（thm:6.2.4），占 1.6%
+- 本批计数（第 3 批）：处理 63 个单元（§6 至少一边改过的单元；另有 branch2 新增的 1 个导读（略改后采用）和 4 个 remark（记入日志））；两边都改过 29 个；回滚 28（其中 22 个只是 branch2 加了描述性 label、`\index`、UTF-8 或无排版差别的源码改动而未搬入；4 个是 remark 改写为指引句或普通段落；1 个是导读略改后采用；另 1 个是 def:6.6.4。第 3 批结束时这里曾误记为 35，第 6 批后按日志逐条核对改正）、冲突处理 29、新的数学修改 0、自行优化 0；列入疑难 1 条（thm:6.2.4），占 1.6%
 - 本批计数（第 4 批）：处理 66 个单元（§7 至少一边改过的单元；另有 branch2 新增的 1 个导读（略改后采用）和 8 个 remark / proposition / example 单元（记入日志））；两边都改过 28 个；回滚 39（其中 18 个只是 branch2 加了描述性 label、`\index`、`\legs` 或行内 `\tfrac` 而未搬入；9 个是 branch2 新增单元的改写或不采用；1 个是 thm:7.4.2，两边都没改，收入 remark@7684 的段落）、冲突处理 28、新的数学修改 0、自行优化 0；列入疑难 0 条
-- 本批计数（第 5 批）：处理 86 个单元（§8–§9 至少一边改过的单元；另有 branch2 新增的 2 个导读（原样采用）和 1 个 remark（记入日志））；两边都改过 39 个；回滚 39（其中 28 个只是 branch2 加了描述性 label、`\index`、`\legs`、UTF-8 或无排版差别的源码改动而未搬入，含 3 个单元里 `\displaystyle` 中的 `\tfrac`；1 个是 remark 改写为普通段落）、冲突处理 40（39 个两边都改过的单元，另 1 条是随 def:9.6.1 的标题补改 thm:2.1.2 的指引句）、新的数学修改 0、自行优化 1（thm:9.1.6 后补替代证明指引）；列入疑难 0 条
+- 本批计数（第 5 批）：处理 86 个单元（§8–§9 至少一边改过的单元；另有 branch2 新增的 2 个导读（原样采用）和 1 个 remark（记入日志））；两边都改过 39 个；回滚 40（其中 28 个只是 branch2 加了描述性 label、`\index`、`\legs`、UTF-8 或无排版差别的源码改动而未搬入，含 3 个单元里 `\displaystyle` 中的 `\tfrac`；1 个是 remark 改写为普通段落）、冲突处理 40（39 个两边都改过的单元，另 1 条是随 def:9.6.1 的标题补改 thm:2.1.2 的指引句）、新的数学修改 0、自行优化 1（thm:9.1.6 后补替代证明指引）；列入疑难 0 条
 - 本批计数（第 6 批）：处理 63 个单元（§10–§12 至少一边改过的单元；另有 branch2 新增的 3 个导读（原样采用）和 2 个 remark（记入日志），文末 branch2 的 `\printindex` 一段不采用）；两边都改过 34 个；回滚 22（其中 15 个只是 branch2 加了描述性 label、`\index`、`\statementlist` 或无排版差别的源码改动而未搬入；2 个是 remark 改写为普通段落）、冲突处理 34、新的数学修改 0、自行优化 0；列入疑难 1 条（thm:10.8.2），占 1.6%
 
 ## 约定（后续章节须遵守）
 
 - 底稿：`branch1.tex` 以包内版本为准（SHA256 与 SHA256SUMS.txt 一致）。仓库根目录的 `nt-branch1.tex`（2026-11-05 上传）比包内 branch1 旧一轮（包内版已把 cancelling 统一为 canceling、Fermat 小定理改用 $p$ 等），没有用它覆盖。用户已确认以本轮 zip 为准，并让删掉 zip 以外的文件；该文件已从本分支删除。来源：合并
 - 导言区（`\begin{document}` 之前）保持 branch1 原样。branch2 对导言区的改动（lmodern、microtype、longtable、tikz、makeidx/`\makeindex`、proposition/lemma/corollary/example/remark/definition* 环境、`\legs`/`\plegs`、`\statementitems` 改名 `\statementlist`、`\indexname`、parskip）一律不搬入；依赖它们的 branch2 正文在各单元里改成 branch1 能编译的写法。来源：合并
-- branch2 新增的描述性 label（如 `thm:fermat-little-theorem`、`def:prime`、`proof:alt-…`、`prop:…`、`cor:…`、`lem:…`、`sec:asymptotic-notation`、`subsec:3.5`、`fig:…`）和 `\phantomsection` 一律不搬入；指向它们的 `\ref`/`\hyperref` 改为指向 branch1 已有的 label，没有对应目标时改成不带链接的文字。来源：合并
+- branch2 新增的描述性 label（如 `thm:fermat-little-theorem`、`def:prime`、`proof:alt-…`、`prop:…`、`cor:…`、`lem:…`、`sec:asymptotic-notation`、`subsec:3.5`、`fig:…`）和 `\phantomsection` 一律不搬入（Introduction 前为目录链接加的 `\phantomsection` 除外，与 branch1 在 Notation and Conventions 前的用法相同）；指向它们的 `\ref`/`\hyperref` 改为指向 branch1 已有的 label，没有对应目标时改成不带链接的文字。来源：合并
 - branch2 的 `\index{…}` 不搬入（终稿导言区没有索引）。是否给讲义加索引留给作者（见未决事项）。来源：合并
 - 宏的写法：用 `\statementitems`（不用 `\statementlist`）；用 `\leg`/`\pleg`（不用 `\legs`/`\plegs`）。来源：合并
 - branch2 新增的 remark / proposition / lemma / corollary / example / definition* 环境：按内容决定取舍；采用时写成所在单元里的普通段落（或并入证明），不新增环境。来源：合并
