@@ -1,7 +1,7 @@
 # 合并核对（merge_check.py audit）
 
-最终稿每个单元取自哪边：branch1 139，branch1/baseline 119，branch1/branch2 1，branch1/branch2/baseline 57，branch2 37，new 159。
-需要在 merge-log.md 里说明的单元 278 个，其中 0 个日志里没有提到。
+最终稿每个单元取自哪边：branch1 141，branch1/baseline 119，branch1/branch2 1，branch1/branch2/baseline 57，branch2 37，new 157。
+需要在 merge-log.md 里说明的单元 276 个，其中 0 个日志里没有提到。
 
 | 单元 | 取自 | branch1 改过 | branch2 改过 | 需要说明 | 日志里有 |
 |---|---|---|---|---|---|
@@ -27,7 +27,6 @@
 | thm:2.2.9 | branch1/baseline |  | 是 | 回滚了只有 branch2 做过的修改 | 有 |
 | thm:2.2.11 | branch1/baseline |  | 是 | 回滚了只有 branch2 做过的修改 | 有 |
 | thm:2.2.12 | new |  | 是 | 新写或融合的文字（最接近 branch2） | 有 |
-| thm:2.2.13 | new | 是 |  | 新写或融合的文字（最接近 branch1） | 有 |
 | thm:2.3.2 | branch1/baseline |  | 是 | 回滚了只有 branch2 做过的修改 | 有 |
 | thm:2.3.3 | new | 是 | 是 | 新写或融合的文字（最接近 branch2） | 有 |
 | def:2.4.1 | branch1/baseline |  | 是 | 回滚了只有 branch2 做过的修改 | 有 |
@@ -158,7 +157,6 @@
 | def:7.3.1 | branch1/baseline |  | 是 | 回滚了只有 branch2 做过的修改 | 有 |
 | thm:7.4.2 | new |  |  | 新写或融合的文字（最接近 branch1） | 有 |
 | thm:7.4.3 | new | 是 | 是 | 新写或融合的文字（最接近 branch1） | 有 |
-| thm:7.5.1 | new | 是 | 是 | 新写或融合的文字（最接近 branch1） | 有 |
 | thm:7.5.3 | new |  | 是 | 新写或融合的文字（最接近 branch2） | 有 |
 | thm:7.5.4 | new |  | 是 | 新写或融合的文字（最接近 branch2） | 有 |
 | thm:7.6.1 | branch1/baseline |  | 是 | 回滚了只有 branch2 做过的修改 | 有 |

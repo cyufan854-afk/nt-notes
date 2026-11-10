@@ -493,11 +493,11 @@
 ### gemini
 
 - gemini · 报告1 F1 · thm:1.1.2 · minor · 采纳 · 证明 (e) 末尾补 `\qedhere`（按约定采用 branch2 在列表结尾的 `\qedhere`）· 否
-- gemini · 报告1 F2 · thm:3.3.1 · minor · 部分采纳 · 指引句改为“appears after Theorem~\ref{thm:3.5.12}, which together with Theorem~\ref{thm:3.5.2} supplies the needed tools”，去掉重复引用；未用其“Chinese remainder theorem”说法 · 否
+- gemini · 报告1 F2 · thm:3.3.1 · minor · 部分采纳（该指引句其后按作者意见整句删去，见下节）· 指引句改为“appears after Theorem~\ref{thm:3.5.12}, which together with Theorem~\ref{thm:3.5.2} supplies the needed tools”，去掉重复引用；未用其“Chinese remainder theorem”说法 · 否
 - gemini · 报告1 F3 · thm:2.2.4（及其他两边都改的单元）· minor · 部分采纳 · 同 gpt L03 · 否
 - gemini · 报告2 · progress.md 第 6 批计数 · 日志 · 采纳 · 第 6 批计数行注明“新的数学修改 1（疑难复核时）” · 否
 - gemini · 报告2/报告3 F3 · def:2.5.1、thm:2.5.5（关联 thm:2.5.4）· minor · 采纳 · “$F_k>0$（$k\ge1$）”的归纳说明移到 Definition~\ref{def:2.5.1} 之后的普通段落，thm:2.5.5 证明改为回引；thm:2.5.4（疑难复核单元）本身不动 · 否
-- gemini · 报告3 F1 · thm:3.2.3 · minor · 交疑难复核 · 暂改为“the inverse $u$ of the statement exists (Theorem~\ref{thm:3.2.1}) and satisfies …”，见 escalate.md · 否
+- gemini · 报告3 F1 · thm:3.2.3 · minor · 交疑难复核 → 改写（见 escalate.md：改为先说逆存在、再“let $u$ be any such inverse, as in the statement”）· 暂改为“the inverse $u$ of the statement exists (Theorem~\ref{thm:3.2.1}) and satisfies …”，见 escalate.md · 否
 - gemini · 报告3 F2 · thm:3.5.6 · minor · 采纳 · “the inverse … exists and is unique”改为“an inverse … exists and is unique modulo $p$”（与 def:3.2.1 的新约定一致）· 否
 - gemini · 报告4（多模型意见汇总）· 导言区（`\statementbreaks`、proof/altproof 重定义、`\leg`、计数器、fontenc、hyperref 书签）· — · 不采纳 · 硬约束：导言区与 branch1 一致；转作者（progress.md 未决事项）· 否
 - gemini · 报告4 · def:1.2.4 · — · 采纳 · 去掉对 Theorem 4.3.1(g) 的前向依赖：就地说明最小值可取到且等于 $\min\{\{x\},1-\{x\}\}$，保留“see also” · 否
@@ -524,7 +524,7 @@
 - ernie · 2.1 L2833 · thm:4.5.5(b) · P0 · 不采纳 · 陈述的括号已说明约定下无条件成立，证明先处理 $q+r=0$ 正是为此，无矛盾 · 否
 - ernie · 2.1 L2706/L2228/L2286 · def:4.4.2、def:4.2.1、thm:4.2.x · P0 · 不采纳 · 上下文已固定所指的展开；前导零问题在 def:4.2.1 的求和写法中无歧义；留第 5 步 · 否
 - ernie · 2.1 L1022/L1031 · def:3.1.1、thm:3.1.1 · P0 · 部分采纳 · def:3.1.1 传递性一句补“for $c\in\mathbb{Z}$”；模数为正整数已由定义写明，thm:3.1.1 的量词不补 · 否
-- ernie · 2.1 L1593 · thm:3.4.5 证明后段落 · P0 · 交疑难复核 · 暂改为“can be checked without knowing $K$ … (computing $\varphi(m)$ itself may still require factoring $m$)”，见 escalate.md · 否
+- ernie · 2.1 L1593 · thm:3.4.5 证明后段落 · P0 · 交疑难复核 → 维持暂定改法（见 escalate.md）· 暂改为“can be checked without knowing $K$ … (computing $\varphi(m)$ itself may still require factoring $m$)”，见 escalate.md · 否
 - ernie · 2.1 L1721、L5043、L10524、L11340、L12267、L14048 · thm:3.5.5、thm:6.2.x Lucas、thm:8.6.8、费马数、$\Phi(x,z)$、$\sigma(A)$ · P0 · 不采纳 · 陈述正确，属写法偏好或已在证明中交代；留作者 · 否
 - ernie · 2.1 L4968 · def:6.2.1 · P0 · 不采纳 · 按定义 $m=1$ 时结论自然成立，无需特别说明 · 否
 - ernie · 2.1 L4994 · thm:6.2.2 · P0 · 采纳 · 句首补“Let $n\in\mathbb{Z}^+$.” · 否
@@ -574,3 +574,19 @@
 - ernie · 5 L6112 · def:6.9.1 · P3 · 不采纳 · $t(m)$ 确是唯一的那个最小正代表系，定冠词正确 · 否
 - ernie · 5 其余各行（L287、L301、L361 等约 55 条）· P3 · 不采纳 · 措辞偏好，原文无误；留作者统一润色 · 否
 - ernie · 6（排版统计、缩进、数学空格、`\pmod`/`\ne` 统一、超长行、导言区两处）· P4 · 不采纳 · branch1 源码风格，批量改动与合并无关且会扰动所有差异；导言区受硬约束；转作者 · 否
+
+## 作者意见：删去替代证明的位置指引
+
+- 单元 sec:introduction · 类型：回滚 · 改了什么：“Alternative proofs.”一段删去“; a note after the original theorem then says where they are” · 理由：作者决定不再在原定理后写替代证明的位置指引。
+- 单元 thm:2.1.2 · 类型：回滚 · 改了什么：删去定理后的指引段（原由 branch2 的 remark@394 改写，含 via Fermat numbers / Euler product / squarefree decomposition 三处位置）· 理由：同上；remark@394 由“改写后采用”变为不采用。
+- 单元 thm:2.2.13 · 类型：回滚 · 改了什么：删去“Alternative proofs of Theorems 2.2.11--2.2.13 via $p$-adic valuations appear after Theorem 4.6.4.”（原由 remark@696、remark@722、remark@736 合并改写）· 理由：同上。
+- 单元 thm:3.3.1 · 类型：回滚 · 改了什么：删去指向 thm:3.5.12 后替代证明的指引句（原由 branch2 证明后的说明改写）· 理由：同上。
+- 单元 thm:5.1.5 · 类型：回滚 · 改了什么：删去第 2 批自行优化加的指引句 · 理由：同上；第 2 批的那条“自行优化”随之撤销。
+- 单元 thm:5.3.2 · 类型：回滚 · 改了什么：删去指引句（原由 remark@4170 改写）· 理由：同上。
+- 单元 thm:6.2.2 · 类型：回滚 · 改了什么：删去指引句（原由 remark@5270 改写）· 理由：同上。
+- 单元 thm:6.2.6 · 类型：回滚 · 改了什么：删去指引句（原由 remark@5499 改写）· 理由：同上。
+- 单元 thm:6.10.3 · 类型：回滚 · 改了什么：删去指引句（原由 remark@6740 改写）· 理由：同上。
+- 单元 thm:7.1.2 · 类型：回滚 · 改了什么：删去指引句（原由 remark@7250 第二句改写）· 理由：同上。
+- 单元 thm:7.5.1 · 类型：回滚 · 改了什么：删去指引句（原由 remark@7794 改写）· 理由：同上。
+- 单元 thm:9.1.6 · 类型：回滚 · 改了什么：删去第 5 批自行优化加的指引句 · 理由：同上；第 5 批的那条“自行优化”随之撤销。
+

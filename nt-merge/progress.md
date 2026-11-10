@@ -1,9 +1,9 @@
 # 合并进度
 
 - 已完成批次：1–6，全书合并完成（各批疑难复核均已完成：第 1 批 4 条，维持 2、改写 2；第 3 批 1 条，改写；第 6 批 1 条，改写；第 2、4、5 批没有疑难条目）。用户要求不再逐批停下，一次做完第 2–6 批，最后统一交 Fable 复核。
-- 当前批次：第 4 步交叉审查的处理（第一轮已完成，见 merge-log.md“交叉审查的处理”；escalate.md“审查意见”一节有 2 条 [待复核]：thm:3.2.3、thm:3.4.5，复核后做收尾）
+- 当前批次：第 4 步交叉审查的处理已完成（第一轮与疑难复核均结束：thm:3.2.3 改写、thm:3.4.5 维持）；之后按作者意见删去了全部替代证明位置指引。待作者重新统计留存率并进入第 5 步。
 - 完成标准核对（疑难复核后，收尾时重跑）：`verify --compile` 通过（211 页，无未定义引用、无重复 label、无溢出版心、无 LaTeX 警告）；`audit` 通过（需要说明的单元 261 个，日志未提到 0 个，`merge-audit.md` 已更新保留）；escalate.md 中没有 [待复核]（6 条：维持 2、改写 4、交作者 0）。“未决事项”只剩交作者的条目，没有可由合并方处理的部分。
-- 全书合计：处理 439 个单元（两边都改过 207 个）；回滚 206、冲突处理 208、新的数学修改 1（thm:10.8.2，疑难复核时补的证明步骤）、自行优化 2（thm:5.1.5、thm:9.1.6 后的替代证明指引）；疑难 6 条，占 1.4%。
+- 全书合计：处理 439 个单元（两边都改过 207 个）；回滚 206、冲突处理 208、新的数学修改 1（thm:10.8.2，疑难复核时补的证明步骤）、自行优化 2（thm:5.1.5、thm:9.1.6 后的替代证明指引）；疑难 6 条，占 1.4%。（交叉审查后：两条自行优化——thm:5.1.5、thm:9.1.6 的指引句——已按作者意见删去）
 - 本批计数（第 1 批）：处理 83 个单元（merge-plan 中本批至少一边改过的单元；另有 branch2 新增的 18 个说明文字、remark 或新环境单元，其中 2 个导读原样采用、16 个记入日志）；两边都改过 39 个；回滚 51（其中 19 个只是 branch2 加了描述性 label、`\index` 或 UTF-8 重音而未搬入；16 个是 branch2 新增单元的改写或不采用）、冲突处理 39、新的数学修改 0、自行优化 0；列入疑难 4 条（thm:2.5.4、def:3.2.1、thm:3.2.3、thm:3.4.5），占本批 83 个单元的 4.8%
 - 本批计数（第 2 批）：处理 78 个单元（merge-plan 中 §4–§5 至少一边改过的单元；另有 branch2 新增的 2 个导读（原样采用）和 3 个 remark（记入日志））；两边都改过 38 个；回滚 26（其中 19 个只是 branch2 加了描述性 label、`\index`、UTF-8 重音而未搬入；3 个是 remark 改写为普通段落）、冲突处理 38、新的数学修改 0、自行优化 1（thm:5.1.5 后补替代证明指引）；列入疑难 0 条
 - 本批计数（第 3 批）：处理 63 个单元（§6 至少一边改过的单元；另有 branch2 新增的 1 个导读（略改后采用）和 4 个 remark（记入日志））；两边都改过 29 个；回滚 28（其中 22 个只是 branch2 加了描述性 label、`\index`、UTF-8 或无排版差别的源码改动而未搬入；4 个是 remark 改写为指引句或普通段落；1 个是导读略改后采用；另 1 个是 def:6.6.4。第 3 批结束时这里曾误记为 35，第 6 批后按日志逐条核对改正）、冲突处理 29、新的数学修改 0、自行优化 0；列入疑难 1 条（thm:6.2.4），占 1.6%
@@ -22,7 +22,7 @@
 - 拼写用美式（branch1 已统一为 canceling / canceled）；从 branch2 搬来的 cancelling、cancelled 改成美式。来源：合并
 - 重音字母用 ASCII 写法（`B{\'e}zout`、`M{\"o}bius` 等）：branch1 与 baseline 全文没有非 ASCII 字符，branch2 改成的 UTF-8（Bézout、Möbius）不采用。来源：合并
 - branch2 在每个 `\section` 标题后加的两三句导读：逐节对照终稿内容核对后采用（Introduction 已写“Each section begins with a short guide”，所以第 2–6 批也要逐节处理）；导读里与终稿不符的说法要改。来源：合并
-- 替代证明的指引：branch2 在定理后加的“Later alternative arguments use \hyperref[proof:alt-…]{…}”一类 remark，改写成定理单元末尾的一句普通文字，用替代证明所在位置之前的定理/定义编号指路（如“appear … after Theorem~\ref{thm:4.6.4}”），不加新 label；相邻几条相同的可以合并成一句。Introduction 已写“a note after the original theorem then says where they are”，所以凡是放在别的小节、离原定理较远的替代证明，都要有这样一句（branch2 没加的要补，已知：thm:5.1.5 的替代证明在 §5.7；thm:7.1.2 的在相邻的 §7.2，可酌情）。来源：合并
+- 替代证明的指引（已废止）：作者决定不在原定理后写替代证明的位置指引，Introduction 也不再作此承诺；各处指引句已删去（见 merge-log.md“作者意见：删去替代证明的位置指引”）。替代证明本身及其标题保留。来源：作者
 - branch2 用 remark 环境写的、证明定义中某个断言的说明（如 def:2.1.2、def:2.2.3 之后），写成定义之后的普通段落。来源：合并
 - label 对照（baseline → branch1）已逐条核对：只有 `def:5.7.1`→`def:5.7.2`（branch1 在 §5.7 新增渐近记号定义 def:5.7.1）；`def:9.4.1` 两边是同一定义（只改了标题，plan 的“找不到”是误报）；branch1 新增的 def:4.2.2、thm:7.2.6、thm:7.4.4、thm:8.1.11、thm:9.1.10、thm:9.1.11、thm:9.2.3 都排在各自小节的最后，不引起改名。从 branch2 搬文字时，`\ref{def:5.7.1}`（average order）要改成 `def:5.7.2`；branch2 指向 `sec:asymptotic-notation` 的链接改为 Definition~\ref{def:5.7.1}。来源：合并
 - 渐近记号：终稿按 branch1 在 §5.7 的 Definition 5.7.1 定义（它已含 branch2 Notation 段落里那条隐含常数约定，措辞相同；§5.7 之前全文没有用到渐近记号，已查）。branch2 放在 Notation 末尾的 Asymptotic notation 段落不采用；第 2 批遇到 branch2 中指向 `sec:asymptotic-notation` 的链接，改为 Definition~\ref{def:5.7.1}。来源：合并
@@ -33,7 +33,7 @@
 - Gauss 引理（thm:7.3.1）中的计数记作 $\mu$（branch1，附“not the M{\"o}bius function”说明），branch2 改名的 $N_{-}$ 不采用；thm:7.3.2、thm:7.5.1 的格点替代证明随之用 $\mu$。Notation at a Glance 不加 branch2 的 $N_{-}$ 一行（原未决事项，第 4 批定下）。后文若遇到 branch2 的 $N_{-}$ 一律改回 $\mu$。来源：合并
 - 第 5 批提醒：采用 §8 导读后，thm:7.11.5 单元末尾的 `\clearpage` 与 `\section{Quadratic Representations of Integers}` 标题会归入 §8 导读单元，这不是对 thm:7.11.5 的修改（thm:7.11.5 已在日志中）。来源：合并
 - 第 6 批提醒：采用 §10 导读后，thm:9.7.3 单元末尾的 `\section{Diophantine Approximation and Lattice Points}` 标题会归入 §10 导读单元，这不是对 thm:9.7.3 的修改（thm:9.7.3 已在日志中）。来源：合并
-- 替代证明标题与指引句一致：替代证明标题按 branch1 定下后，原定理后的指引句要用同样的说法（第 5 批据此把 thm:2.1.2 指引句中的“via squarefree parts”改为“via squarefree decomposition”）。来源：合并
+- 替代证明标题与指引句一致（随指引句一并废止）。来源：作者
 - 环的定义：终稿保留在 Definition 6.6.4 里（branch2 另立的 `definition*`［ring conventions，`def:rings`］不采用）。第 5、6 批遇到 branch2 中 `\hyperref[def:rings]{…}`（如“commutative-ring convention”“ring conventions”）时改为 Definition~\ref{def:6.6.4}。来源：合并
 - 记号 $a^{-1}$（Definition 3.2.1）：表示 $a$ 模 $n$ 的任意一个逆（一个整数），模 $n$ 唯一确定（取 branch2 的说法：“thus $a^{-1}$ denotes any one of them and is determined modulo $n$”），不是剩余类；它可以直接写进模 $n$ 的同余式和只依赖模 $n$ 剩余的表达式，不要求取特定代表。类层面的逆（def:6.1.1 的 unit class、def:6.3.1 的 inverse class、$\mathbb{F}_p$ 中的 $x^{-1}$ 等）是单位群或域里的逆，不受影响。已逐处查过 §3–§12 的用法，现有文字都与此相容，无需调整；后续若改写相关句子，不要再写成“the residue class $a^{-1}$”。来源：疑难复核
 - Theorem 3.2.3（线性同余）：陈述已写明 $\gcd(a/d,m/d)=1$ 且 $u$ 是 $a/d$ 模 $m/d$ 的任意一个逆（存在性引 Theorem 3.2.1）；引用它时可无条件使用“$d\mid b$ 时恰有 $d$ 个解”。来源：疑难复核
