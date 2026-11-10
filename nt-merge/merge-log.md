@@ -590,3 +590,26 @@
 - 单元 thm:7.5.1 · 类型：回滚 · 改了什么：删去指引句（原由 remark@7794 改写）· 理由：同上。
 - 单元 thm:9.1.6 · 类型：回滚 · 改了什么：删去第 5 批自行优化加的指引句 · 理由：同上；第 5 批的那条“自行优化”随之撤销。
 
+
+## 作者意见：全书修订（导言区、索引、记号、标题、术语、润色、源码风格）
+
+作者决定按交作者清单中的以下各项修改：导言区的索引与排版宏包、altproof 与 QED、二次互反律格点图、记号多义与多套记号、小节标题、未定义术语、源码风格与英文润色；其余（语义化 label、定理斜体、共用计数器、booktabs、`\statementbreaks` 等）不改。导言区因此不再与 branch1 相同，`merge_check.py verify` 的导言区一项按作者决定不再适用，其余各项（label、环境、引用、编译）仍须通过。
+
+- 单元 preamble · 类型：自行优化 · 改了什么：加 `lmodern`、`microtype`、`tikz`、`makeidx` 与 `\makeindex`；定义 branch2 的 `\legs`/`\plegs`（`\bigl(\tfrac{…}{…}\bigr)`）；`\indexname` 改为 Index of Terms；altproof 不再清空 `\qedsymbol`（替代证明与证明一样以 □ 结束）· 理由：作者决定（原交作者事项）。
+- 单元 （文末）· 类型：自行优化 · 改了什么：文末加 `\clearpage`、`\phantomsection`、`\addcontentsline{toc}{section}{Index of Terms}`、`\printindex`（与 branch2 相同）· 理由：同上。
+- 单元 （全书索引）· 类型：回滚 · 改了什么：搬入 branch2 的全部 256 条 `\index{…}`，按 branch2 所附的定理/定义 label 放到终稿同一 label 之后（`def:5.7.1`→`def:5.7.2`，branch2 `definition*` 的 `def:unit`→def:3.5.1、`def:rings`→def:6.6.4）；条目中的 UTF-8 重音改为 ASCII 写法 · 理由：作者决定采用索引（原约定不搬入）。
+- 单元 （全书 Legendre 符号）· 类型：回滚 · 改了什么：按 branch2 的规则，行内公式中的 `\leg`/`\pleg` 一律改为 `\legs`/`\plegs`（253 处），行间公式保留 `\leg`（58 处）· 理由：作者决定采用行内小号符号。
+- 单元 （全书 QED）· 类型：自行优化 · 改了什么：删去 `\end{proof}`、`\end{altproof}`、`\end{theorem}`、`\end{definition}` 前的空行（913 处），使 □ 落在证明最后一行行末，不再单独成行（已渲染核对）· 理由：作者决定修改 QED 位置。
+- 单元 thm:7.5.1 · 类型：回滚 · 改了什么：搬入 branch2 的 TikZ 格点图（$p=7,q=11$），放在主证明之后的 figure 中；branch2 的 `\label{fig:…}` 不搬入（label 须与 branch1 相同），正文改为“(the figure after this proof shows the case $p=7$, $q=11$)” · 理由：作者决定加图。
+- 单元 thm:11.1.1、thm:11.1.2 · 类型：自行优化 · 改了什么：有理根定理中的既约分数 $p/q$ 改记 $r/s$ · 理由：全书约定 $p$ 表示素数（ernie 4.1）。
+- 单元 thm:11.2.1 · 类型：自行优化 · 改了什么：证明中 $G=\tfrac ab G_0$、$H=\tfrac cd H_0$ 改记 $\tfrac rs$、$\tfrac tu$（及其后各式）· 理由：避免与 content $c(\cdot)$ 同字母（ernie 4.1）。
+- 单元 thm:9.7.2 · 类型：自行优化 · 改了什么：误差项 $\theta_d$ 改记 $\eta_d$ · 理由：避免与 Chebyshev 函数 $\theta$ 冲突。
+- 单元 thm:10.6.1 · 类型：自行优化 · 改了什么：$\delta:=\lVert q\alpha\rVert$ 改记 $\rho$ · 理由：避免与阶 $\delta_m(a)$ 及 thm:10.7.1 的 $\delta$ 冲突。
+- 单元 def:6.4.1 · 类型：自行优化 · 改了什么：定义中的指数 $n$ 改记 $k$ · 理由：避免与模数并列时的混淆。
+- 单元 thm:6.4.2 · 类型：自行优化 · 改了什么：“(Case 3 in the proof of Theorem 6.2.6)”改为“(as shown for powers of $2$ in the proof of Theorem 6.2.6)” · 理由：两处证明的 Case 编号含义不同。
+- 单元 （多套记号）thm:3.6.x、def:6.10.1、thm:6.6.x · 类型：自行优化 · 改了什么：$\mathbb{F}_p$ 只在 Definition 3.2.2 定义，另两处改为引用它；$\mathbb{Z}/q\mathbb{Z}$ 改为 $(\mathbb{Z}_q,+)$；“nonzero residue(s)”统一为“nonzero residue class(es)”（9 处）；def:2.1.2 后段落的“proper positive divisor”改为“positive divisor $a$ with $1<a<n$” · 理由：ernie 4.2。
+- 单元 sec:arithmetic-functions 及 §2.2、§2.5、§3.4、§9.5 小节标题 · 类型：自行优化 · 改了什么：§5 标题 Number-Theoretic Functions 改为 Arithmetic Functions（与正文用语一致）；§2.2 改为 Greatest Common Divisors, Least Common Multiples, and the Euclidean Algorithm；§2.5 改为 The Fibonacci Numbers and the Euclidean Algorithm（与内容顺序一致）；§3.4 去掉未讨论的 Linear Congruences，改为 … Euler's Totient Function, and Exponent Reduction；§9.5 补 and Congruent Squares（thm:9.5.3）· 理由：ernie 4.3。
+- 单元 thm:5.2.2、def:5.4.x（线性扩张）、thm:8.6.x（格点、原始值）、thm:8.6.6（$\mathrm{SL}_2$）、thm:6.6.x（群作用）、thm:12.4.2 · 类型：自行优化 · 改了什么：就地补出术语含义：Mersenne prime、linear extension、lattice points、values at primitive pairs（替代“primitive values”）、$\operatorname{SL}_2(\mathbb{Z})$、群作用与轨道、additive basis of order $h$ · 理由：ernie 2.2。
+- 单元 thm:2.1.x、thm:2.3.7、thm:2.6.x、def:3.2.4、thm:3.3.3、thm:3.5.1、thm:3.5.10、thm:3.5.11、thm:4.2.7、thm:4.9.1、thm:5.1.2、def:5.3.2、thm:5.7.4、thm:6.2.6、thm:8.6.6、thm:10.5.1、thm:11.3.4 · 类型：自行优化 · 改了什么：英文润色（ernie 第五部分中确属改进的约 20 条）：去掉教师口吻、补明指代、调整冠词与语序、“$\tau(n)$ and $\sigma(n)$”改为“$\tau$ and $\sigma$”、thm:3.5.11 陈述改为按 $p\mid n$ 分情形的写法（内容不变）等；其余属措辞偏好的条目未改 · 理由：作者决定润色。
+- 单元 （全书源码）· 类型：自行优化 · 改了什么：裸 `\pmod x` 加括号（86 处）；`\ne`→`\neq`（22 处）；行首空格缩进改为 tab（976 行）；连续空行合并（12 处）；超过 120 字符的行在空格处折行（394 行；含 `\label`/`\index` 的环境首行不折）。数学模式内的空格写法未统一（改动风险大于收益）· 理由：作者决定统一源码风格；以上均不改变排版。
+- 单元 thm:8.1.11、thm:9.1.10、thm:9.1.11、thm:4.9.1、thm:2.3.7、thm:4.2.7 · 类型：自行优化 · 改了什么：只受上面全书源码与润色改动影响（`\pmod` 括号、折行、空行等），文字无实质变化 · 理由：同上。

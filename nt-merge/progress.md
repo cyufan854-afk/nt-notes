@@ -14,10 +14,10 @@
 ## 约定（后续章节须遵守）
 
 - 底稿：`branch1.tex` 以包内版本为准（SHA256 与 SHA256SUMS.txt 一致）。仓库根目录的 `nt-branch1.tex`（2026-11-05 上传）比包内 branch1 旧一轮（包内版已把 cancelling 统一为 canceling、Fermat 小定理改用 $p$ 等），没有用它覆盖。用户已确认以本轮 zip 为准，并让删掉 zip 以外的文件；该文件已从本分支删除。来源：合并
-- 导言区（`\begin{document}` 之前）保持 branch1 原样。branch2 对导言区的改动（lmodern、microtype、longtable、tikz、makeidx/`\makeindex`、proposition/lemma/corollary/example/remark/definition* 环境、`\legs`/`\plegs`、`\statementitems` 改名 `\statementlist`、`\indexname`、parskip）一律不搬入；依赖它们的 branch2 正文在各单元里改成 branch1 能编译的写法。来源：合并
+- 导言区：合并阶段保持 branch1 原样；第 4 步之后作者决定加入 lmodern、microtype、tikz、makeidx 与 `\legs`/`\plegs`，altproof 保留 QED 符号（见 merge-log.md“作者意见：全书修订”）。`verify` 的导言区一项因此不再适用；其余 branch2 导言区改动（longtable、新定理环境、`\statementlist`、parskip 等）仍不采用。来源：作者
 - branch2 新增的描述性 label（如 `thm:fermat-little-theorem`、`def:prime`、`proof:alt-…`、`prop:…`、`cor:…`、`lem:…`、`sec:asymptotic-notation`、`subsec:3.5`、`fig:…`）和 `\phantomsection` 一律不搬入（Introduction 前为目录链接加的 `\phantomsection` 除外，与 branch1 在 Notation and Conventions 前的用法相同）；指向它们的 `\ref`/`\hyperref` 改为指向 branch1 已有的 label，没有对应目标时改成不带链接的文字。来源：合并
-- branch2 的 `\index{…}` 不搬入（终稿导言区没有索引）。是否给讲义加索引留给作者（见未决事项）。来源：合并
-- 宏的写法：用 `\statementitems`（不用 `\statementlist`）；用 `\leg`/`\pleg`（不用 `\legs`/`\plegs`）。来源：合并
+- 索引：作者决定采用，branch2 的 256 条 `\index` 已按定理/定义 label 搬入，文末 `\printindex`。新增或改写的定理、定义如需索引，按 branch2 的格式在 label 之后加。来源：作者
+- 宏的写法：用 `\statementitems`（不用 `\statementlist`）；Legendre/Jacobi 符号在行内公式用 `\legs`/`\plegs`，行间公式用 `\leg`/`\pleg`。来源：合并、作者
 - branch2 新增的 remark / proposition / lemma / corollary / example / definition* 环境：按内容决定取舍；采用时写成所在单元里的普通段落（或并入证明），不新增环境。来源：合并
 - 拼写用美式（branch1 已统一为 canceling / canceled）；从 branch2 搬来的 cancelling、cancelled 改成美式。来源：合并
 - 重音字母用 ASCII 写法（`B{\'e}zout`、`M{\"o}bius` 等）：branch1 与 baseline 全文没有非 ASCII 字符，branch2 改成的 UTF-8（Bézout、Möbius）不采用。来源：合并
@@ -40,12 +40,14 @@
 
 ## 未决事项
 
-- （交作者）导言区：是否采用 branch2 的索引（makeidx + `\printindex`，branch2 全文约 254 条 `\index`）、lmodern、microtype、行内小号 Legendre 符号 `\legs`/`\plegs`（`\bigl(\tfrac{…}{…}\bigr)`）等排版改动。终稿按硬约束保持 branch1 的导言区，这些都没有搬入。
-- （交作者）插图：branch2 在 thm:7.5.1（二次互反律）的格点证明处加了一幅 TikZ 图（`fig:quadratic-reciprocity-lattice`，$p=7$, $q=11$ 的格点计数）。终稿导言区没有 tikz，图未搬入；是否加图（需在导言区加 tikz）留给作者。
+- （已处理，作者决定）（交作者）导言区：是否采用 branch2 的索引（makeidx + `\printindex`，branch2 全文约 254 条 `\index`）、lmodern、microtype、行内小号 Legendre 符号 `\legs`/`\plegs`（`\bigl(\tfrac{…}{…}\bigr)`）等排版改动。终稿按硬约束保持 branch1 的导言区，这些都没有搬入。
+- （已处理，作者决定）（交作者）插图：branch2 在 thm:7.5.1（二次互反律）的格点证明处加了一幅 TikZ 图（`fig:quadratic-reciprocity-lattice`，$p=7$, $q=11$ 的格点计数）。终稿导言区没有 tikz，图未搬入；是否加图（需在导言区加 tikz）留给作者。
 - （交作者，可选；疑难复核附带）thm:3.4.5：$n\ge\log_2 m$ 的情形目前并在陈述末句“In particular, …”中；若更愿意单列为推论，需要新增带编号环境。
 - （已处理：交叉审查第一轮把这句说明移到 Definition 2.5.1 之后）（交作者或第 5 步，可选；疑难复核附带）thm:2.5.5 / def:2.5.1：“$F_k>0$（$k\ge1$）”的说明在 thm:2.5.5 证明开头，而 thm:2.5.4 的证明已用到 $F_m\ge0$；由定义显然，若要严格按先后顺序，可把这句移到 Definition 2.5.1 之后。
-- （交作者；交叉审查第一轮转来）证明末 QED 符号单独成行：全书所有以正文结尾的证明都如此（证明末尾的空行加 branch1 导言区对 proof 的重定义所致，已渲染核对）。要改需动导言区或删去全书约 900 处 `\end{proof}` 前的空行。
-- （交作者；muse、gemini 报告4/5）导言区与全书体例：`\statementbreaks` 等分页机制的维护风险、altproof 的 QED 处理、`\leg` 改用 `\genfrac`、定理斜体与定义区分、定理与定义共用计数器、booktabs、microtype、语义化 label 与 cleveref。硬约束下终稿未动。
-- （交作者；muse、ernie）结构与记号：§1.2 中 floor 等定义在除法定理之前的次序、Assumed background 中代数与几何前提的位置、ernie 第四部分列出的记号多义（$p$、$c$、$\delta$、$\varepsilon$、$\theta_d$、模数 $n$/$m$ 等）与多套记号、几处小节标题与内容不完全对应，以及若干未单独定义的术语（Mersenne prime、group action、$\mathrm{SL}_2(\mathbb{Z})$、additive basis 等）。
-- （交作者；ernie 第六部分）源码风格的批量统一（缩进、数学模式空格、`\pmod` 花括号、`\ne`/`\neq`、超长行）与第五部分其余英文润色。
+- （已处理，作者决定）（交作者；交叉审查第一轮转来）证明末 QED 符号单独成行：全书所有以正文结尾的证明都如此（证明末尾的空行加 branch1 导言区对 proof 的重定义所致，已渲染核对）。要改需动导言区或删去全书约 900 处 `\end{proof}` 前的空行。
+- （交作者；muse、gemini 报告4/5）导言区与全书体例：`\statementbreaks` 等分页机制的维护风险、altproof 的 QED 处理、`\leg` 改用 `\genfrac`、定理斜体与定义区分、定理与定义共用计数器、booktabs、microtype、语义化 label 与 cleveref。硬约束下终稿未动。 其中 altproof 的 QED 已处理；其余作者决定不改。
+- （已处理，作者决定）（交作者；muse、ernie）结构与记号：§1.2 中 floor 等定义在除法定理之前的次序、Assumed background 中代数与几何前提的位置、ernie 第四部分列出的记号多义（$p$、$c$、$\delta$、$\varepsilon$、$\theta_d$、模数 $n$/$m$ 等）与多套记号、几处小节标题与内容不完全对应，以及若干未单独定义的术语（Mersenne prime、group action、$\mathrm{SL}_2(\mathbb{Z})$、additive basis 等）。
+- （已处理，作者决定）（交作者；ernie 第六部分）源码风格的批量统一（缩进、数学模式空格、`\pmod` 花括号、`\ne`/`\neq`、超长行）与第五部分其余英文润色。
 - （作者意见）正文不加例子：交叉审查中建议补例子的条目（muse 第 3 条、ernie 若干条）一律不采纳；除法定理后曾加的例子已删去。
+
+- 源码风格约定（作者）：证明与定理环境结束前不留空行；`\pmod` 一律带花括号；用 `\neq`；行首用 tab 缩进；源码行尽量不超过约 100 字符。来源：作者
