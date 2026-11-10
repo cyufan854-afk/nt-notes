@@ -402,3 +402,70 @@
 - 单元 thm:9.7.1 · 类型：回滚 · 改了什么：branch2 的描述性 label、`\index`、UTF-8 重音和 `\displaystyle` 中的 `\tfrac` 都不采用 · 理由：同 thm:9.6.9。
 - 单元 thm:9.7.2 · 类型：冲突处理 · 改了什么：取 branch1（误差写成显式界 $\le2^{\pi(z)}$，$\theta_d$，$z=c\ln x$ 中 $0<c<1/\ln2$）；branch2 对同一句的措辞修改与 `\displaystyle` 中的 `\tfrac` 未采用 · 理由：两边改的是同一处，branch1 的改写更完整。
 - 单元 thm:9.7.3 · 类型：冲突处理 · 改了什么：取 branch1；branch2 在本单元的改动只是 §10 导读使 `\section{Diophantine Approximation and Lattice Points}` 标题归入该导读单元（第 6 批处理）· 理由：branch2 对本单元没有实质修改。
+
+## 第 6 批（§10–§12 与文末）
+
+### §10 Diophantine Approximation and Lattice Points
+
+- 单元 thm:10.1.1 · 类型：回滚 · 改了什么：采用 branch2 在无穷多性论证中补的两句（“The construction above gives an element of $S$ after reduction to lowest terms: … Thus $S\neq\varnothing$.”）；branch2 的 `\index` 和重新折行不搬入 · 理由：原证明对 $S$ 取最小值前没有说明 $S$ 非空，branch2 补上了。
+- 单元 def:10.1.1 · 类型：冲突处理 · 改了什么：取 branch1；branch2 只加了描述性 label 和 `\index` · 理由：branch2 没有实质修改。
+- 单元 thm:10.1.3 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
+- 单元 thm:10.1.4 · 类型：回滚 · 改了什么：同上 · 理由：见约定。
+- 单元 thm:10.2.1 · 类型：回滚 · 改了什么：采用 branch2 补的一步（“$n<\tfrac{N+1}{\alpha}$. Since $\tfrac{N+1}{\alpha}$ is irrational, this is equivalent to $n\le\lfloor(N+1)/\alpha\rfloor$”）；描述性 label 和 `\index` 不搬入 · 理由：由 $n\alpha<N+1$ 得 $n\le\lfloor(N+1)/\alpha\rfloor$ 需要 $(N+1)/\alpha$ 不是整数，branch2 写明了。
+- 单元 def:10.2.1 · 类型：冲突处理 · 改了什么：取 branch1；branch2 只加了描述性 label 和 `\index` · 理由：branch2 没有实质修改。
+- 单元 thm:10.2.2 · 类型：冲突处理 · 改了什么：融合两边：取 branch1 对证明的改写（$q\ge3$，块内计数的常数 $7$，平均值部分改由等分布推出）；采用 branch2 对“平移后仍是等距网格”的补证（写 $t=\lfloor qt\rfloor/q+t_0$，用余数 $s$ 说明 $\{t+\tfrac rq\}=t_0+\tfrac sq$，且 $s$ 跑遍 $0,\ldots,q-1$）和“; thus $j$ points” · 理由：两边改的位置不重叠；branch2 的补证已核对（$t_0<\tfrac1q$ 保证 $t_0+\tfrac sq<1$）。
+- 单元 thm:10.2.3 · 类型：冲突处理 · 改了什么：融合两边：取 branch1 对陈述的修改（“for some $m\ge1$”，指明 $B_\alpha$ 的含义）；采用 branch2 在证明中补的 $N=0$ 情形（“For $N=0$, this interval is empty and $\lfloor1/\alpha\rfloor=0$, so the same count applies.”）和“and setting $M=N+1$” · 理由：两边改的位置不重叠；补充使“对所有 $M\ge1$”的等式有据。
+- 单元 def:10.3.1 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
+- 单元 thm:10.3.2 · 类型：冲突处理 · 改了什么：两边对同一句（有理数的连分数与欧几里得算法的对应）补了 $p\le0$ 时的说明，取 branch1（“its partial quotients are the successive quotients in Euclid's algorithm applied to $(p,q)$, with each division taken with nonnegative remainder”）；branch2 的写法（“where the first division $p=a_0q+r$ with $0\le r<q$ is also allowed for $p\le0$”）未采用 · 理由：两边意思相同。
+- 单元 def:10.3.2 · 类型：冲突处理 · 改了什么：取 branch1；branch2 只加了描述性 label 和 `\index` · 理由：branch2 没有实质修改。
+- 单元 thm:10.3.6 · 类型：冲突处理 · 改了什么：取 branch1（(b) 的陈述改写）；另采用 branch2 的措辞“strictly increasing from $q_1$ onward, and hence unbounded” · 理由：两边改的位置不重叠。
+- 单元 thm:10.3.7 · 类型：冲突处理 · 改了什么：融合两边：取 branch1 的多处补证（由周期性写出 $\psi=[b_0;\ldots,b_{k-1},\psi]$，多项式非零的理由，引用 Theorem~\ref{thm:10.3.3}(c)）；采用 branch2 的两处补充（“since it satisfies a quadratic equation, $\psi$ has degree exactly $2$”，“because the transformation has determinant $p_nq_{n-1}-p_{n-1}q_n=\pm1$”）· 理由：两边改的位置不重叠。
+- 单元 thm:10.3.10 · 类型：冲突处理 · 改了什么：取 branch1（陈述改为“with $x>0$ and $y>0$”）；另采用 branch2 补的说明“(a complete quotient is the value of the partial quotients from its index on, and these agree by periodicity)” · 理由：两边改的位置不重叠。
+- 单元 def:10.4.1 · 类型：冲突处理 · 改了什么：取 branch1；branch2 只加了描述性 label 和 `\index` · 理由：branch2 没有实质修改。
+- 单元 thm:10.4.1 · 类型：冲突处理 · 改了什么：取 branch1（“as $n$ increases”）；另采用 branch2 对 $h/k<1$ 的说明（“Since $h/k$ has the strictly larger successor $h'/k'\in F_n\subseteq[0,1]$, we have $h/k<1$.”）· 理由：两边改的位置不重叠。
+- 单元 thm:10.5.1 · 类型：冲突处理 · 改了什么：取 branch1（陈述写明“best possible”的含义，证明中先求出 $\phi=[\,\overline1\,]$ 与 $1/\phi=[0;\overline1]$）；branch2 补的“with $q_{-1}=0$, $q_0=1$ … gives $q_n=F_{n+1}$. Hence $\beta_n=F_n/F_{n+1}=\ldots$”未采用 · 理由：§10.4 刚用 $F_n$ 表示 Farey 序列，这里再用 $F_n$ 表示 Fibonacci 数容易混淆；$\beta_n=[0;1,\ldots,1]$ 由证明前面写出的 $1/\beta_n=a_n+\beta_{n-1}$ 直接得到。
+- 单元 thm:10.6.1 · 类型：回滚 · 改了什么：采用 branch2 补的“whose approximating denominators are unbounded, choose $q\ge1$ so large that”；描述性 label、`\index` 和重新折行不搬入 · 理由：补出了满足 $\lVert q\alpha\rVert<\min\{\varepsilon,1/2\}$ 的 $q$ 为何存在。
+- 单元 def:10.7.1 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
+- 单元 thm:10.7.1 · 类型：冲突处理 · 改了什么：融合两边：取 branch1（“positive”解及其顺序的定义，排除 $x^2-dy^2=0$ 的理由，“least positive solution”）；采用 branch2 对 $v\neq0$ 的补证（$u=\pm1$ 时写出 $(r_1+s_1\sqrt d)(r_2-s_2\sqrt d)=\pm k$ 与 $r_2-s_2\sqrt d=k/(r_2+s_2\sqrt d)$，再约去 $k$）· 理由：两边改的位置不重叠；补证已核对。
+- 单元 def:10.8.1 · 类型：冲突处理 · 改了什么：取 branch1（“This area is independent of the chosen lattice basis (Theorem~\ref{thm:10.8.1})”）；branch2 在 primitive 定义中加的“(points of the lattice under consideration)”未采用 · 理由：同一定义前文已说明未指定格时 lattice point 指 $\mathbb{Z}^2$ 的点。
+- 单元 thm:10.8.1 · 类型：冲突处理 · 改了什么：两边对同一处标点做了修改，取 branch1（“$(f_1,f_2)$”，“matrix;”）· 理由：只是标点。
+- 单元 thm:10.8.2 · 类型：冲突处理 · 改了什么：两边都重写了“简单多边形有内对角线”的论证，融合两边：$uw$ 情形取 branch1 的详细论证（逐条排除其他边与 $T$、开线段 $uw$ 相交，再由凸性推出 $uw$ 在多边形内）；$vz$ 情形取 branch2 的论证（$z$ 取 $T$ 中离直线 $uw$ 最远的顶点；开线段 $vz$ 上的点都严格在过 $z$ 平行于 $uw$ 的直线靠 $v$ 一侧，与之相交的边因高度沿边线性变化而会有更高的端点，与最大性矛盾；$vz$ 从 $v$ 处内角出发，故在多边形内），并保留 branch1/baseline 关于 $z$ 不在 $vu$、$vw$ 相对内部的一句；branch2 对 $uw$ 情形的简短论证、branch1 保留的 baseline 原 $vz$ 论证未采用 · 理由：branch1 只加强了 $uw$ 情形，$vz$ 情形仍是原来较简略的一句；branch2 把 $vz$ 情形写完整了。融合后的文字已逐句核对，已列入疑难（情形 A）。
+- 单元 def:10.10.1 · 类型：冲突处理 · 改了什么：两边做了同样的修改（centre→center），取 branch1 · 理由：两边一致。
+- 单元 thm:10.11.1 · 类型：冲突处理 · 改了什么：取 branch1（陈述末句改为“the same conclusion holds with $\area(K)\ge4\,d(\Lambda)$”，`\clearpage`）；branch2 的措辞“there are only finitely many such points”未采用；采用 §11 导读后，`\section{Polynomials over …}` 标题归入该导读单元 · 理由：只是措辞。
+
+### §11 Polynomials over $\mathbb{Z}$: Roots, Irreducibility, and Lifting
+
+- 单元 thm:11.1.1 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
+- 单元 def:11.2.1 · 类型：回滚 · 改了什么：同上 · 理由：见约定。
+- 单元 thm:11.2.1 · 类型：冲突处理 · 改了什么：取 branch1 对陈述的修改（“for all $f,g\in\mathbb{Z}[x]$”，“into polynomials of positive degree in $\mathbb{Q}[x]$ … of the same positive degrees”）；另采用 branch2 对证明的改写（“$|bd|=c(bd\,f)=|bd|\,c(f)=|ac|\,c(G_0H_0)=|ac|$, since $c(f)=c(G_0H_0)=1$ by primitivity and the first part.”）；branch2 在陈述中补的“for all $f,g\in\mathbb{Z}[x]$”与 branch1 相同 · 理由：两边改的位置不重叠。
+- 单元 def:11.3.1 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
+- 单元 thm:11.3.1 · 类型：回滚 · 改了什么：同上 · 理由：见约定。
+- 单元 thm:11.3.2 · 类型：冲突处理 · 改了什么：取 branch1（陈述补“be nonconstant”，证明改为直接用 Gauss 引理）；branch2 在原证明中补的“(clear denominators and divide by the content)”所在的句子已被 branch1 的新证明替换，不再适用 · 理由：取 branch1 的新证明。
+- 单元 thm:11.3.3 · 类型：冲突处理 · 改了什么：取 branch1（陈述中引用改为 Theorem~\ref{thm:6.11.1}）；另采用 branch2 对 (b) 的措辞修改（“Since … we have”）· 理由：两边改的位置不重叠；原句缺谓语。
+- 单元 thm:11.3.4 · 类型：冲突处理 · 改了什么：取 branch1（$n=1$ 的情形，“minimal polynomial”的说明，$\pi$ 改记 $\alpha$ 等）；另采用 branch2 的四处措辞修改（存在性、唯一性、整除性的理由改为“because …”从句；“both factors of positive degree”；“so $x$ divides $x^n-1$; but the constant term … a contradiction”；“then each $p_j\nmid n$”）· 理由：两边改的位置不重叠；“positive degree”是可约的标准说法。
+- 单元 thm:11.4.1 · 类型：回滚 · 改了什么：采用 branch2 的两处修改：归纳假设写成“has been constructed and is unique modulo $p^k$”；把证明末尾关于 Theorem 7.8.3、7.8.4 与导数条件的说明段移到证明之后（branch2 写成 remark@13678），并采用其中补的“(for the modulus $2^e$ with $e\ge3$; the moduli $2$ and $4$ are treated separately in Theorem~\ref{thm:7.8.4})”；描述性 label、`\index` 和 `\pmod` 加括号不搬入 · 理由：唯一性论证用到归纳假设中的唯一性；说明段不是证明的一部分。
+- 单元 remark@13678 · 类型：回滚 · 改了什么：remark 环境不保留，文字作为 thm:11.4.1 证明之后的段落（见上条）· 理由：终稿没有 remark 环境。
+- 单元 thm:11.4.2 · 类型：冲突处理 · 改了什么：取 branch1（`\clearpage`）；采用 branch2 的位置调整：证明末尾关于 $p=2$ 的说明段移到证明之后作普通段落（branch2 写成 remark@13739，文字不变）；采用 §12 导读后，`\section{Additive Number Theory and Partitions}` 标题归入该导读单元 · 理由：说明段不是证明的一部分；两边改的位置不重叠。
+- 单元 remark@13739 · 类型：回滚 · 改了什么：remark 环境不保留，文字作为 thm:11.4.2 证明之后的段落（见上条）· 理由：终稿没有 remark 环境。
+
+### §12 Additive Number Theory and Partitions
+
+- 单元 def:12.1.1 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
+- 单元 thm:12.1.2 · 类型：回滚 · 改了什么：同上 · 理由：见约定。
+- 单元 def:12.2.1 · 类型：回滚 · 改了什么：同上 · 理由：见约定。
+- 单元 thm:12.2.1 · 类型：冲突处理 · 改了什么：取 branch1（$\mathbb{Z}_p$ 改为 $\mathbb{F}_p$，Theorem 6.10.3 的替代证明标题“via the Cauchy--Davenport theorem”）；另采用 branch2 在该替代证明开头补的“Let $p$ be an odd prime and put”；branch2 的标题和描述性 label 未采用 · 理由：两边改的位置不重叠；Theorem 6.10.3 只对奇素数陈述。
+- 单元 thm:12.2.2 · 类型：冲突处理 · 改了什么：取 branch1（$\mathbb{Z}_p$ 改为 $\mathbb{F}_p$）；另采用 branch2 补的两处“preceding”（“the preceding display”）· 理由：两边改的位置不重叠。
+- 单元 thm:12.3.1 · 类型：冲突处理 · 改了什么：取 branch1（陈述改为“in any sequence of $2p-1$ integers, some $p$ terms …”，$f_1,f_2$ 写出全部变量〔branch2 同样修改〕，替代证明标题“via the Cauchy--Davenport theorem”）；branch2 的标题“via Cauchy--Davenport and paired residues”和 `\pmod{p}` 未采用 · 理由：标题按 branch1。
+- 单元 thm:12.3.2 · 类型：冲突处理 · 改了什么：取 branch1；branch2 只有描述性 label、`\index` 和 UTF-8 重音 · 理由：branch2 没有实质修改。
+- 单元 def:12.3.1 · 类型：冲突处理 · 改了什么：取 branch1；branch2 只加了描述性 label 和 `\index` · 理由：同上。
+- 单元 thm:12.3.4 · 类型：回滚 · 改了什么：branch2 只把 `\statementitems` 改成 `\statementlist`，不采用 · 理由：见约定（宏名）。
+- 单元 def:12.4.1 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
+- 单元 thm:12.4.1 · 类型：冲突处理 · 改了什么：取 branch1；branch2 只加了描述性 label 和 `\index` · 理由：branch2 没有实质修改。
+- 单元 def:12.5.1 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
+- 单元 thm:12.5.1 · 类型：回滚 · 改了什么：branch2 只有描述性 label、`\index`、行内 `\tfrac` 和重新折行，不采用 · 理由：见约定。
+- 单元 thm:12.5.2 · 类型：冲突处理 · 改了什么：取 branch1（替代证明标题“via a bijection”，$c_m\ge1$，“with distinct exponents $e_j$”）；另采用 branch2 对逆映射的补充（“splitting each part … merging, for each odd $m$, according to the binary expansion of the total multiplicity of $m$ recovers the parts with odd part $m$ (their exponents $e$ are distinct, so they are the binary digits of that multiplicity)”）和“Both maps preserve the sum of the parts, so for each $n$ the two families of partitions of $n$ are in bijection”；branch2 删去主证明末尾的 `\qedhere` 和标题“via binary multiplicities”未采用 · 理由：branch1 在这一句只做了断句，branch2 补出了同一奇数 $m$ 有多个部分时的合并理由和“保持和”这一步；`\qedhere` 位于普通段落末尾，删不删排版相同。
+- 单元 thm:12.5.3 · 类型：冲突处理 · 改了什么：两边都补证了“第一步移动的结果不是第二步的例外情形”，取 branch1 的论证；另采用 branch2 的两处补充：第一步写明“add $1$ to each of the $s$ largest remaining parts”，第二步补“The smallest lowered part is $a-t\ge s+1>t$, while every unmodified part is at least $s>t$.”；branch2 对同一处的另一种补证未采用 · 理由：两种补证意思相同，取 branch1；另两处补充位置不重叠，已核对（$t<r$ 时第 $t+1$ 大的部分 $\ge s$ 且 $\le a-t-1$）。
+- 单元 thm:12.5.4 · 类型：回滚 · 改了什么：采用 branch2 在陈述中补的“Here $p(m)=0$ for $m<0$, as in Definition~\ref{def:12.5.1}; thus only finitely many summands are nonzero.”；描述性 label 和 `\index` 不搬入 · 理由：说明了求和中负参数的约定（Definition 12.5.1 已规定）。
+- 单元 def:12.5.2 · 类型：冲突处理 · 改了什么：两边都补了空分拆的共轭，取 branch1（“The empty partition has empty Ferrers diagram and is its own conjugate.”）；branch2 的括号写法与 `\label` 换行合并未采用 · 理由：两边意思相同。
+- 单元 def:12.6.1 · 类型：冲突处理 · 改了什么：取 branch1（“$N\in\mathbb{Z}_{\ge0}$”，写明可表示的含义）；branch2 只把 `\label` 移到标题行 · 理由：branch2 没有实质修改。
+- 单元 thm:12.6.1 · 类型：冲突处理 · 改了什么：取 branch1（`\mbox{$g(2)=G(2)=4$}`）；branch2 在文末加的 `\clearpage`、`\phantomsection`、`\addcontentsline{toc}{section}{Index of Terms}` 与 `\printindex` 不采用 · 理由：终稿导言区没有 makeidx，`\printindex` 无法编译；是否加索引留给作者（见 progress.md）。

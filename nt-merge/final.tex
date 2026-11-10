@@ -12339,6 +12339,9 @@ appears after Theorem~\ref{thm:9.1.9}.
 
 \section{Diophantine Approximation and Lattice Points}
 
+Rational approximation leads to continued fractions and Pell equations. Lattice geometry provides another
+perspective, connecting Diophantine questions with area and convexity.
+
 \subsection{Rational Approximation}
 
 \begin{theorem}[Dirichlet's approximation theorem]\label{thm:10.1.1} For an irrational $\alpha$,
@@ -12355,7 +12358,10 @@ appears after Theorem~\ref{thm:9.1.9}.
 		\tfrac{1}{N}\le\tfrac{1}{q}$ for some integer $p$, giving $\big|\alpha -
 		\tfrac{p}{q}\big| < \tfrac{1}{qN}\le\tfrac{1}{q^2}$.
 		  To see that there are infinitely many such rationals, suppose the set $S$ of rationals $p/q$ (in lowest terms, $q\ge1$) with $\big|\alpha-\tfrac{p}{q}\big|<\tfrac{1}{q^2}$ were finite.
-		  Since $\alpha$ is irrational, $\big|\alpha-\tfrac{p}{q}\big|>0$ for each such rational, so $\delta:=\min_{p/q\in S}\big|\alpha-\tfrac{p}{q}\big|>0$.
+		  The construction above gives an element of $S$ after reduction to lowest terms: if $p/q$
+		  reduces to $p'/q'$, then $q'\le q$ and
+		  $\big|\alpha-\tfrac{p'}{q'}\big|<\tfrac{1}{q^2}\le\tfrac{1}{q'^2}$.
+		  Thus $S\neq\varnothing$. Since $\alpha$ is irrational, $\big|\alpha-\tfrac{p}{q}\big|>0$ for each such rational, so $\delta:=\min_{p/q\in S}\big|\alpha-\tfrac{p}{q}\big|>0$.
 		  Choose $N$ with $\tfrac{1}{N}<\delta$; the construction above produces $p/q$ with $q\le N$ and $\big|\alpha-\tfrac{p}{q}\big|<\tfrac{1}{qN}\le\tfrac{1}{q^2}$; writing this fraction in lowest terms as $p'/q'$, we get $q'\le q$ and
 	$\big|\alpha-\tfrac{p'}{q'}\big|=\big|\alpha-\tfrac{p}{q}\big|<\tfrac{1}{q^{2}}\le\tfrac{1}{q'^{2}}$,
 	hence $p'/q'\in S$, yet
@@ -12510,7 +12516,9 @@ appears after Theorem~\ref{thm:9.1.9}.
 \end{theorem}
 
 \begin{proof} For $N\ge1$, we have $\lfloor n\alpha\rfloor\le
-		N$ if and only if $n\alpha<N+1$, that is, if and only if $n\le\lfloor(N+1)/\alpha\rfloor$, so $B_\alpha$
+		N$ if and only if $n\alpha<N+1$, that is, if and only if
+	$n<\tfrac{N+1}{\alpha}$. Since $\tfrac{N+1}{\alpha}$ is irrational, this
+	is equivalent to $n\le\lfloor(N+1)/\alpha\rfloor$, so $B_\alpha$
 	has $\lfloor(N+1)/\alpha\rfloor$ terms in $[1,N]$; likewise $B_\beta$
 	has $\lfloor(N+1)/\beta\rfloor$. Since $\tfrac{N+1}{\alpha} +
 		\tfrac{N+1}{\beta} = N+1$ with both terms irrational, their fractional
@@ -12545,9 +12553,14 @@ appears after Theorem~\ref{thm:9.1.9}.
 	$M\delta=M_0\delta+(M-M_0)\delta$. Across the block, the term
 	$(M-M_0)\delta$ varies by less than $q|\delta|<\tfrac{1}{q}$. Hence, up
 	to a common shift $t:=M_0\delta$ and a per-term perturbation of size
-	less than $\tfrac{1}{q}$, the block values $\{M\gamma\}$ are the points $\{\tfrac{r}{q}+t\}$ for $r=0,\ldots,q-1$. For any real $t$, these $q$ points are again
-	equally spaced with gap $\tfrac{1}{q}$: they equal $t_0+\tfrac{r}{q}$ with
-	$t_0=\{qt\}/q\in[0,\tfrac{1}{q})$. For the $q$ equally
+	less than $\tfrac{1}{q}$, the block values $\{M\gamma\}$ are the points $\{\tfrac{r}{q}+t\}$ for $r=0,\ldots,q-1$. For any real $t$, write
+	$t=\lfloor qt\rfloor/q+t_0$, where $t_0=\{qt\}/q\in[0,\tfrac{1}{q})$.
+	If $s$ is the remainder of $\lfloor qt\rfloor+r$ modulo $q$, then
+	$\{t+\tfrac{r}{q}\}=t_0+\tfrac{s}{q}$, since $t_0<\tfrac{1}{q}$
+	prevents another wrap past $1$. As $r$ runs through $0,\ldots,q-1$, so
+	does $s$. Thus, after reordering, the $q$ points are
+	$t_0+\tfrac{r}{q}$ ($0\le r\le q-1$), an equally spaced grid with gap
+	$\tfrac{1}{q}$. For the $q$ equally
 	spaced points $t_0+\tfrac{r}{q}$, the number lying in an interval
 	$[a,b)\subseteq[0,1)$ equals $\lfloor(b-a)q\rfloor$ or
 	$\lceil(b-a)q\rceil$, hence differs from $(b-a)q$ by at most $1$. Now
@@ -12558,7 +12571,7 @@ appears after Theorem~\ref{thm:9.1.9}.
 	arc of length $L$ on $\mathbb{R}/\mathbb{Z}$ contains at most $\lfloor
 		Lq\rfloor + 1$ of the $q$ points $t_0 + \tfrac{r}{q}$ ($0 \le r \le
 		q-1$), because any $j$ of these points that lie in a common arc span,
-	along that arc, a distance of at least $\tfrac{j-1}{q}$, so $j$ points
+	along that arc, a distance of at least $\tfrac{j-1}{q}$; thus $j$ points
 	force $\tfrac{j-1}{q} \le L$, that is, $j \le Lq + 1$. Now the points at
 	distance less than $\tfrac{1}{q}$ from a given endpoint lie in an arc of length
 	$\tfrac{2}{q}$, which, by this count, contains at most
@@ -12598,8 +12611,10 @@ appears after Theorem~\ref{thm:9.1.9}.
 \begin{proof} For irrational $\alpha>1$ and $N\ge0$,
 	we have $\lfloor k\alpha\rfloor\le N$ if and only if $k<\tfrac{N+1}{\alpha}$, so
 	$B_\alpha$ has exactly $\big\lfloor\tfrac{N+1}{\alpha}\big\rfloor$
-	terms in $[1,N]$. If the $B_{\alpha_i}$ partition $\mathbb{Z}^+$,
-	adding these counts gives
+	terms in $[1,N]$. For $N=0$, this interval is empty and
+	$\lfloor1/\alpha\rfloor=0$, so the same count applies.
+	If the $B_{\alpha_i}$ partition $\mathbb{Z}^+$,
+	adding these counts and setting $M=N+1$ gives
 	$\sum_{i=1}^{m}\big\lfloor\tfrac{M}{\alpha_i}\big\rfloor=M-1$ for all
 	integers $M\ge1$. Writing $\lfloor x\rfloor=x-\{x\}$ and letting
 	$M\to\infty$ forces $\sum_i\tfrac{1}{\alpha_i}=1$, and then
@@ -12740,41 +12755,44 @@ appears after Theorem~\ref{thm:9.1.9}.
 
 \end{proof}
 \begin{theorem}\label{thm:10.3.5} Let $\theta$
-	be irrational with convergents $p_n/q_n$. Then:
-	\begin{enumerate}[label={\alph*)}]
-		\item for $n\ge0$, $p\in\mathbb{Z}$, and $q\in\mathbb{Z}^+$, if
-		      $q<q_{n+1}$, then $|q\theta-p|\ge|q_n\theta-p_n|$;
-		\item for $n\ge1$, $p\in\mathbb{Z}$, and $q\in\mathbb{Z}^+$,
-		      the inequality $|\theta-p/q|<|\theta-p_n/q_n|$ forces $q>q_n$.
-	\end{enumerate}
+  be irrational with convergents $p_n/q_n$. Then:
+  \begin{enumerate}[label={\alph*)}]
+    \item for $n\ge0$, $p\in\mathbb{Z}$, and $q\in\mathbb{Z}^+$, if
+          $q<q_{n+1}$, then $|q\theta-p|\ge|q_n\theta-p_n|$;
+    \item for $n\ge1$, $p\in\mathbb{Z}$, and $q\in\mathbb{Z}^+$,
+          the inequality $|\theta-p/q|<|\theta-p_n/q_n|$ forces $q>q_n$.
+  \end{enumerate}
 
 \end{theorem}
 
 \begin{proof} (a) Solve $p=p_nu+p_{n+1}v$,
-	$q=q_nu+q_{n+1}v$ for integers $u,v$, which is possible with $(u,v)\neq(0,0)$
-	since $p_nq_{n+1}-p_{n+1}q_n=\pm1$ (Theorem~\ref{thm:10.3.3}(a)). If $v=0$, then
-	$q\theta-p=u(q_n\theta-p_n)$ with $|u|\ge1$. Otherwise, $0<q<q_{n+1}$
-	forces $u,v$ to have opposite signs: if $u,v\ge0$ with $v\ge1$, then
-	$q=q_nu+q_{n+1}v\ge q_{n+1}$; if $u,v\le0$, then $q\le0$. Also, the
-	consecutive convergent errors $q_n\theta-p_n$ and
-	$q_{n+1}\theta-p_{n+1}$ have opposite signs (Theorem~\ref{thm:10.3.3}(c),
-	applied at index $n+1$). Hence
-	in
-	$q\theta-p=u(q_n\theta-p_n)+v(q_{n+1}\theta-p_{n+1})$,
-	the two summands have the same sign, so
-	$|q\theta-p|\ge|q_n\theta-p_n|$. For (b), suppose instead that
-	$q\le q_n$. Since $n\ge1$, the recurrence in
-	Definition~\ref{def:10.3.2} gives $q_n<q_{n+1}$, so (a) yields
-	\[
-		\left|\theta-\frac{p}{q}\right|
-		=\frac{|q\theta-p|}{q}
-		\ge\frac{|q_n\theta-p_n|}{q}
-		\ge\frac{|q_n\theta-p_n|}{q_n}
-		=\left|\theta-\frac{p_n}{q_n}\right|.
-	\]
-	This is the contrapositive of (b).
-
+  $q=q_nu+q_{n+1}v$ for integers $u,v$. Since
+  $p_nq_{n+1}-p_{n+1}q_n=\pm1$ (Theorem~\ref{thm:10.3.3}(a) at index $n+1$),
+  the system has a unique integer solution, and $(u,v)\neq(0,0)$ because
+  $q>0$. If $v=0$, then
+  $q\theta-p=u(q_n\theta-p_n)$ with $|u|\ge1$. Otherwise, $0<q<q_{n+1}$
+  forces $u,v$ to have opposite signs: if $u,v\ge0$ with $v\ge1$, then
+  $q=q_nu+q_{n+1}v\ge q_{n+1}$; if $u,v\le0$, then $q\le0$. Also, the
+  consecutive convergent errors $q_n\theta-p_n$ and
+  $q_{n+1}\theta-p_{n+1}$ have opposite signs (Theorem~\ref{thm:10.3.3}(c),
+  applied at index $n+1$, writes $\theta$ as a mediant of $p_n/q_n$ and $p_{n+1}/q_{n+1}$ with positive weights, so
+  $\theta$ lies between them). Hence
+  in
+  $q\theta-p=u(q_n\theta-p_n)+v(q_{n+1}\theta-p_{n+1})$,
+  the two summands have the same sign, so
+  $|q\theta-p|\ge|q_n\theta-p_n|$. For (b), suppose instead that
+  $q\le q_n$. Since $n\ge1$, the recurrence in
+  Definition~\ref{def:10.3.2} gives $q_n<q_{n+1}$, so (a) yields
+  \[
+    \left|\theta-\frac{p}{q}\right|
+    =\frac{|q\theta-p|}{q}
+    \ge\frac{|q_n\theta-p_n|}{q}
+    \ge\frac{|q_n\theta-p_n|}{q_n}
+    =\left|\theta-\frac{p_n}{q_n}\right|.
+  \]
+  This is the contrapositive of (b).
 \end{proof}
+
 \begin{theorem}[Legendre's theorem on continued fractions]\label{thm:10.3.6} Let $\theta$ be
 	irrational. Then:
 	\begin{enumerate}[label={\alph*)}]
@@ -12800,7 +12818,7 @@ appears after Theorem~\ref{thm:9.1.9}.
 	$\tfrac{1}{2}$, then $\theta=a_0+\tfrac{1}{2}$ would be rational;
 	therefore irrationality forces one of them to be
 	less than $\tfrac{1}{2}$, which is the required bound because both denominators
-	are $1$, so (a) still holds.) (b) The recurrence $q_{n+1}=a_{n+1}q_n+q_{n-1}$ makes $(q_n)$ strictly increasing from $q_1$ onward and unbounded.
+	are $1$, so (a) still holds.) (b) The recurrence $q_{n+1}=a_{n+1}q_n+q_{n-1}$ makes $(q_n)$ strictly increasing from $q_1$ onward, and hence unbounded.
 	Since $q_0=1\le q$, let $n$ be the largest index such that $q_n\le q$.
 	Then $q_n\le q<q_{n+1}$. If $p/q\neq p_n/q_n$, then
 	$\tfrac{1}{qq_n}\le\big|\tfrac{p}{q}-\tfrac{p_n}{q_n}\big|\le\big|\theta-\tfrac{p}{q}\big|+\big|\theta-\tfrac{p_n}{q_n}\big|$. Now $\big|\theta-\tfrac{p}{q}\big|<\tfrac{1}{2q^2}\le\tfrac{1}{2qq_n}$, and by Theorem~\ref{thm:10.3.5}(a) we have
@@ -12822,7 +12840,7 @@ appears after Theorem~\ref{thm:9.1.9}.
 	$\psi=\dfrac{P\psi+P'}{Q\psi+Q'}$ for the convergent coefficients
 	over one period, with $Q>0$. Thus
 	$Q\psi^2+(Q'-P)\psi-P'=0$. The number $\psi$, whose expansion is infinite, is
-	irrational by Theorem~\ref{thm:10.3.2}, so $\psi$ has degree exactly $2$.
+	irrational by Theorem~\ref{thm:10.3.2}; since it satisfies a quadratic equation, $\psi$ has degree exactly $2$.
 	Any eventually periodic $\theta=[a_0;\ldots,a_{m-1},\psi]$ is a
 	rational M{\"o}bius image of $\psi$ with determinant $\pm1$.
 	The inverse transformation is rational as well: substituting it into the quadratic
@@ -12839,7 +12857,7 @@ appears after Theorem~\ref{thm:9.1.9}.
 		f_n(x,y)=f(p_nx+p_{n-1}y,\ q_nx+q_{n-1}y)
 		=A_nx^2+B_nxy+C_ny^2.
 	\]
-	All $f_n$ share the discriminant of $f$ because $p_nq_{n-1}-p_{n-1}q_n=\pm1$.
+	All $f_n$ share the discriminant of $f$ because the transformation has determinant $p_nq_{n-1}-p_{n-1}q_n=\pm1$.
 	Since $\theta=(p_n\theta_{n+1}+p_{n-1})/(q_n\theta_{n+1}+q_{n-1})$
 	by Theorem~\ref{thm:10.3.3}(c), the complete quotient $\theta_{n+1}$ is a root of $f_n(x,1)=0$.
 	By Theorem~\ref{thm:10.3.4}, $q_n^2\big|\tfrac{p_n}{q_n}-\theta\big|=q_n|q_n\theta-p_n|<1$, and $\big|\tfrac{p_n}{q_n}-\theta'\big|\le\big|\tfrac{p_n}{q_n}-\theta\big|+|\theta-\theta'|<1+|\theta-\theta'|$ once $n$ is large;
@@ -12878,20 +12896,19 @@ appears after Theorem~\ref{thm:9.1.9}.
 
 \end{proof}
 \begin{theorem}\label{thm:10.3.9} For a
-	non-square $d\in\mathbb{Z}^+$, we have $\sqrt
-		{d}=[a_0;\overline{a_1,\ldots,a_r}]$ with $a_0=\lfloor\sqrt{d}\rfloor$;
-	the expansion is periodic from $a_1$ on.
+  non-square $d\in\mathbb{Z}^+$, we have $\sqrt {d}=[a_0;\overline{a_1,\ldots,a_r}]$ with $a_0=\lfloor\sqrt{d}\rfloor$;
+  the expansion is periodic from $a_1$ on.
 
 \end{theorem}
 
 \begin{proof} Since $d$ is not a square, $\sqrt{d}$ is irrational
-	(Theorem~\ref{thm:2.3.7}). Put $a_0=\lfloor\sqrt{d}\rfloor$ and
-	$\theta_1=1/(\sqrt{d}-a_0)$. Then $\theta_1>1$ (since $0<\sqrt
-		{d}-a_0<1$) and $\theta_1'=1/(-\sqrt{d}-a_0)\in(-1,0)$ (since $\sqrt
-		{d}+a_0>1$), so $\theta_1$ is reduced and, by Theorem~\ref{thm:10.3.8}, its expansion is purely
-	periodic.
-
+  (Theorem~\ref{thm:2.3.7}). Put $a_0=\lfloor\sqrt{d}\rfloor$ and
+  $\theta_1=1/(\sqrt{d}-a_0)$. Then $\theta_1>1$ (since $0<\sqrt {d}-a_0<1$) and
+  $\theta_1'=1/(-\sqrt{d}-a_0)\in(-1,0)$ (since $\sqrt {d}+a_0>1$), so $\theta_1$, a real quadratic irrational
+  since $\sqrt d\notin\mathbb{Q}$, is reduced and, by Theorem~\ref{thm:10.3.8}, its expansion is purely
+  periodic.
 \end{proof}
+
 \begin{theorem}\label{thm:10.3.10}
 	For a non-square $d\in\mathbb{Z}^+$, the equation $x^2-dy^2=1$ has an integer solution
 	$(x,y)$ with $xy\neq0$; moreover, every integer solution with $x>0$ and $y>0$ has $x/y$ equal
@@ -12902,7 +12919,8 @@ appears after Theorem~\ref{thm:9.1.9}.
 \begin{proof} By Theorem~\ref{thm:10.3.9}, write $\sqrt
 		{d}=[a_0;\overline{a_1,\ldots,a_\ell}]$ and let $n$ be the least even
 	multiple of the period length $\ell$ (so $n=\ell$ or $n=2\ell$). Then
-	$\theta_{n+1}=\theta_1=1/(\sqrt{d}-a_0)$ and, by Theorem~\ref{thm:10.3.3}(c),
+	$\theta_{n+1}=\theta_1=1/(\sqrt{d}-a_0)$ (a complete quotient is the value of the partial
+	quotients from its index on, and these agree by periodicity) and, by Theorem~\ref{thm:10.3.3}(c),
 	\[
 		\sqrt{d}=\dfrac{p_n\theta_1+p_{n-1}}{q_n\theta_1+q_{n-1}}.
 	\]
@@ -12951,7 +12969,8 @@ appears after Theorem~\ref{thm:9.1.9}.
 \begin{proof} Since $\gcd(h, k)=1$, the equation $kx-hy=1$
 	has integer solutions, all of the form $(x_0+ht,\,y_0+kt)$; choose
 	the one with $n-k<y\le n$ and set $\tfrac{a}{b}=\tfrac{x}{y}$. Then
-	$\gcd(a, b)=1$ (as $ka-hb=1$), and $a/b=h/k+1/(kb)>0$. Also $h/k<1$ gives $k-h\ge1$, and $k(a-b)=1-(k-h)b\le0$, so $a\le b$. Together with $b\le n$, this proves $a/b\in F_n$ and $\tfrac{a}{b}>\tfrac{h}{k}$. If some $\tfrac{p}{q}\in F_n$ had
+	$\gcd(a, b)=1$ (as $ka-hb=1$), and $a/b=h/k+1/(kb)>0$. Since $h/k$ has the strictly larger successor $h'/k'\in F_n\subseteq[0,1]$,
+	we have $h/k<1$. Thus $k-h\ge1$, and $k(a-b)=1-(k-h)b\le0$, so $a\le b$. Together with $b\le n$, this proves $a/b\in F_n$ and $\tfrac{a}{b}>\tfrac{h}{k}$. If some $\tfrac{p}{q}\in F_n$ had
 	$\tfrac{h}{k}<\tfrac{p}{q}<\tfrac{a}{b}$, then $\tfrac{p}{q}-\tfrac{h}{k}\ge\tfrac{1}{kq}$ and $\tfrac{a}{b}-\tfrac{p}{q}\ge\tfrac{1}{bq}$, whence
 	$\tfrac{1}{kb}=\tfrac{a}{b}-\tfrac{h}{k}\ge\tfrac{b+k}{kbq}$, giving $q\ge
 		b+k>n$, which is impossible. So $\tfrac{a}{b}$ is the successor
@@ -13029,8 +13048,8 @@ appears after Theorem~\ref{thm:9.1.9}.
 
 \end{theorem}
 
-\begin{proof} By Dirichlet's theorem (Theorem~\ref{thm:10.1.1}),
-	choose $q\ge1$ with $0<\delta:=\lVert q\alpha\rVert<\min\{\varepsilon,1/2\}$.
+\begin{proof} By Dirichlet's theorem (Theorem~\ref{thm:10.1.1}), whose
+	approximating denominators are unbounded, choose $q\ge1$ so large that $0<\delta:=\lVert q\alpha\rVert<\min\{\varepsilon,1/2\}$.
 	Put $\theta=\{q\alpha\}$, so $\theta=\delta$ or $\theta=1-\delta$,
 	and let $M=\lceil1/\delta\rceil-1$.
 	The points $0,\delta,\ldots,M\delta$ on $\mathbb{R}/\mathbb{Z}$
@@ -13087,7 +13106,15 @@ appears after Theorem~\ref{thm:9.1.9}.
 	$v=\tfrac{r_2s_1-r_1s_2}{k}$ are integers (modulo $|k|$, the numerators are congruent to
 		$r_1^2-ds_1^2\equiv0$ and to $r_1s_1-r_1s_1=0$, respectively), and
 	$u^2-dv^2=\tfrac{k\cdot k}{k^2}=1$. Here $v\neq0$: if $v=0$, then
-	$u^2=1$, so $u=\pm1$ and therefore
+	$u^2=1$, so $u=\pm1$ and
+	\[
+		\begin{aligned}
+		(r_1+s_1\sqrt{d})(r_2-s_2\sqrt{d})&=uk=\pm k,\\
+		r_2-s_2\sqrt{d}&=\frac{k}{r_2+s_2\sqrt{d}}.
+		\end{aligned}
+	\]
+	The latter denominator is positive. Substitution and cancellation of
+	$k\neq0$ give
 	$r_1+s_1\sqrt{d}=\pm(r_2+s_2\sqrt{d})$, which is impossible for distinct
 	positive pairs. Since the norm equation depends only on the squares of
 	$u$ and $v$, replacing them by $|u|$ and $|v|$ gives a positive
@@ -13246,19 +13273,23 @@ appears after Theorem~\ref{thm:9.1.9}.
 	outside the polygon. Since the interior angle at $v$ is less than
 	$\pi$, points of the interior of $T$ near $v$ lie inside the
 	polygon; therefore the open segment $uw$ lies inside the polygon, and $uw$
-	is an interior diagonal. Otherwise a vertex
-	$z\notin\{u,v,w\}$ of the polygon lying in the closed triangle $T$ and
-	maximizing the distance to the line $uw$ makes $vz$ an interior diagonal.
-	Here $z$ is allowed to lie on the segment $uw$, which covers the case in
-	which all polygon vertices in $T$ other than $u,v,w$ are collinear with
-	$u$ and $w$, and no polygon vertex lies in the open interior of $T$. Moreover, $z$ cannot lie in the
+	is an interior diagonal. Otherwise choose a polygon vertex
+	$z\notin\{u,v,w\}$ in $T$ at maximal distance from the line $uw$. These
+	vertices lie in the closed half-plane bounded by $uw$ and containing $v$.
+	The maximum may be zero, so $z$ may lie on $uw$; this includes the case
+	when all the other polygon vertices in $T$ are collinear with $u,w$ and
+	none lies in the open interior of $T$. Moreover, $z$ cannot lie in the
 	relative interior of the sides $vu$ or $vw$, since a vertex there would
-	make the boundary meet itself, contrary to simplicity. To justify the diagonal construction, note that a polygon
-	edge meeting the interior of $vz$ cannot cross the sides $vu$ or $vw$ of
-	the simple polygon, so it would end at a vertex in $T$ strictly on $v$'s
-	side of the line through $z$ parallel to $uw$, contradicting the choice of
-	$z$. Thus induction on the number of vertices reduces the polygon to
-	triangles.
+	make the boundary meet itself, contrary to simplicity. Every point of
+	the open segment $vz$ lies strictly on $v$'s side of the line through $z$
+	parallel to $uw$. If a polygon edge met this segment, it could not leave
+	$T$ across the boundary sides $vu$ or $vw$. Since height above $uw$
+	varies linearly along an edge, that edge would therefore have an
+	endpoint in $T$ at greater distance from $uw$ than $z$, contradicting
+	maximality. Thus the open segment $vz$ meets no boundary edge. It starts
+	inside the interior angle at $v$, so it lies entirely inside the polygon,
+	and $vz$ is an interior diagonal. Thus induction on the number of
+	vertices reduces the polygon to triangles.
 
 	We now subdivide any lattice triangle still containing a lattice point
 	$z$ other than its vertices: if $z$ is on an edge, join it to the opposite
@@ -13338,31 +13369,30 @@ appears after Theorem~\ref{thm:9.1.9}.
 
 \end{definition}
 \begin{theorem}\label{thm:10.10.1} If all vertices of a regular $n$-gon
-	($n\ge3$) are lattice points, then $n=4$. Conversely, the unit square, with
-	vertices $0,1,1+i,i$, is a regular $4$-gon with lattice vertices.
+  ($n\ge3$) are lattice points, then $n=4$. Conversely, the unit square, with
+  vertices $0,1,1+i,i$, is a regular $4$-gon with lattice vertices.
 
 \end{theorem}
 
 \begin{proof} Let $P_k=c+w\zeta_n^{\,k}$ be lattice points. Put
-	$u=P_1-P_0=w(\zeta_n-1)$ and $v=P_2-P_1=w\zeta_n(\zeta_n-1)=\zeta_n u$. Both
-	are Gaussian integers, and $u\neq0$ because $w\neq0$ and $\zeta_n\neq1$.
-	Hence $\zeta_n=v/u$ is a quotient of Gaussian integers. By unique
-	factorization in $\mathbb{Z}[i]$ (Theorem~\ref{thm:8.2.2}), we may cancel
-	common prime factors and write $\zeta_n=\alpha/\beta$ with
-	$\alpha,\beta\in\mathbb{Z}[i]$, $\beta\neq0$, and no Gaussian prime dividing
-	both $\alpha$ and $\beta$. From $\zeta_n^n=1$ we get $\alpha^n=\beta^n$. If a
-	Gaussian prime $\pi$ divided $\beta$, it would divide $\alpha^n$, hence
-	$\alpha$, which is impossible; so $\beta$ is a unit and
-	$\zeta_n\in\mathbb{Z}[i]$. Then $N(\zeta_n)$ is a positive integer with
-	$N(\zeta_n)^n=N(\zeta_n^n)=1$ (Theorem~\ref{thm:8.2.1}), so $N(\zeta_n)=1$
-	and $\zeta_n\in\{\pm1,\pm i\}$ by Theorem~\ref{thm:8.2.2}. In particular
-	$\zeta_n^4=1$. Since $e^{2\pi ik/n}=1$ exactly when $n\mid k$, the element
-	$\zeta_n$ of $\mathbb{C}^{\times}$ has order $n$, so $n\mid4$. With $n\ge3$,
-	this forces $n=4$.
+  $u=P_1-P_0=w(\zeta_n-1)$ and $v=P_2-P_1=w\zeta_n(\zeta_n-1)=\zeta_n u$. Both
+  are Gaussian integers, and $u\neq0$ because $w\neq0$ and $\zeta_n\neq1$.
+  Hence $\zeta_n=v/u$ is a quotient of Gaussian integers. By unique
+  factorization in $\mathbb{Z}[i]$ (Theorem~\ref{thm:8.2.2}), we may cancel
+  common prime factors and write $\zeta_n=\alpha/\beta$ with
+  $\alpha,\beta\in\mathbb{Z}[i]$, $\beta\neq0$, and no Gaussian prime dividing
+  both $\alpha$ and $\beta$. From $\zeta_n^n=1$ we get $\alpha^n=\beta^n$. If a
+  Gaussian prime $\pi$ divided $\beta$, it would divide $\alpha^n$, hence
+  $\alpha$, which is impossible; so $\beta$ is a unit and
+  $\zeta_n\in\mathbb{Z}[i]$. Then $N(\zeta_n)$ is a positive integer with
+  $N(\zeta_n)^n=N(\zeta_n^n)=1$ (Theorem~\ref{thm:8.2.1}), so $N(\zeta_n)=1$
+  and $\zeta_n\in\{\pm1,\pm i\}$ by Theorem~\ref{thm:8.2.2}. In particular
+  $\zeta_n^4=1$. Since $e^{2\pi ik/n}=1$ exactly when $n\mid k$, the element
+  $\zeta_n$ of $\mathbb{C}^{\times}$ has order $n$, so $n\mid4$. With $n\ge3$,
+  this forces $n=4$.
 
-	Conversely, with $\zeta_4=i$, $c=\frac{1+i}{2}$, and $w=-\frac{1+i}{2}$, the
-	points $c+wi^k$ for $k=0,1,2,3$ are $0,1,1+i,i$.
-
+  Conversely, with $\zeta_4=i$, $c=\tfrac{1+i}{2}$, and $w=-\tfrac{1+i}{2}$, the
+  points $c+wi^k$ for $k=0,1,2,3$ are $0,1,1+i,i$.
 \end{proof}
 \subsection{Minkowski's Convex-Body Theorem}
 
@@ -13409,6 +13439,9 @@ appears after Theorem~\ref{thm:9.1.9}.
 \clearpage
 
 \section{Polynomials over \texorpdfstring{$\mathbb{Z}$}{Z}: Roots, Irreducibility, and Lifting}
+
+Polynomial roots and irreducibility organize arithmetic over the integers and finite fields. Cyclotomic polynomials
+and Hensel lifting extend the congruence methods developed earlier.
 
 \subsection{Integer and Rational Roots}
 
@@ -13479,8 +13512,8 @@ appears after Theorem~\ref{thm:9.1.9}.
 	primitive $f$ factors as $f=GH$ with $G,H\in\mathbb{Q}[x]$ of
 	positive degree. Every nonzero rational polynomial can be normalized as follows: multiply by a common positive denominator to obtain an integer polynomial, then divide by the gcd of its coefficients. Thus write $G=\tfrac{a}{b}G_0$ and $H=\tfrac{c}{d}H_0$ with $G_0,H_0\in\mathbb{Z}[x]$ primitive; then $bd\,f=ac\,G_0H_0$.
 	Comparing the contents of both sides gives
-	$|bd|=|bd|\,c(f)=|ac|\,c(G_0H_0)=|ac|$ (using the fact that $f$ is primitive
-	and, by the first part, so is $G_0H_0$), so $ac/bd=\pm1$ and $f=\pm
+	$|bd|=c(bd\,f)=|bd|\,c(f)=|ac|\,c(G_0H_0)=|ac|$, since
+	$c(f)=c(G_0H_0)=1$ by primitivity and the first part. Thus $ac/bd=\pm1$ and $f=\pm
 		G_0H_0$ is a factorization into integer polynomials of the same
 	positive degrees as $G,H$.
 
@@ -13558,8 +13591,8 @@ appears after Theorem~\ref{thm:9.1.9}.
 	Definition~\ref{def:11.3.1}. For nonconstant $f$, a factorization $f=GH$
 	over $\mathbb{Q}$ with $\deg G,\deg H\ge1$ gives
 	$f(x+c)=G(x+c)H(x+c)$ with the same positive degrees for the factors.
-	Shifting back by $-c$ gives the converse. (b) From
-	$x^{p} - 1 = (x - 1)\Phi_p(x)$ (Theorem~\ref{thm:6.11.1}),
+	Shifting back by $-c$ gives the converse. (b) Since
+	$x^{p} - 1 = (x - 1)\Phi_p(x)$ (Theorem~\ref{thm:6.11.1}), we have
 	\[
 		\Phi_p(x+1)=\frac{(x+1)^{p}-1}{x}=\sum_{k=1}^{p}\binom{p}{k}x^{k-1}.
 	\]
@@ -13586,11 +13619,11 @@ appears after Theorem~\ref{thm:9.1.9}.
 	degree $\varphi(n)$ (Theorem~\ref{thm:6.11.2}). Put $\zeta = e^{2\pi
 				i/n}$ and let $f\in\mathbb{Q}[x]$ be the minimal polynomial of
 	$\zeta$: the monic polynomial of least degree with $\zeta$ as a root.
-	It exists ($\Phi_n(\zeta) = 0$), it is unique (the difference of two
-	such polynomials has smaller degree and still vanishes at $\zeta$),
+	It exists because $\Phi_n(\zeta) = 0$; it is unique because the difference of two
+	such polynomials has smaller degree and still vanishes at $\zeta$;
 	and it divides every polynomial in $\mathbb{Q}[x]$ vanishing at
-	$\zeta$ (divide and evaluate the remainder at $\zeta$). It is also
-	irreducible: if $f=f_1f_2$ with both factors of smaller degree, then
+	$\zeta$, as follows by dividing and evaluating the remainder at $\zeta$. It is also
+	irreducible: if $f=f_1f_2$ with both factors of positive degree, then
 	$f_1(\zeta)f_2(\zeta)=0$ forces one of them to vanish at $\zeta$,
 	contrary to minimality. Thus $f$ is, for each of its (complex) roots $\alpha$, the monic polynomial of least degree in $\mathbb{Q}[x]$ vanishing at $\alpha$. In particular, $\Phi_n=fh$ in $\mathbb{Q}[x]$, and $h$ is monic.
 	Write $f=F/a$ and $h=H/b$, where $F,H\in\mathbb{Z}[x]$ are
@@ -13634,11 +13667,11 @@ appears after Theorem~\ref{thm:9.1.9}.
 	also divides its derivative $nx^{n-1}$. Since $p\nmid n$, the constant
 	$n$ is invertible in $\mathbb{F}_p$, so $g\mid x^{n-1}$, and the second
 	fact gives $g\mid x$. Thus $g$ is a nonzero constant multiple of $x$,
-	and $x$ would divide $x^n-1$, which is false because the constant
-	term of $x^n-1$ is $-1$; this is a contradiction.
+	so $x$ divides $x^n-1$; but the constant
+	term of $x^n-1$ is $-1$, a contradiction.
 
 	Now let $m\ge1$ with $\gcd(m, n) = 1$ and factor $m = p_1\cdots p_r$
-	into primes; each $p_j\nmid n$. Applying the claim successively to
+	into primes; then each $p_j\nmid n$. Applying the claim successively to
 	the roots $\zeta, \zeta^{p_1}, \zeta^{p_1p_2}, \ldots$ of $f$ shows
 	that $\zeta^{m}$ is a root of $f$. Hence every primitive $n$-th root
 	of unity, being $\zeta^{m}$ for some $1\le m\le n$ with $\gcd(m,n)=1$ (Definition~\ref{def:6.11.1}), is a root of $f$; these are $\varphi(n)$ distinct numbers, so $\deg f\ge\varphi(n) = \deg\Phi_n$.
@@ -13660,7 +13693,7 @@ appears after Theorem~\ref{thm:9.1.9}.
 
 \begin{proof} For $k=1$, take $a_1\equiv a\pmod p$; this is the unique
 	class satisfying the two required congruences. Assume that $a_k$ has
-	been constructed; we seek $a_{k+1}=a_k+tp^k$.
+	been constructed and is unique modulo $p^k$; we seek $a_{k+1}=a_k+tp^k$.
 	For $x,h\in\mathbb{Z}$, expanding each power $(x+h)^i$ by the
 	binomial theorem shows that
 	$f(x+h)-f(x)-hf'(x)$ is divisible by $h^2$. Applied with
@@ -13671,20 +13704,21 @@ appears after Theorem~\ref{thm:9.1.9}.
 		f'(a_k)\equiv0\pmod{p}$, which has a unique solution $t\pmod{p}$ since
 	$f'(a_k)\equiv f'(a)\not\equiv0\pmod{p}$ is invertible. This proves existence. For uniqueness, if $b_{k+1}$ is any other root congruent to $a$ modulo $p$, then its reduction $b_k$ modulo $p^k$ is a root with the same initial class; by the induction hypothesis, $b_k\equiv a_k\pmod{p^k}$. Hence $b_{k+1}=a_k+tp^k$ for some $t\pmod{p}$, and the uniqueness of the solution modulo $p$ to the linear congruence above forces the same $t$ modulo $p$. Thus the lift is globally unique.
 
-	Theorem~\ref{thm:7.8.3} is the case $f=x^n-c$ of this lemma, and the
-	odd-prime lifting step in Theorem~\ref{thm:7.8.4}(a) is the case $f=x^2-c$ of the same lemma:
-	for $f=x^n-c$ with $n\ge2$, the hypotheses $p\nmid n$ and
-	$p\nmid c$ say exactly that $f'(x) = n x^{n-1}$ is nonzero at the root
-	modulo $p$. The $p = 2$ case of Theorem~\ref{thm:7.8.4} is not covered by this
-	lemma: there $f'(x) = 2x \equiv 0 \pmod{2}$ for every $x$, so the derivative
-	condition fails identically, and the criterion $c\equiv1\pmod8$ is what
-	remains in that singular case. The derivative condition cannot be
-	dropped: for $f(x)=x^p-(1+p)$ and $a=1$, one has
-	$f(1)=-p\equiv0\pmod p$ and $f'(1)=p\equiv0\pmod p$, but every possible
-	lift has the form $x=1+pt$ and satisfies $x^p\equiv1\not\equiv1+p\pmod{p^2}$ by
-	the binomial theorem.
-
 \end{proof}
+
+Theorem~\ref{thm:7.8.3} is the case $f=x^n-c$ of this lemma, and the
+odd-prime lifting step in Theorem~\ref{thm:7.8.4}(a) is the case $f=x^2-c$ of the same lemma:
+for $f=x^n-c$ with $n\ge2$, the hypotheses $p\nmid n$ and
+$p\nmid c$ say exactly that $f'(x) = n x^{n-1}$ is nonzero at the root
+modulo $p$. The $p = 2$ case of Theorem~\ref{thm:7.8.4} is not covered by this
+lemma: there $f'(x) = 2x \equiv 0 \pmod{2}$ for every $x$, so the derivative
+condition fails identically, and the criterion $c\equiv1\pmod8$ (for the modulus $2^e$ with $e\ge3$; the moduli
+$2$ and $4$ are treated separately in Theorem~\ref{thm:7.8.4}) is what
+remains in that singular case. The derivative condition cannot be
+dropped: for $f(x)=x^p-(1+p)$ and $a=1$, one has
+$f(1)=-p\equiv0\pmod p$ and $f'(1)=p\equiv0\pmod p$, but every possible
+lift has the form $x=1+pt$ and satisfies $x^p\equiv1\not\equiv1+p\pmod{p^2}$ by
+the binomial theorem.
 
 \begin{theorem}[Hensel's lemma, strong form]\label{thm:11.4.2} Let $f\in\mathbb{Z}[x]$, let $p$
 	be prime, let $a\in\mathbb{Z}$ with $f'(a)\neq0$, and write
@@ -13730,16 +13764,20 @@ appears after Theorem~\ref{thm:9.1.9}.
 	congruence uniquely determines $t\pmod{p}$, whence $b\equiv a_{m+1}
 		\pmod{p^{m+1-s}}$.
 
-	For $f=x^2-c$ at $a=1$ with $p=2$, one has $s=v_2(2)=1$, and the
-	hypothesis $v_2(f(1))\ge3$ is exactly $c\equiv1\pmod8$. Thus the strong
-	form recovers the lifting and existence direction of the $p=2$ criterion
-	in Theorem~\ref{thm:7.8.4}, which
-	Theorem~\ref{thm:11.4.1} does not cover.
-
 \end{proof}
+
+For $f=x^2-c$ at $a=1$ with $p=2$, one has $s=v_2(2)=1$, and the
+hypothesis $v_2(f(1))\ge3$ is exactly $c\equiv1\pmod8$. Thus the strong
+form recovers the lifting and existence direction of the $p=2$ criterion
+in Theorem~\ref{thm:7.8.4}, which
+Theorem~\ref{thm:11.4.1} does not cover.
+
 \clearpage
 
 \section{Additive Number Theory and Partitions}
+
+Polynomial methods and sumset estimates begin the additive theory. Density arguments, partition identities, and
+additive representations then show how counting and algebra interact.
 
 \subsection{Polynomial Tools for Additive Problems}
 
@@ -13840,6 +13878,7 @@ appears after Theorem~\ref{thm:9.1.9}.
 
 \end{proof}
 \begin{altproof}[Alternative proof of Theorem~\ref{thm:6.10.3} via the Cauchy--Davenport theorem] Let
+	$p$ be an odd prime and put
 	$A = \{x^{2} \bmod p \mid 0 \le x \le \tfrac{p-1}{2}\} \subseteq
 		\mathbb{F}_p$. If $x^2\equiv y^2\pmod{p}$ with
 	$0\le x,y\le\tfrac{p-1}{2}$, then $p\mid(x-y)(x+y)$ and the
@@ -13882,7 +13921,7 @@ appears after Theorem~\ref{thm:9.1.9}.
 		=\frac{1}{k-1}\binom{2k-4}{k-2}.
 	\]
 	The difference is a positive integer $M$ (it is a difference of
-	integers, and it is positive by the display), and $M\not\equiv0\pmod{p}$: the display
+	integers, and it is positive by the preceding display), and $M\not\equiv0\pmod{p}$: the preceding display
 	gives $\binom{2k-4}{k-2} = (k - 1)M$, so $p\mid M$ would give
 	$p\mid\binom{2k-4}{k-2}$, hence also $p\mid(2k - 4)! =
 		\binom{2k-4}{k-2}\big((k - 2)!\,(k - 2)!\big)$, which is impossible
@@ -14128,11 +14167,13 @@ appears after Theorem~\ref{thm:9.1.9}.
 	then $m = m'$. Conversely, map a partition into distinct parts to a
 	partition into odd parts by writing each part uniquely as $2^{e}m$
 	with $m$ odd and replacing it by $2^{e}$ copies of $m$. The two maps
-	are mutually inverse: splitting $2^{e}m$ into $2^{e}$ copies of $m$
-	and then merging them again according to the binary expansion of the multiplicity recovers $2^{e}m$. Merging the $c_m$ copies of $m$
+	are mutually inverse: splitting each part $2^{e}m$ into $2^{e}$ copies of $m$
+	and then merging, for each odd $m$, according to the binary expansion of the total multiplicity of $m$ recovers
+	the parts with odd part $m$ (their exponents $e$ are distinct, so they are the binary digits of that
+	multiplicity). Merging the $c_m$ copies of $m$
 	into the parts $2^{e_j}m$ and then re-splitting recovers the $c_m$
-	copies, since binary expansions are unique. Hence the two families of
-	partitions are in bijection and have the same cardinality.
+	copies, since binary expansions are unique. Both maps preserve the sum of the parts, so for each $n$ the two families of
+	partitions of $n$ are in bijection and have the same cardinality.
 
 \end{altproof}
 \begin{theorem}[Euler's pentagonal number theorem]\label{thm:12.5.3} As
@@ -14152,7 +14193,7 @@ appears after Theorem~\ref{thm:9.1.9}.
 	longest run of consecutive integers $a,a-1,\ldots$ descending from the
 	largest part $a$). Define an involution as follows. If $s\le t$,
 	delete the smallest part $s$ and add $1$ to each of the $s$ largest
-	parts. If $s>t$, subtract $1$ from each of the $t$ largest
+	remaining parts. If $s>t$, subtract $1$ from each of the $t$ largest
 	parts and adjoin a new smallest part $t$.
 
 	Whenever the first move is defined, increasing the $s$ largest
@@ -14175,7 +14216,8 @@ appears after Theorem~\ref{thm:9.1.9}.
 	For the second move, if $t<r$, maximality of the top staircase
 	means that the gap between the $t$-th and $(t+1)$-th largest parts
 	is at least $2$. After lowering the first $t$ parts, this gap
-	remains at least $1$. The new part $t$ is smaller than every
+	remains at least $1$. The smallest lowered part is $a-t\ge s+1>t$,
+	while every unmodified part is at least $s>t$. Thus the new part $t$ is smaller than every
 	remaining part. If $t=r$, the lowered smallest part is $s-1$,
 	so the only possible collision is $s-1=t$, the exceptional
 	configuration described below. Outside that configuration, the
@@ -14203,6 +14245,8 @@ appears after Theorem~\ref{thm:9.1.9}.
 \end{proof}
 \begin{theorem}[Euler's recurrence for $p(n)$]\label{thm:12.5.4} If $n\in\mathbb{Z}^+$, then
 	$p(n)=\sum_{j\ge1}(-1)^{j-1}\Big(p\big(n-\tfrac{j(3j-1)}{2}\big)+p\big(n-\tfrac{j(3j+1)}{2}\big)\Big)$.
+	Here $p(m)=0$ for $m<0$, as in Definition~\ref{def:12.5.1}; thus only
+	finitely many summands are nonzero.
 
 \end{theorem}
 
@@ -14260,38 +14304,37 @@ appears after Theorem~\ref{thm:9.1.9}.
 
 \end{proof}
 \begin{theorem}\label{thm:12.5.6} For every $n\in\mathbb{Z}^+$,
-	\[
-		p(n)<e^{\pi\sqrt{2n/3}}.
-	\]
+  \[
+    p(n)<e^{\pi\sqrt{2n/3}}.
+  \]
 
 \end{theorem}
 
 \begin{proof} Fix a real $x$ with $0<x<1$, and let $P(x)=\sum_{m\ge0}p(m)x^m$ as
-	in Theorem~\ref{thm:12.5.1}. All terms of this series are nonnegative, so
-	$p(n)x^n\le P(x)$. For $0\le y<1$, we have
-	$-\ln(1-y)=\sum_{m\ge1}y^m/m$. Theorem~\ref{thm:12.5.1} therefore gives
-	\[
-		\ln P(x)=\sum_{k\ge1}\sum_{m\ge1}\frac{x^{km}}{m}
-		=\sum_{m\ge1}\frac1m\sum_{k\ge1}x^{km}
-		=\sum_{m\ge1}\frac1m\cdot\frac{x^m}{1-x^m},
-	\]
-	where the order of summation may be interchanged because all terms are
-	nonnegative. For $m\ge1$, since $x^j\ge x^{m-1}$ for $0\le j\le m-1$,
-	\[
-		1-x^m=(1-x)(1+x+\cdots+x^{m-1})\ge(1-x)\,m\,x^{m-1},
-	\]
-	so $\frac{x^m}{1-x^m}\le\frac{x}{m(1-x)}$. By Theorem~\ref{thm:5.7.3},
-	\[
-		\ln P(x)\le\frac{x}{1-x}\sum_{m\ge1}\frac1{m^2}=\frac{\pi^2}{6}\cdot\frac{x}{1-x}.
-	\]
-	Now write $x=e^{-t}$ with $t>0$. Since $e^{t}>1+t$, we have
-	$\frac{x}{1-x}=\frac{1}{e^{t}-1}<\frac1t$, and therefore
-	\[
-		\ln p(n)\le\ln P(x)+nt<\frac{\pi^2}{6t}+nt.
-	\]
-	Choosing $t=\pi/\sqrt{6n}$ makes both terms on the right equal to
-	$\pi\sqrt{n/6}$, so $\ln p(n)<2\pi\sqrt{n/6}=\pi\sqrt{2n/3}$.
-
+  in Theorem~\ref{thm:12.5.1}. All terms of this series are nonnegative, so
+  $p(n)x^n\le P(x)$. For $0\le y<1$, we have
+  $-\ln(1-y)=\sum_{m\ge1}y^m/m$. Theorem~\ref{thm:12.5.1} therefore gives
+  \[
+    \ln P(x)=\sum_{k\ge1}\sum_{m\ge1}\frac{x^{km}}{m}
+    =\sum_{m\ge1}\frac1m\sum_{k\ge1}x^{km}
+    =\sum_{m\ge1}\frac1m\cdot\frac{x^m}{1-x^m},
+  \]
+  where the order of summation may be interchanged because all terms are
+  nonnegative. For $m\ge1$, since $x^j\ge x^{m-1}$ for $0\le j\le m-1$,
+  \[
+    1-x^m=(1-x)(1+x+\cdots+x^{m-1})\ge(1-x)\,m\,x^{m-1},
+  \]
+  so $\tfrac{x^m}{1-x^m}\le\tfrac{x}{m(1-x)}$. By Theorem~\ref{thm:5.7.3},
+  \[
+    \ln P(x)\le\frac{x}{1-x}\sum_{m\ge1}\frac1{m^2}=\frac{\pi^2}{6}\cdot\frac{x}{1-x}.
+  \]
+  Now write $x=e^{-t}$ with $t>0$. Since $e^{t}>1+t$, we have
+  $\tfrac{x}{1-x}=\tfrac{1}{e^{t}-1}<\tfrac1t$, and therefore
+  \[
+    \ln p(n)\le\ln P(x)+nt<\frac{\pi^2}{6t}+nt.
+  \]
+  Choosing $t=\pi/\sqrt{6n}$ makes both terms on the right equal to
+  $\pi\sqrt{n/6}$, so $\ln p(n)<2\pi\sqrt{n/6}=\pi\sqrt{2n/3}$.
 \end{proof}
 \subsection{Waring's Problem: The Case \texorpdfstring{$k=2$}{k=2}}
 
