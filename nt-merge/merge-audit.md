@@ -1,15 +1,17 @@
 # 合并核对（merge_check.py audit）
 
-最终稿每个单元取自哪边：branch1 154，branch1/baseline 124，branch1/branch2 1，branch1/branch2/baseline 58，branch2 38，new 137。
-需要在 merge-log.md 里说明的单元 261 个，其中 0 个日志里没有提到。
+最终稿每个单元取自哪边：branch1 139，branch1/baseline 119，branch1/branch2 1，branch1/branch2/baseline 57，branch2 37，new 159。
+需要在 merge-log.md 里说明的单元 278 个，其中 0 个日志里没有提到。
 
 | 单元 | 取自 | branch1 改过 | branch2 改过 | 需要说明 | 日志里有 |
 |---|---|---|---|---|---|
 | sec:introduction | new |  |  | 新写或融合的文字（最接近 branch2） | 有 |
 | sec:notation-and-conventions | new | 是 | 是 | 新写或融合的文字（最接近 branch1） | 有 |
 | sec:notation-at-a-glance | new |  |  | 新写或融合的文字（最接近 branch2） | 有 |
+| thm:1.1.2 | new | 是 | 是 | 新写或融合的文字（最接近 branch1） | 有 |
 | def:1.2.2 | branch1/baseline |  | 是 | 回滚了只有 branch2 做过的修改 | 有 |
 | def:1.2.3 | branch1/baseline |  | 是 | 回滚了只有 branch2 做过的修改 | 有 |
+| def:1.2.4 | new | 是 | 是 | 新写或融合的文字（最接近 branch1） | 有 |
 | thm:1.2.1 | new | 是 | 是 | 新写或融合的文字（最接近 branch1） | 有 |
 | sec:primes-the-euclidean-algorithm-and-dioph | new |  |  | 新写或融合的文字（最接近 branch2） | 有 |
 | def:2.1.1 | branch1/baseline |  | 是 | 回滚了只有 branch2 做过的修改 | 有 |
@@ -31,11 +33,12 @@
 | def:2.4.1 | branch1/baseline |  | 是 | 回滚了只有 branch2 做过的修改 | 有 |
 | thm:2.4.1 | new | 是 | 是 | 新写或融合的文字（最接近 branch2） | 有 |
 | thm:2.4.2 | new |  | 是 | 新写或融合的文字（最接近 branch1） | 有 |
-| def:2.5.1 | branch1/baseline |  | 是 | 回滚了只有 branch2 做过的修改 | 有 |
+| def:2.5.1 | new |  | 是 | 新写或融合的文字（最接近 branch1） | 有 |
 | thm:2.5.4 | new | 是 | 是 | 新写或融合的文字（最接近 branch2） | 有 |
+| thm:2.5.5 | new |  | 是 | 新写或融合的文字（最接近 branch2） | 有 |
 | thm:2.6.2 | branch1/baseline |  | 是 | 回滚了只有 branch2 做过的修改 | 有 |
 | thm:2.6.3 | new | 是 | 是 | 新写或融合的文字（最接近 branch1） | 有 |
-| def:3.1.1 | branch1/baseline |  | 是 | 回滚了只有 branch2 做过的修改 | 有 |
+| def:3.1.1 | new |  | 是 | 新写或融合的文字（最接近 branch1） | 有 |
 | def:3.2.1 | new | 是 | 是 | 新写或融合的文字（最接近 branch2） | 有 |
 | thm:3.2.1 | branch1/baseline |  | 是 | 回滚了只有 branch2 做过的修改 | 有 |
 | thm:3.2.3 | new | 是 | 是 | 新写或融合的文字（最接近 branch1） | 有 |
@@ -44,7 +47,7 @@
 | def:3.2.4 | branch1/baseline |  | 是 | 回滚了只有 branch2 做过的修改 | 有 |
 | thm:3.2.6 | new | 是 | 是 | 新写或融合的文字（最接近 branch1） | 有 |
 | def:3.2.5 | branch1/baseline |  | 是 | 回滚了只有 branch2 做过的修改 | 有 |
-| thm:3.3.1 | new |  | 是 | 新写或融合的文字（最接近 branch2） | 有 |
+| thm:3.3.1 | new |  | 是 | 新写或融合的文字（最接近 branch1） | 有 |
 | def:3.3.1 | new | 是 | 是 | 新写或融合的文字（最接近 branch1） | 有 |
 | thm:3.3.3 | new |  | 是 | 新写或融合的文字（最接近 branch1） | 有 |
 | thm:3.4.1 | new |  | 是 | 新写或融合的文字（最接近 branch1） | 有 |
@@ -52,11 +55,12 @@
 | thm:3.4.4 | new |  | 是 | 新写或融合的文字（最接近 branch1） | 有 |
 | thm:3.4.5 | new | 是 | 是 | 新写或融合的文字（最接近 branch2） | 有 |
 | thm:3.5.1 | new | 是 | 是 | 新写或融合的文字（最接近 branch2） | 有 |
-| def:3.5.1 | branch1/baseline |  | 是 | 回滚了只有 branch2 做过的修改 | 有 |
+| def:3.5.1 | new |  | 是 | 新写或融合的文字（最接近 branch1） | 有 |
 | thm:3.5.4 | new | 是 | 是 | 新写或融合的文字（最接近 branch1） | 有 |
 | thm:3.5.6 | new |  | 是 | 新写或融合的文字（最接近 branch1） | 有 |
 | thm:3.5.8 | new |  | 是 | 新写或融合的文字（最接近 branch1） | 有 |
 | thm:3.5.11 | new |  | 是 | 新写或融合的文字（最接近 branch2） | 有 |
+| thm:3.6.1 | new | 是 | 是 | 新写或融合的文字（最接近 branch1） | 有 |
 | thm:3.6.2 | new | 是 | 是 | 新写或融合的文字（最接近 branch1） | 有 |
 | thm:4.1.3 | new | 是 | 是 | 新写或融合的文字（最接近 branch1） | 有 |
 | def:4.2.1 | branch1/baseline |  | 是 | 回滚了只有 branch2 做过的修改 | 有 |
@@ -66,6 +70,7 @@
 | thm:4.3.3 | branch1/baseline |  | 是 | 回滚了只有 branch2 做过的修改 | 有 |
 | def:4.4.2 | branch1/baseline |  | 是 | 回滚了只有 branch2 做过的修改 | 有 |
 | def:4.5.1 | new | 是 | 是 | 新写或融合的文字（最接近 branch1） | 有 |
+| def:4.5.2 | new | 是 | 是 | 新写或融合的文字（最接近 branch1） | 有 |
 | thm:4.6.4 | new | 是 | 是 | 新写或融合的文字（最接近 branch2） | 有 |
 | thm:4.7.2 | new |  | 是 | 新写或融合的文字（最接近 branch1） | 有 |
 | thm:4.7.3 | new | 是 | 是 | 新写或融合的文字（最接近 branch1） | 有 |
@@ -77,12 +82,14 @@
 | thm:4.8.6 | new | 是 | 是 | 新写或融合的文字（最接近 branch2） | 有 |
 | def:4.9.1 | branch1/baseline |  | 是 | 回滚了只有 branch2 做过的修改 | 有 |
 | thm:4.9.3 | new | 是 | 是 | 新写或融合的文字（最接近 branch2） | 有 |
+| def:5.1.1 | new | 是 | 是 | 新写或融合的文字（最接近 branch1） | 有 |
 | def:5.1.2 | branch1/baseline |  | 是 | 回滚了只有 branch2 做过的修改 | 有 |
 | thm:5.1.2 | new | 是 | 是 | 新写或融合的文字（最接近 branch1） | 有 |
 | thm:5.1.5 | new | 是 | 是 | 新写或融合的文字（最接近 branch2） | 有 |
 | def:5.1.3 | branch1/baseline |  | 是 | 回滚了只有 branch2 做过的修改 | 有 |
 | def:5.2.1 | branch1/baseline |  | 是 | 回滚了只有 branch2 做过的修改 | 有 |
 | thm:5.2.1 | branch1/baseline |  | 是 | 回滚了只有 branch2 做过的修改 | 有 |
+| thm:5.2.4 | new |  |  | 新写或融合的文字（最接近 branch1） | 有 |
 | def:5.2.2 | branch1/baseline |  | 是 | 回滚了只有 branch2 做过的修改 | 有 |
 | thm:5.2.5 | branch1/baseline |  | 是 | 回滚了只有 branch2 做过的修改 | 有 |
 | def:5.3.1 | branch1/baseline |  | 是 | 回滚了只有 branch2 做过的修改 | 有 |
@@ -96,6 +103,8 @@
 | def:5.6.1 | branch1/baseline |  | 是 | 回滚了只有 branch2 做过的修改 | 有 |
 | thm:5.6.3 | branch1/baseline |  | 是 | 回滚了只有 branch2 做过的修改 | 有 |
 | def:5.7.2 | new | 是 | 是 | 新写或融合的文字（最接近 branch1） | 有 |
+| thm:5.7.1 | new | 是 | 是 | 新写或融合的文字（最接近 branch1） | 有 |
+| thm:5.7.4 | new | 是 | 是 | 新写或融合的文字（最接近 branch1） | 有 |
 | thm:5.7.7 | new | 是 | 是 | 新写或融合的文字（最接近 branch1） | 有 |
 | sec:orders-primitive-roots-and-multiplicativ | new |  |  | 新写或融合的文字（最接近 branch2） | 有 |
 | thm:6.1.1 | new | 是 | 是 | 新写或融合的文字（最接近 branch1） | 有 |
@@ -133,6 +142,7 @@
 | def:6.11.1 | branch1/baseline |  | 是 | 回滚了只有 branch2 做过的修改 | 有 |
 | thm:6.11.1 | new | 是 | 是 | 新写或融合的文字（最接近 branch2） | 有 |
 | thm:6.11.3 | branch1/baseline |  | 是 | 回滚了只有 branch2 做过的修改 | 有 |
+| thm:6.11.4 | new | 是 |  | 新写或融合的文字（最接近 branch1） | 有 |
 | thm:6.11.5 | branch1/baseline |  | 是 | 回滚了只有 branch2 做过的修改 | 有 |
 | def:6.11.2 | branch1/baseline |  | 是 | 回滚了只有 branch2 做过的修改 | 有 |
 | thm:6.11.10 | new | 是 | 是 | 新写或融合的文字（最接近 branch2） | 有 |
@@ -141,6 +151,7 @@
 | thm:7.1.2 | new | 是 | 是 | 新写或融合的文字（最接近 branch1） | 有 |
 | def:7.2.1 | branch1/baseline |  | 是 | 回滚了只有 branch2 做过的修改 | 有 |
 | thm:7.2.1 | new | 是 | 是 | 新写或融合的文字（最接近 branch1） | 有 |
+| thm:7.2.2 | new | 是 | 是 | 新写或融合的文字（最接近 branch1） | 有 |
 | thm:7.2.4 | new | 是 | 是 | 新写或融合的文字（最接近 branch1） | 有 |
 | thm:7.3.1 | new | 是 | 是 | 新写或融合的文字（最接近 branch1） | 有 |
 | thm:7.3.2 | new |  | 是 | 新写或融合的文字（最接近 branch1） | 有 |
@@ -159,6 +170,7 @@
 | thm:7.6.6 | new |  | 是 | 新写或融合的文字（最接近 branch2） | 有 |
 | thm:7.6.7 | new | 是 | 是 | 新写或融合的文字（最接近 branch1） | 有 |
 | thm:7.6.8 | branch1/baseline |  | 是 | 回滚了只有 branch2 做过的修改 | 有 |
+| def:7.7.1 | new | 是 | 是 | 新写或融合的文字（最接近 branch1） | 有 |
 | def:7.7.2 | branch1/baseline |  | 是 | 回滚了只有 branch2 做过的修改 | 有 |
 | thm:7.7.1 | new | 是 | 是 | 新写或融合的文字（最接近 branch1） | 有 |
 | def:7.7.3 | branch1/baseline |  | 是 | 回滚了只有 branch2 做过的修改 | 有 |
@@ -180,6 +192,7 @@
 | def:7.11.3 | branch1/baseline |  | 是 | 回滚了只有 branch2 做过的修改 | 有 |
 | thm:7.11.4 | new |  | 是 | 新写或融合的文字（最接近 branch2） | 有 |
 | thm:7.11.5 | new | 是 | 是 | 新写或融合的文字（最接近 branch1） | 有 |
+| thm:8.1.1 | new | 是 | 是 | 新写或融合的文字（最接近 branch1） | 有 |
 | thm:8.1.8 | new | 是 | 是 | 新写或融合的文字（最接近 branch1） | 有 |
 | thm:8.1.10 | new |  | 是 | 新写或融合的文字（最接近 branch1） | 有 |
 | thm:8.2.2 | new | 是 | 是 | 新写或融合的文字（最接近 branch1） | 有 |
@@ -188,7 +201,8 @@
 | def:8.6.3 | branch1/baseline |  | 是 | 回滚了只有 branch2 做过的修改 | 有 |
 | thm:8.6.2 | new |  | 是 | 新写或融合的文字（最接近 branch2） | 有 |
 | thm:8.6.3 | new | 是 | 是 | 新写或融合的文字（最接近 branch1） | 有 |
-| thm:8.6.8 | branch1/baseline |  | 是 | 回滚了只有 branch2 做过的修改 | 有 |
+| thm:8.6.5 | new | 是 | 是 | 新写或融合的文字（最接近 branch1） | 有 |
+| thm:8.6.8 | new |  | 是 | 新写或融合的文字（最接近 branch2） | 有 |
 | thm:8.7.1 | branch1/baseline |  | 是 | 回滚了只有 branch2 做过的修改 | 有 |
 | def:8.7.3 | branch1/baseline |  | 是 | 回滚了只有 branch2 做过的修改 | 有 |
 | thm:8.7.3 | branch1/baseline |  | 是 | 回滚了只有 branch2 做过的修改 | 有 |
@@ -236,10 +250,12 @@
 | thm:10.2.2 | new | 是 | 是 | 新写或融合的文字（最接近 branch1） | 有 |
 | thm:10.2.3 | new | 是 | 是 | 新写或融合的文字（最接近 branch2） | 有 |
 | def:10.3.1 | branch1/baseline |  | 是 | 回滚了只有 branch2 做过的修改 | 有 |
+| thm:10.3.2 | new | 是 | 是 | 新写或融合的文字（最接近 branch1） | 有 |
 | thm:10.3.6 | new | 是 | 是 | 新写或融合的文字（最接近 branch1） | 有 |
 | thm:10.3.7 | new | 是 | 是 | 新写或融合的文字（最接近 branch1） | 有 |
 | thm:10.3.10 | new | 是 | 是 | 新写或融合的文字（最接近 branch2） | 有 |
 | thm:10.4.1 | new | 是 | 是 | 新写或融合的文字（最接近 branch2） | 有 |
+| thm:10.5.1 | new | 是 | 是 | 新写或融合的文字（最接近 branch1） | 有 |
 | thm:10.6.1 | new |  | 是 | 新写或融合的文字（最接近 branch1） | 有 |
 | def:10.7.1 | branch1/baseline |  | 是 | 回滚了只有 branch2 做过的修改 | 有 |
 | thm:10.7.1 | new | 是 | 是 | 新写或融合的文字（最接近 branch1） | 有 |
@@ -250,7 +266,7 @@
 | thm:11.2.1 | new | 是 | 是 | 新写或融合的文字（最接近 branch1） | 有 |
 | def:11.3.1 | branch1/baseline |  | 是 | 回滚了只有 branch2 做过的修改 | 有 |
 | thm:11.3.1 | branch1/baseline |  | 是 | 回滚了只有 branch2 做过的修改 | 有 |
-| thm:11.3.3 | new | 是 | 是 | 新写或融合的文字（最接近 branch1） | 有 |
+| thm:11.3.3 | new | 是 | 是 | 新写或融合的文字（最接近 branch2） | 有 |
 | thm:11.3.4 | new | 是 | 是 | 新写或融合的文字（最接近 branch1） | 有 |
 | thm:11.4.1 | new |  | 是 | 新写或融合的文字（最接近 branch1） | 有 |
 | thm:11.4.2 | new | 是 | 是 | 新写或融合的文字（最接近 branch1） | 有 |
@@ -262,7 +278,8 @@
 | thm:12.3.4 | branch1/baseline |  | 是 | 回滚了只有 branch2 做过的修改 | 有 |
 | def:12.4.1 | branch1/baseline |  | 是 | 回滚了只有 branch2 做过的修改 | 有 |
 | def:12.5.1 | branch1/baseline |  | 是 | 回滚了只有 branch2 做过的修改 | 有 |
-| thm:12.5.1 | branch1/baseline |  | 是 | 回滚了只有 branch2 做过的修改 | 有 |
+| thm:12.5.1 | new |  | 是 | 新写或融合的文字（最接近 branch1） | 有 |
 | thm:12.5.2 | new | 是 | 是 | 新写或融合的文字（最接近 branch2） | 有 |
 | thm:12.5.3 | new | 是 | 是 | 新写或融合的文字（最接近 branch1） | 有 |
 | thm:12.5.4 | new |  | 是 | 新写或融合的文字（最接近 branch2） | 有 |
+| thm:12.6.1 | new | 是 | 是 | 新写或融合的文字（最接近 branch1） | 有 |

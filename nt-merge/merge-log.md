@@ -295,7 +295,7 @@
 - 单元 thm:7.7.4 · 类型：回滚 · 改了什么：同上 · 理由：见约定。
 - 单元 thm:7.7.7 · 类型：冲突处理 · 改了什么：取 branch1（$k\ge2$ 放宽为 $k\ge1$）；branch2 只有行内 `\tfrac` · 理由：无排版差别。
 - 单元 thm:7.8.2 · 类型：冲突处理 · 改了什么：取 branch1（补“$r\ge0$”）；branch2 只有 `\pmod{4}` 和重新缩进 · 理由：branch2 没有实质修改。
-- 单元 thm:7.8.4 · 类型：冲突处理 · 改了什么：融合两边：取 branch1（(c) 中把根的同余式写成 $x^{\varphi(p^e)/2}\equiv1$，替代证明标题“via the structure of $\ZmodUnits{2^e}$”）；采用 branch2 补的“$t\ge0$”；branch2 的 `\pmod` 加括号、`\legs` 和重新缩进未采用 · 理由：两边改的位置不重叠；“$t\ge0$”与 branch1 在 thm:7.8.2 补的“$r\ge0$”同类（允许 $m$ 是 $2$ 的幂）。
+- 单元 thm:7.8.4 · 类型：冲突处理 · 改了什么：融合两边：取 branch1（(d) 中把根的同余式写成 $x^{\varphi(p^e)/2}\equiv1$〔交叉审查 gpt L02 指出原记为 (c)，已改〕，替代证明标题“via the structure of $\ZmodUnits{2^e}$”）；采用 branch2 补的“$t\ge0$”；branch2 的 `\pmod` 加括号、`\legs` 和重新缩进未采用 · 理由：两边改的位置不重叠；“$t\ge0$”与 branch1 在 thm:7.8.2 补的“$r\ge0$”同类（允许 $m$ 是 $2$ 的幂）。
 - 单元 def:7.9.1 · 类型：冲突处理 · 改了什么：取 branch1（删去定义末尾“When $n=p$ is an odd prime with $p\nmid d$, the algebra is the field … and it is isomorphic to $\mathbb{F}_p\times\mathbb{F}_p$ …”一句）；branch2 对同一句的措辞修改（When→If）与 `\legs` 未采用 · 理由：branch1 删掉的是定义里未加证明的断言；$\leg{d}{p}=-1$ 时是域由 Theorem~\ref{thm:7.9.1}(a) 证明。
 - 单元 thm:7.9.1 · 类型：回滚 · 改了什么：branch2 只把 `\leg` 改成 `\legs`，不采用 · 理由：见约定。
 - 单元 thm:7.9.2 · 类型：回滚 · 改了什么：采用 branch2 补的“(Theorem~\ref{thm:7.1.2})”；描述性 label、`\index` 和 `\legs` 不搬入 · 理由：见约定。
@@ -402,7 +402,7 @@
 - 单元 def:9.7.1 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
 - 单元 thm:9.7.1 · 类型：回滚 · 改了什么：branch2 的描述性 label、`\index`、UTF-8 重音和 `\displaystyle` 中的 `\tfrac` 都不采用 · 理由：同 thm:9.6.9。
 - 单元 thm:9.7.2 · 类型：冲突处理 · 改了什么：取 branch1（误差写成显式界 $\le2^{\pi(z)}$，$\theta_d$，$z=c\ln x$ 中 $0<c<1/\ln2$）；branch2 对同一句的措辞修改与 `\displaystyle` 中的 `\tfrac` 未采用 · 理由：两边改的是同一处，branch1 的改写更完整。
-- 单元 thm:9.7.3 · 类型：冲突处理 · 改了什么：取 branch1；branch2 在本单元的改动只是 §10 导读使 `\section{Diophantine Approximation and Lattice Points}` 标题归入该导读单元（第 6 批处理）· 理由：branch2 对本单元没有实质修改。
+- 单元 thm:9.7.3 · 类型：冲突处理 · 改了什么：取 branch1；branch2 另加的描述性 label `thm:bonferroni-inequalities` 和 `\index` 按约定不搬入〔交叉审查 gpt L04 补记〕；branch2 在本单元的其余改动只是 §10 导读使 `\section{Diophantine Approximation and Lattice Points}` 标题归入该导读单元（第 6 批处理）· 理由：branch2 对本单元没有实质修改。
 
 ## 第 6 批（§10–§12 与文末）
 
@@ -471,3 +471,106 @@
 - 单元 def:12.5.2 · 类型：冲突处理 · 改了什么：两边都补了空分拆的共轭，取 branch1（“The empty partition has empty Ferrers diagram and is its own conjugate.”）；branch2 的括号写法与 `\label` 换行合并未采用 · 理由：两边意思相同。
 - 单元 def:12.6.1 · 类型：冲突处理 · 改了什么：取 branch1（“$N\in\mathbb{Z}_{\ge0}$”，写明可表示的含义）；branch2 只把 `\label` 移到标题行 · 理由：branch2 没有实质修改。
 - 单元 thm:12.6.1 · 类型：冲突处理 · 改了什么：取 branch1（`\mbox{$g(2)=G(2)=4$}`）；branch2 在文末加的 `\clearpage`、`\phantomsection`、`\addcontentsline{toc}{section}{Index of Terms}` 与 `\printindex` 不采用 · 理由：终稿导言区没有 makeidx，`\printindex` 无法编译；是否加索引留给作者（见 progress.md）。
+
+## 交叉审查的处理
+
+审查材料：gpt（review-report.md、review-coverage.md）、gemini（review-report-1～5、fragment_*）、muse（review-report.md）、ernie（FINAL_REVIEW_zh.md）。各审查针对的 final.tex 与本轮起点一致（SHA-256 20505dd2…）。gemini 4/5、muse 的片段级意见主要针对导言区与 §1；ernie 是全文独立审读（多为 branch1/baseline 原有写法）。严重度按各审查者自己的标注；都没有 blocking。
+
+### gpt
+
+- gpt · R01 · def:3.5.1 · 局部内容遗漏 · 采纳 · 在 def:3.5.1 后加普通段落：分数 $a/b$（$p\nmid b$）是 $\mathbb{Z}_{(p)}$ 中单位当且仅当 $p\nmid a$，含两向理由（branch2 的 prop:localization-units 内容，第 1 批曾以“后文只需整数情形”不采用，审查指出 thm:7.4.4 的 Morley 证明用到一般分数情形）· 否（搬入 branch2 已有内容）
+- gpt · R02 · thm:7.5.1 指引句、thm:7.10.3 替代证明标题 · 局部表述准确性 · 采纳 · 两处“via Gauss sums in finite fields”改为 branch2 的“via Gauss sums”（$R=\mathbb{F}_q[T]/(\Phi_p)$ 一般不是域，已核对 $p=3,q=7$ 时有零因子）· 否
+- gpt · R03 · thm:8.6.8 · 局部引用与证明衔接 · 采纳 · “Both are primitive, so $h(-20)=2$”改为引用 Theorem~\ref{thm:8.6.3} 得出两类、再由 Theorem~\ref{thm:8.6.1}(a) 说明真等价保持所表示的整数 · 否（补引用与衔接）
+- gpt · R04 · thm:6.2.2 替代证明 · 局部引用遗漏 · 采纳 · 补“(Theorem~\ref{thm:5.1.5})”和“(Theorem~\ref{thm:5.3.2}(c))” · 否
+- gpt · L01 · def:5.7.1/def:5.7.2 · 日志问题 · 部分采纳 · 不另列疑难：该拆分在第 1 批已作为全书约定定下（progress.md“label 对照”“渐近记号”两条），各引用已逐条核对，审查也确认无误；在 escalate.md“审查意见”一节补记此事 · 否
+- gpt · L02 · thm:7.8.4 · 日志问题 · 采纳 · 日志中的分项 (c) 改为 (d) · 否
+- gpt · L03 · thm:2.2.4、thm:2.3.3、thm:2.6.1、thm:3.5.4、thm:4.1.1、thm:4.8.6、thm:6.10.2、thm:8.6.3、thm:10.2.2、thm:12.5.3 · 日志问题 · 部分采纳 · 这些单元两边改的位置基本不重叠，合并时两边都已收入（没有在两份数学论证之间取舍），所以当时未列疑难；审查逐个核对认为正确。在 escalate.md“审查意见”一节补记为 [已核对]，不另交复核 · 否
+- gpt · L04 · thm:9.7.3 · 日志问题 · 采纳 · 日志补记 branch2 的描述性 label 与 `\index` 未搬入 · 否
+- gpt · H01 · thm:10.3.2 · 局部证明表述 · 采纳 · 倒数等式限定在 $s_{n+2}>0$ 时（“if $s_{n+2}>0$, then …”）· 是（小幅，补条件）
+- gpt · H02 · thm:7.2.2 替代证明 · 可选建议 · 采纳 · 标题改为“Alternative proof of the counting assertion in Theorem~\ref{thm:7.2.2} via the squaring map” · 否
+- gpt · O01 · Notation at a Glance · 可选建议 · 采纳 · $v_p$ 一行改为“Exponent of $p$ in a nonzero rational $x$ ($v_p(0)=+\infty$)” · 否
+
+### gemini
+
+- gemini · 报告1 F1 · thm:1.1.2 · minor · 采纳 · 证明 (e) 末尾补 `\qedhere`（按约定采用 branch2 在列表结尾的 `\qedhere`）· 否
+- gemini · 报告1 F2 · thm:3.3.1 · minor · 部分采纳 · 指引句改为“appears after Theorem~\ref{thm:3.5.12}, which together with Theorem~\ref{thm:3.5.2} supplies the needed tools”，去掉重复引用；未用其“Chinese remainder theorem”说法 · 否
+- gemini · 报告1 F3 · thm:2.2.4（及其他两边都改的单元）· minor · 部分采纳 · 同 gpt L03 · 否
+- gemini · 报告2 · progress.md 第 6 批计数 · 日志 · 采纳 · 第 6 批计数行注明“新的数学修改 1（疑难复核时）” · 否
+- gemini · 报告2/报告3 F3 · def:2.5.1、thm:2.5.5（关联 thm:2.5.4）· minor · 采纳 · “$F_k>0$（$k\ge1$）”的归纳说明移到 Definition~\ref{def:2.5.1} 之后的普通段落，thm:2.5.5 证明改为回引；thm:2.5.4（疑难复核单元）本身不动 · 否
+- gemini · 报告3 F1 · thm:3.2.3 · minor · 交疑难复核 · 暂改为“the inverse $u$ of the statement exists (Theorem~\ref{thm:3.2.1}) and satisfies …”，见 escalate.md · 否
+- gemini · 报告3 F2 · thm:3.5.6 · minor · 采纳 · “the inverse … exists and is unique”改为“an inverse … exists and is unique modulo $p$”（与 def:3.2.1 的新约定一致）· 否
+- gemini · 报告4（多模型意见汇总）· 导言区（`\statementbreaks`、proof/altproof 重定义、`\leg`、计数器、fontenc、hyperref 书签）· — · 不采纳 · 硬约束：导言区与 branch1 一致；转作者（progress.md 未决事项）· 否
+- gemini · 报告4 · def:1.2.4 · — · 采纳 · 去掉对 Theorem 4.3.1(g) 的前向依赖：就地说明最小值可取到且等于 $\min\{\{x\},1-\{x\}\}$，保留“see also” · 否
+- gemini · 报告4 · thm:1.1.2(e) · — · 采纳 · “partial order”后补“that is, it is reflexive, antisymmetric, and transitive” · 否
+- gemini · 报告4 · Notation 中面积的可数可加 · — · 采纳 · 改为“finitely additive … (and countably additive when the union is again such a region)” · 否
+- gemini · 报告4 · Notation at a Glance 的 $\delta_m(a)$ · — · 采纳 · 补“for $\gcd(a,m)=1$” · 否
+- gemini · 报告4 · thm:1.1.1 用到 $\mathbb{Z}$ 的离散性 · — · 不采纳 · 证明已写“$a$ 与 $k$ 非零，故 $|k|\ge1$”，在 Assumed background 的整数性质之内 · 否
+- gemini · 报告4/5 · 证明末 QED 单独成行（证明末空行 + 导言区 proof 重定义）· — · 不采纳 · 已渲染核对：全书统一如此，是 branch1 导言区与源码风格的整体效果；改动要么动导言区（硬约束），要么改全书 913 处证明结尾，转作者 · 否
+- gemini · 报告5/fragment · §1 片段修订稿（导言区宏、定义术语加 \emph、分节重排证明、`\neq`/`\ne` 统一等）· — · 部分采纳 · 只采纳其中与上面重合的内容（def:1.2.4、面积措辞、除法定理与 floor 的衔接见 muse 条）；导言区与全书风格改动不采纳（硬约束 / 转作者）· 否
+
+### muse
+
+- muse · 1 分页机制与 altproof 的 QED · — · 不采纳 · 导言区，硬约束；转作者 · 否
+- muse · 2 §1.2 次序（floor 先于除法定理、def:1.2.4 前向引用、代数词汇的位置）· — · 部分采纳 · def:1.2.4 前向引用已去掉（同 gemini 报告4）；章节次序与 Assumed background 搬移属结构调整，转作者 · 否
+- muse · 3 缺例子、除法定理两证 · — · 部分采纳 · 在除法定理替代证明之后加普通段落：用 Definition~\ref{def:1.2.1} 写出 $q=\lfloor a/b\rfloor$、$r=a-b\lfloor a/b\rfloor$，并给 $-7=(-3)\cdot3+2$ 的例子（同时回应 gemini 报告5“导读说用 floor 却未用”）；两证互换、删去替代证明中的唯一性部分不采纳（替代证明按全书体例自足）· 否（自行补充的说明与例子）
+- muse · 4 数字型 label、cleveref、计数器 · — · 不采纳 · 硬约束：label 与 branch1 相同；转作者 · 否
+- muse · 5 booktabs、microtype、hidelinks、`\leg` 行距、parindent · — · 不采纳 · 导言区，硬约束；转作者 · 否
+- muse · diff 中的定理斜体、example 环境、整除定义改写 · — · 不采纳 · 导言区 / 不新增环境；整除定义的边界说明保留 · 否
+
+### ernie
+
+- ernie · 2.1 L2101/L2602 · def:4.1.1、def:4.4.1 · P0 · 不采纳 · 全书只对非负整数用 $b$ 进制表示；def:4.4.1 先分离符号再展开的是小数部分，整数部分即按 def:4.1.1，已足够；留作者 · 否
+- ernie · 2.1 L2806/L2741 · def:4.5.2、def:4.5.1 · P0 · 采纳 · def:4.5.2 末补“As for integers, $v_p(0)=+\infty$”；def:4.5.1 的约定说明改为同时指向 Theorem 4.5.1(c) 与 Theorem 4.5.5(b) · 否
+- ernie · 2.1 L2833 · thm:4.5.5(b) · P0 · 不采纳 · 陈述的括号已说明约定下无条件成立，证明先处理 $q+r=0$ 正是为此，无矛盾 · 否
+- ernie · 2.1 L2706/L2228/L2286 · def:4.4.2、def:4.2.1、thm:4.2.x · P0 · 不采纳 · 上下文已固定所指的展开；前导零问题在 def:4.2.1 的求和写法中无歧义；留第 5 步 · 否
+- ernie · 2.1 L1022/L1031 · def:3.1.1、thm:3.1.1 · P0 · 部分采纳 · def:3.1.1 传递性一句补“for $c\in\mathbb{Z}$”；模数为正整数已由定义写明，thm:3.1.1 的量词不补 · 否
+- ernie · 2.1 L1593 · thm:3.4.5 证明后段落 · P0 · 交疑难复核 · 暂改为“can be checked without knowing $K$ … (computing $\varphi(m)$ itself may still require factoring $m$)”，见 escalate.md · 否
+- ernie · 2.1 L1721、L5043、L10524、L11340、L12267、L14048 · thm:3.5.5、thm:6.2.x Lucas、thm:8.6.8、费马数、$\Phi(x,z)$、$\sigma(A)$ · P0 · 不采纳 · 陈述正确，属写法偏好或已在证明中交代；留作者 · 否
+- ernie · 2.1 L4968 · def:6.2.1 · P0 · 不采纳 · 按定义 $m=1$ 时结论自然成立，无需特别说明 · 否
+- ernie · 2.1 L4994 · thm:6.2.2 · P0 · 采纳 · 句首补“Let $n\in\mathbb{Z}^+$.” · 否
+- ernie · 2.1 L6436 · thm:6.10.3 · P0 · 采纳 · 改为“there exist integers $x,y$” · 否
+- ernie · 2.1 L6541 · thm:6.11.4 · P0 · 采纳 · 句首补“Let $q\in\mathbb{Z}^+$.” · 否
+- ernie · 2.1 L8274 · def:7.7.1 · P0 · 采纳 · “every $a$”改为“every $a$ coprime to $p$” · 否
+- ernie · 2.1 L10163/L10179/L10577/L10494 · def:8.6.1、def:8.6.2、def:8.7.1 · P0 · 不采纳 · 定义只用到所述情形，$A_d=\mathbb{Z}[\sqrt d]$ 对任意非平方 $d$ 成立，没有声称是极大序；补充理论留作者 · 否
+- ernie · 2.1 L11790 · def:9.4.1 · P0 · 不采纳 · 定义与定理明确只对奇数 $n$，偶数情形不在讨论之内 · 否
+- ernie · 2.1 L11943/L12155 · $\pi(x)$、$\theta(x)$、$\psi(x)$ · P0 · 不采纳 · 已核对：$\pi(x)$ 首次出现即在 def:9.6.1，§5 没有用到；$\psi$ 全文未出现；$\theta$ 只在一个证明内使用 · 否
+- ernie · 2.1 L13224 · thm:10.8.2 · P0 · 不采纳 · “simple polygon”已排除顶点全共线的退化情形 · 否
+- ernie · 2.1 L13401 · thm:10.11.1 · P0 · 不采纳 · 陈述已写明等号情形需紧性 · 否
+- ernie · 2.1 L13675 · thm:11.3.4 · P0 · 不采纳 · $m=1$ 时为空乘积，全书约定已说明 · 否
+- ernie · 2.1 L14046 · §12.4 标题 · P0 · 不采纳 · 正文未使用该术语，只在标题中，留作者 · 否
+- ernie · 2.1 L11709 · thm:9.3.2 · P0 · 不采纳 · 已核对：Definition 7.9.1 对任意 $n\ge2$ 与 $d$ 成立，没有 $p\nmid d$ 的前提，审查看错了定义 · 否
+- ernie · 2.2 L13454 · “monic” · P0 · 采纳 · 首次出现处（thm:3.6.1 证明）补“(leading coefficient $1$)” · 否
+- ernie · 2.2 L3914 · “squarefree” · P0 · 不采纳 · 首次作为术语使用处（thm:5.3.2 证明）已就地定义 · 否
+- ernie · 2.2 其余（principal lower set、Mersenne prime、primitive values、lattice points、group action、$\mathrm{SL}_2$、fundamental discriminant、求和指标）· P0 · 不采纳 · 均为 branch1/baseline 原文，术语在上下文中可读；补定义属全书统一工作，转作者 · 否
+- ernie · 2.3 L3474 · def:5.1.1 · P0 · 采纳 · “It is called completely multiplicative”改为“Such an $f$, again not identically zero, is called completely multiplicative” · 否
+- ernie · 2.3 L4412 · thm:5.7.1 · P0 · 采纳 · 陈述中写明 $\gamma=\lim_{N\to\infty}(\sum_{n\le N}1/n-\ln N)$，存在性见证明 · 否
+- ernie · 2.3 其余（$\tau(1)$、$\Lambda(1)$、$\log 1$、$c_q(0)$、$k$ 为整数、五边形数乘积的约定、gcd 的零情形）· P0 · 不采纳 · 由定义可直接推出或上下文已说明；留作者 · 否
+- ernie · 2.4 L13619 · thm:11.3.4 · P0 · 采纳 · “the general case follows by reduction modulo primes not dividing $n$”改为“for general $n$ we argue directly, the key step being reduction modulo primes not dividing $n$” · 否
+- ernie · 2.4 L13648 · thm:11.3.4 · P0 · 采纳 · Fermat 小定理只用于非零系数，补“(a zero coefficient is unchanged)” · 是（小幅，补条件）
+- ernie · 2.4 L4096 · thm:5.3.4 后段落 · P0 · 采纳 · “as the proof above shows directly”改为说明“since the shifts fixing the word are exactly the multiples of $d$, as shown in the proof above” · 否
+- ernie · 2.4 L4090 · thm:5.3.4 · P0 · 不采纳 · 陈述正好给出 $A_m$、$L_m$、$N_m$ 三个公式 · 否
+- ernie · 2.4 L3784 · thm:5.2.4（奇完全数）· P0 · 采纳 · 补“write $a=a_1$” · 否
+- ernie · 2.4 L11370 · def:9.1.1 · P0 · 不采纳 · “composite”已蕴含 $N>1$，“the base $b$”上下文已明 · 否
+- ernie · 2.4 L11694 · thm:9.3.2 · P0 · 不采纳 · 证明开头两句是第 5 批有意采用的 branch2 思路概述，不是遗留 · 否
+- ernie · 2.4 L14135 · thm:12.5.1 · P0 · 采纳 · 补“Since $p_N(n)=p(n)$ for $n\le N$” · 否
+- ernie · 2.4 L14215 · thm:12.5.3 · P0 · 采纳 · “is therefore defined and reverses”改为“therefore applies to the result and reverses” · 否
+- ernie · 2.4 L9549/L9589、L9580、L372、L706 · thm:8.1.x、thm:2.1.x · P0 · 不采纳 · 两处是同一恒等式的两种符号写法；`\qedhere` 无害；“no zero divisors”是标准说法；留作者 · 否
+- ernie · 3.1 L3591 · thm:5.1.5 替代证明 · P1 · 采纳 · 引用改为“(Theorem~\ref{thm:3.4.2}, together with $\varphi(1)=1$)” · 否
+- ernie · 3.1 L4626 · thm:5.7.4 证明 · P1 · 采纳 · 补“(with $\varphi(1)=1$)”和“(Theorem~\ref{thm:3.4.3})” · 否
+- ernie · 3.1 L13586 · thm:11.3.3(b) · P1 · 采纳 · 引用改为“(Definition~\ref{def:6.11.1} and Theorem~\ref{thm:6.11.1})” · 否
+- ernie · 3.1 L13610、L13711 · thm:11.3.4、thm:11.4.1 后段落 · P1 · 不采纳 · 前者已引 Theorem 6.11.2；后者 7.8.3 只是该引理的特例，说法正确 · 否
+- ernie · 3.1 L13026 · thm:10.5.1 · P1 · 不采纳 · $[0;1,\ldots,1]$ 正是 $[0;\overline1]$ 的渐近分数，引 Theorem 10.3.4 正确 · 否
+- ernie · 3.1 L11425 · thm:9.1.5 · P1 · 不采纳 · 同一证明上文已说明 Jacobi 符号的定义，乘积式直接来自 Definition 7.6.1；留第 5 步 · 否
+- ernie · 3.2 L13000 · thm:10.5.1 · P1 · 采纳 · 引用补分项“(Theorem~\ref{thm:10.3.3}(c))” · 否
+- ernie · 3.2 L10563 · thm:8.6.8 · P1 · 采纳 · 同 gpt R03 · 否
+- ernie · 3.2 其余（未标分项、引用过略、$\mu_P$、Euler 乘积两处、$\tau,\sigma$ 的 $f(1)=1$、陈述与证明衔接等）与 3.3 定义位置 · P1 · 不采纳 · 均为 branch1/baseline 原文的精度问题，不影响正确性；留第 5 步统一审查 · 否
+- ernie · 4.1/4.2/4.3 · 记号多义、多套记号、标题与内容 · P2 · 不采纳 · 全书范围的改名或改标题，超出合并修正；转作者 · 否
+- ernie · 5（英文语言）L1405 · thm:3.3.3 后段落 · P3 · 采纳 · 补“$\not\equiv1$” · 否
+- ernie · 5 L4816 · thm:6.1.1 后说明 · P3 · 采纳 · “the special case of the group $\ZmodUnits{m}$”改为“the special case $G=\ZmodUnits{m}$” · 否
+- ernie · 5 L9481 · thm:8.1.1 · P3 · 采纳 · 同余式补模数 $\pmod{p}$ · 否
+- ernie · 5 L10437 · thm:8.6.3 · P3 · 采纳 · “be reduced”改为“be a reduced form” · 否
+- ernie · 5 L11059 · thm:8.8.2 · P3 · 采纳 · 两个“its”改为写明 $\delta$ 与 B{\'e}zout 等式 · 否
+- ernie · 5 L14358 · thm:12.6.1 · P3 · 采纳 · 分号改句号 · 否
+- ernie · 5 L6112 · def:6.9.1 · P3 · 不采纳 · $t(m)$ 确是唯一的那个最小正代表系，定冠词正确 · 否
+- ernie · 5 其余各行（L287、L301、L361 等约 55 条）· P3 · 不采纳 · 措辞偏好，原文无误；留作者统一润色 · 否
+- ernie · 6（排版统计、缩进、数学空格、`\pmod`/`\ne` 统一、超长行、导言区两处）· P4 · 不采纳 · branch1 源码风格，批量改动与合并无关且会扰动所有差异；导言区受硬约束；转作者 · 否

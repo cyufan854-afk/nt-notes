@@ -122,7 +122,7 @@ We use the following facts without separate proof.
     We assume the elementary properties of $\exp$, $\ln$, $\sin$, $\cos$, $\tan$, and $\cot$, including their derivatives, monotonicity on the usual intervals, power series, and the trigonometric addition formulas.
     Angles are measured in radians, $\pi$ is the least positive zero of $\sin$, and $\sin$ is positive on $(0,\pi)$.
   \item \emph{Plane geometry and area.} In Theorem~\ref{thm:5.7.3} and the sections on lattice points, we use area for the regions considered, including convex sets.
-    Area is nonnegative, monotone, countably additive on disjoint regions of this kind, and invariant under translation.
+    Area is nonnegative, monotone, finitely additive on disjoint regions of this kind (and countably additive when the union is again such a region), and invariant under translation.
     An invertible linear map $T$ multiplies area by $|\det T|$.
     A circular sector of radius $1$ and angle $\theta\in(0,2\pi]$ has area $\theta/2$, and a disk of radius $r$ has area $\pi r^2$.
     A simple polygon bounds an interior region; its interior angle at a vertex of its convex hull is less than $\pi$; and a polygonal path joining two distinct points on the polygon's boundary, lying otherwise in its interior and not self-intersecting, divides the polygon into two simple polygons.
@@ -150,10 +150,10 @@ $\{x\}$ & Fractional part $x-\lfloor x\rfloor$; braces denote a set when their c
 $\lVert x\rVert$ & Distance from $x$ to the nearest integer & \ref{def:1.2.4} \\
 $\gcd(a,b)$ & Greatest common divisor, chosen nonnegative & \ref{def:2.2.1} \\
 $\varphi(n)$ & Euler's totient function & \ref{def:3.2.5} \\
-$v_p(x)$ & Exponent of $p$ in an integer or nonzero rational & \ref{def:4.5.1}, \ref{def:4.5.2} \\
+$v_p(x)$ & Exponent of $p$ in a nonzero rational $x$ ($v_p(0)=+\infty$) & \ref{def:4.5.1}, \ref{def:4.5.2} \\
 $\mu(n)$ & M{\"o}bius function & \ref{def:5.3.6} \\
 $\Lambda(n)$ & von Mangoldt function & \ref{def:5.5.1} \\
-$\delta_m(a)$ & Multiplicative order of $a$ modulo $m$ & \ref{def:6.1.1} \\
+$\delta_m(a)$ & Multiplicative order of $a$ modulo $m$, for $\gcd(a,m)=1$ & \ref{def:6.1.1} \\
 $\lambda(m)$ & Carmichael function & \ref{def:6.4.1} \\
 $\leg{a}{p}$ & Legendre symbol, for an odd prime $p$ & \ref{def:7.2.1} \\
 $\leg{a}{n}$ & Jacobi symbol for odd $n>0$; Kronecker symbol for general $n$ when specified & \ref{def:7.6.1}, \ref{def:7.6.2} \\
@@ -197,7 +197,7 @@ functions and the division algorithm to control quotients and remainders.
 		\item (linear combinations) Let $m\ge1$ be an integer.
 		      Let $b_1,\ldots,b_m,w_1,\ldots,w_m\in\mathbb{Z}$. If $a\mid b_i$ for every $i$, then $a\mid\sum_{i=1}^{m}w_i b_i$.
 		\item (mutual divisibility) If $a\mid b$ and $b\mid a$, then $a=\pm b$; in particular, if $a,b\in\mathbb{Z}^+$, then $a=b$.
-		\item The relation on $\mathbb{Z}^+$ defined by $a\mid b$ is a partial order.
+		\item The relation on $\mathbb{Z}^+$ defined by $a\mid b$ is a partial order, that is, it is reflexive, antisymmetric, and transitive.
 	\end{enumerate}
 
 \end{theorem}
@@ -222,7 +222,7 @@ functions and the division algorithm to control quotients and remainders.
 		      If $a, b \in \mathbb{Z}^+$, then both are positive, so $a = b$.
 		\item Reflexivity ($a \mid a$), transitivity (b), and antisymmetry
 		      (d) together show that the divisibility relation $a \mid b$ is a partial order on
-		      $\mathbb{Z}^+$.
+		      $\mathbb{Z}^+$.\qedhere
 	\end{enumerate}
 
 \end{proof}
@@ -242,7 +242,7 @@ functions and the division algorithm to control quotients and remainders.
 
 \end{definition}
 \begin{definition}[distance to the nearest integer]\label{def:1.2.4}
-	For $x\in\mathbb{R}$, put $\lVert x\rVert=\min_{k\in\mathbb{Z}}|x-k|$; the minimum is attained (Theorem~\ref{thm:4.3.1}(g)).
+	For $x\in\mathbb{R}$, put $\lVert x\rVert=\min_{k\in\mathbb{Z}}|x-k|$. The minimum is attained: $|x-k|\ge\{x\}$ for $k\le\lfloor x\rfloor$ and $|x-k|\ge1-\{x\}$ for $k\ge\lfloor x\rfloor+1$, with equality at $k=\lfloor x\rfloor$ and $k=\lfloor x\rfloor+1$, so $\lVert x\rVert=\min\{\{x\},1-\{x\}\}$ (see also Theorem~\ref{thm:4.3.1}(g)).
 
 \end{definition}
 \begin{theorem}[division algorithm]\label{thm:1.2.1}
@@ -280,6 +280,11 @@ functions and the division algorithm to control quotients and remainders.
 	Then $(q-q')b=0$ with $b\ne0$, so $q=q'$.
 
 \end{altproof}
+
+In terms of Definition~\ref{def:1.2.1}, the condition $0\le r<b$ says exactly that
+$q\le a/b<q+1$, so the quotient is $q=\lfloor a/b\rfloor$ and the remainder is
+$r=a-b\lfloor a/b\rfloor$. For example, $-7=(-3)\cdot3+2$, so dividing $-7$ by $3$
+gives quotient $-3=\lfloor-7/3\rfloor$ and remainder $2$; the remainder is never negative.
 \clearpage
 
 \section{Primes, the Euclidean Algorithm, and Diophantine Equations}
@@ -853,6 +858,10 @@ appear after Theorem~\ref{thm:4.6.4}.
 	$F_1 = 1$, and $F_{n+1} = F_n + F_{n-1}$ for $n \ge 1$.
 
 \end{definition}
+
+The initial values $F_1=F_2=1$ and the recurrence show by induction that
+$F_k>0$ for every $k\ge1$; in particular, $F_k\ge0$ for every $k\ge0$.
+
 \begin{theorem}\label{thm:2.5.1} For all integers
 	$m \ge 1$ and $n \ge 0$, we have $F_{m+n} = F_m F_{n+1} + F_{m-1} F_n$.
 
@@ -930,8 +939,8 @@ appear after Theorem~\ref{thm:4.6.4}.
 
 \end{theorem}
 
-\begin{proof} The initial values $F_1 = F_2 = 1$ and the recurrence show by induction that
-	$F_k>0$ for every $k\ge1$. Hence, by Theorem~\ref{thm:2.5.4}, $F_m \mid F_n$ if and only if
+\begin{proof} Recall that $F_k>0$ for every $k\ge1$ (see the paragraph after
+	Definition~\ref{def:2.5.1}). Hence, by Theorem~\ref{thm:2.5.4}, $F_m \mid F_n$ if and only if
 		$\gcd(F_m, F_n) = F_m$, that is, if and only if $F_{\gcd(m, n)} = F_m$. By positivity,
 	$F_{k+1} = F_k + F_{k-1} > F_k$ for every $k \ge 2$, so
 	the sequence is strictly increasing from $F_2$ onward. Since $F_3 = 2$,
@@ -1024,7 +1033,7 @@ theorem lead to exponent reduction, binomial congruences, and polynomial root bo
 
 	For each fixed $n$, congruence modulo $n$ is an equivalence relation on
 	$\mathbb{Z}$: $n\mid(a-a)$ gives reflexivity; $n\mid(a-b)$ implies
-	$n\mid(b-a)$, giving symmetry; and $n\mid(a-b)$ together with
+	$n\mid(b-a)$, giving symmetry; and, for $c\in\mathbb{Z}$, $n\mid(a-b)$ together with
 	$n\mid(b-c)$ implies $n\mid(a-c)$, giving transitivity.
 
 \end{definition}
@@ -1144,8 +1153,8 @@ theorem lead to exponent reduction, binomial congruences, and polynomial root bo
 	dividing by $d$ yields $a' r + m' s = 1$, whence $\gcd(a', m') = 1$.
 	Dividing $ax - b = my$ through by $d$ shows that
 	$ax \equiv b \pmod{m}$ holds if and only if $a' x \equiv b'
-		\pmod{m'}$. Since $\gcd(a', m') = 1$, Theorem~\ref{thm:3.2.1} provides an integer
-	$u$ with $a' u \equiv 1 \pmod{m'}$, and the reduced congruence is
+		\pmod{m'}$. Since $\gcd(a', m') = 1$, the inverse $u$ of the statement exists
+	(Theorem~\ref{thm:3.2.1}) and satisfies $a' u \equiv 1 \pmod{m'}$, so the reduced congruence is
 	equivalent to $x \equiv b'u \pmod{m'}$. Thus $x_1=b'u$ is a solution,
 	and all integer solutions are $x=x_1+m'v$ with $v\in\mathbb{Z}$.
 	Write $v=qd+t$ with $0\le t<d$. Since $dm'=m$, this gives
@@ -1330,7 +1339,7 @@ Put $k=\varphi(n)$. Since $a$ and every $r_i$ are coprime to $n$,
 \end{proof}
 
 An alternative proof using binomial congruences, prime-power lifting, and the Chinese remainder theorem
-appears after Theorem~\ref{thm:3.5.12}, once Theorems~\ref{thm:3.5.2} and~\ref{thm:3.5.12} have established the needed tools.
+appears after Theorem~\ref{thm:3.5.12}, which together with Theorem~\ref{thm:3.5.2} supplies the needed tools.
 
 \begin{samepage}
 \begin{theorem}[Fermat's little theorem]\label{thm:3.3.2} Let $p$ be a prime and $a\in\mathbb{Z}$ with $\gcd(a,p)=1$. Then $a^{p-1}\equiv1\pmod{p}$.
@@ -1404,7 +1413,7 @@ so Theorem~\ref{thm:3.2.1} gives $\gcd(a,n)=1$.
 
 The restriction $p>3$ in Theorem~\ref{thm:3.3.3} cannot be dropped:
 $n_3=21$ is composite, but $2^6=64\equiv1\pmod{21}$ gives
-$2^{20}=(2^6)^3\cdot4\equiv4\pmod{21}$.
+$2^{20}=(2^6)^3\cdot4\equiv4\not\equiv1\pmod{21}$.
 
 \begin{theorem}[Wilson's theorem]\label{thm:3.3.4} An integer
 	$p>1$ is prime if and only if $(p-1)!\equiv-1\pmod{p}$.
@@ -1594,7 +1603,7 @@ Unlike the Fermat--Euler theorem (Theorem~\ref{thm:3.3.1}), Theorem~\ref{thm:3.4
 does not require the coprimality hypothesis $\gcd(a,m)=1$. It replaces the exponent
 $n$ by an integer $E=(n\bmod\varphi(m))+\varphi(m)$ satisfying
 $\varphi(m)\le E<2\varphi(m)$; this new exponent need not be smaller than $n$.
-The sufficient condition $n\ge\log_2 m$ is convenient when a factorization of $m$ is unavailable.
+The sufficient condition $n\ge\log_2 m$ can be checked without knowing $K$, that is, without the exponents in the factorization of $m$ (computing $\varphi(m)$ itself may still require factoring $m$).
 
 \subsection{Binomial Congruences and Wolstenholme's Theorem}
 
@@ -1688,6 +1697,13 @@ The sufficient condition $n\ge\log_2 m$ is convenient when a factorization of $m
 	Definition~\ref{def:3.2.2}.
 
 \end{definition}
+
+For integers $a,b$ with $p\nmid b$, the fraction $a/b$ is a unit in
+$\mathbb{Z}_{(p)}$ if and only if $p\nmid a$. If $p\nmid a$, then its
+reciprocal $b/a$ belongs to $\mathbb{Z}_{(p)}$. Conversely, if
+$(a/b)(c/d)=1$ with $p\nmid d$, then $ac=bd$. Since $p\nmid bd$,
+we have $p\nmid a$.
+
 \begin{theorem}[congruence of fractions]\label{thm:3.5.4}
 	Let $p$ be a prime and $r\in\mathbb{Z}^+$. For $x=a/b$ and $y=c/d$ with
 	$a,b,c,d\in\mathbb{Z}$ and $p\nmid bd$,
@@ -1742,7 +1758,7 @@ The sufficient condition $n\ge\log_2 m$ is convenient when a factorization of $m
 \end{theorem}
 
 \begin{proof} Since $\gcd(i, p)=1$ for all $i\in\{1,\ldots,p-1\}$,
-	the inverse $i^{-1}$ modulo $p$ exists and is unique. For $i\neq j$ in that range,
+	an inverse $i^{-1}$ modulo $p$ exists and is unique modulo $p$. For $i\neq j$ in that range,
 	$i^{-1}\not\equiv j^{-1}\pmod{p}$: multiplying a congruence
 	$i^{-1}\equiv j^{-1}\pmod{p}$ by $ij$ would give $j\equiv i\pmod{p}$,
 	contradicting $i\neq j$ and $1\le i,j\le p-1$. Inversion therefore
@@ -2032,7 +2048,7 @@ The sufficient condition $n\ge\log_2 m$ is convenient when a factorization of $m
 
 \begin{proof} We argue by induction on $k$. When $k=0$,
 	take $g=f$. For the second base case, when $k=1$, dividing the integer
-	polynomial $f$ by the monic linear
+	polynomial $f$ by the monic (leading coefficient $1$) linear
 	polynomial $x - x_1$ using the usual algorithm (at each step subtracting an integer multiple of $x^{j}(x - x_1)$, for a suitable $j \ge 0$, to cancel the current leading term, which keeps every coefficient an integer) yields
 	$f(x) = (x - x_1) q(x) + r$ with $q(x)$ an integer-coefficient
 	polynomial and $r \in \mathbb{Z}$; then $0 \equiv
@@ -2738,7 +2754,7 @@ the positive integers not exceeding $x$.
 	$v_p(n)$ is the exponent of $p$ in the prime factorization of $|n|$;
 	equivalently, $v_p(n)$ is the largest integer $\alpha \ge 0$ with
 	$p^{\alpha} \mid n$. By convention, $v_p(0)=+\infty$, taken to be greater than every integer.
-	This convention allows the valuation inequality (Theorem~\ref{thm:4.5.1}(c)) to apply when a sum is zero; the power and quotient formulas below retain the hypothesis that their inputs are nonzero.
+	This convention allows the valuation inequalities (Theorems~\ref{thm:4.5.1}(c) and~\ref{thm:4.5.5}(b)) to apply when a sum is zero; the power and quotient formulas below retain the hypothesis that their inputs are nonzero.
 	If $p_1,p_2,\ldots,p_r$ are the distinct prime divisors of a nonzero
 	integer $n$, then the fundamental theorem of arithmetic (Theorem~\ref{thm:2.3.3}) gives
 	$|n|=\prod_{i=1}^{r}p_i^{v_{p_i}(n)}$ (for $n=\pm1$ we have $r=0$, and the empty product is $1$).
@@ -2806,7 +2822,7 @@ the positive integers not exceeding $x$.
 \begin{definition}[$p$-adic valuation on $\mathbb{Q}^{\times}$]\label{def:4.5.2} For a prime $p$, let $q \in \mathbb{Q}^{\times}$, the multiplicative group
 	of nonzero rationals. Choose
 	$a,b\in\mathbb{Z}^+$ with $q=\pm a/b$ and set
-	$v_p(q)=v_p(a)-v_p(b)$.
+	$v_p(q)=v_p(a)-v_p(b)$. As for integers, $v_p(0)=+\infty$ (Definition~\ref{def:4.5.1}).
 
 \end{definition}
 \begin{theorem}\label{thm:4.5.4} The value prescribed in Definition~\ref{def:4.5.2} is
@@ -3471,7 +3487,7 @@ inversion provide identities, while average orders describe their aggregate beha
 	arithmetic function is a function $f:\mathbb{Z}^+\to\mathbb{C}$. An arithmetic
 	function $f$ that is not identically zero is called multiplicative
 	if $f(mn)=f(m)f(n)$ for all $m,n\in\mathbb{Z}^+$
-	with $\gcd(m, n)=1$. It is called completely multiplicative if $f(mn)=f(m)f(n)$ for all $m,n\in\mathbb{Z}^+$, with no coprimality condition.
+	with $\gcd(m, n)=1$. Such an $f$, again not identically zero, is called completely multiplicative if $f(mn)=f(m)f(n)$ for all $m,n\in\mathbb{Z}^+$, with no coprimality condition.
 
 \end{definition}
 \begin{theorem}\label{thm:5.1.1}
@@ -3588,7 +3604,7 @@ inversion provide identities, while average orders describe their aggregate beha
 
 \end{proof}
 \begin{altproof}[Alternative proof of Theorem~\ref{thm:5.1.5} via multiplicativity]
-	Since $\varphi$ is multiplicative (Theorem~\ref{thm:3.4.2}), Theorem~\ref{thm:5.1.3} shows that
+	Since $\varphi$ is multiplicative (Theorem~\ref{thm:3.4.2}, together with $\varphi(1)=1$), Theorem~\ref{thm:5.1.3} shows that
 	$F(n)=\sum_{d\mid n}\varphi(d)$ is multiplicative. If
 	$n=\prod_{i=1}^{k}p_i^{a_i}$, where the $p_i$ are distinct primes and
 	$a_i\in\mathbb{Z}^+$, then
@@ -3780,7 +3796,7 @@ A further alternative proof of Theorem~\ref{thm:5.1.5}, via Dirichlet series, ap
 	$2n\equiv2\pmod{4}$, so $v_2(\sigma(n))=1$: exactly one factor $\sigma(p_i^{a_i})$ is even, and that factor is congruent to $2\pmod{4}$, while the remaining factors are odd.
 	Now $\sigma(p^{a})=1+p+\cdots+p^{a}$ has $a+1$ odd terms, so it is
 	odd if and only if $a$ is even. Thus exactly one exponent, say $a_1$, is odd and
-	the others are even. For the exceptional prime $p=p_1$, if $p\equiv3\pmod{4}$, then
+	the others are even. For the exceptional prime $p=p_1$, write $a=a_1$; if $p\equiv3\pmod{4}$, then
 	$1,p,p^2,\ldots\equiv1,3,1,3,\ldots\pmod{4}$ and the $a+1$ terms (an even number of them)
 	group into pairs $(1,3)$, which gives $\sigma(p^{a})\equiv0\pmod{4}$ and
 	contradicts the earlier congruence $\sigma(p^{a})\equiv2\pmod{4}$; hence $p\equiv1\pmod{4}$, and then
@@ -4094,7 +4110,8 @@ appears after Theorem~\ref{thm:5.4.1}.
 For a word of least cyclic
 period $d$, the shifts fixing it form a subgroup of $(\mathbb{Z}_n,+)$.
 The $d$ cosets of this subgroup correspond to the distinct rotations
-(Definition~\ref{def:6.6.4}), as the proof above shows directly.
+(Definition~\ref{def:6.6.4}), since the shifts fixing the word are exactly the
+multiples of $d$, as shown in the proof above.
 
 \begin{theorem}\label{thm:5.3.5} If $f$ and $g$ are multiplicative functions, then
 	$f*g$ is multiplicative.
@@ -4409,7 +4426,7 @@ Both sides equal
 	In particular, $\sum_{n\le x}g(n)$ must be nonzero for all sufficiently large $x$.
 
 \end{definition}
-\begin{theorem}\label{thm:5.7.1} Let $\gamma$ be Euler's constant. Then:
+\begin{theorem}\label{thm:5.7.1} Let $\gamma=\lim_{N\to\infty}\bigl(\sum_{n\le N}\frac1n-\ln N\bigr)$ be Euler's constant; the limit exists, as shown in the proof. Then:
 	\begin{enumerate}[label={\alph*)}]
 		\item as $x\to\infty$, $\displaystyle \sum_{n\le x}\frac{1}{n}=\ln x+\gamma+O\!\left(\frac{1}{x}\right)$;
 		\item as $x\to\infty$, $\displaystyle \sum_{n>x}\frac{1}{n^{2}}=O\!\left(\frac{1}{x}\right)$;
@@ -4623,7 +4640,7 @@ Both sides equal
 	\]
 	by Theorem~\ref{thm:5.7.1}(b).
 
-	For $f=\varphi$, Theorem~\ref{thm:3.4.2} and $\varphi(p^a)=p^a-p^{a-1}$ for $a\ge1$ give, when $s>2$,
+	For $f=\varphi$, Theorem~\ref{thm:3.4.2} (with $\varphi(1)=1$) and $\varphi(p^a)=p^a-p^{a-1}$ for $a\ge1$ (Theorem~\ref{thm:3.4.3}) give, when $s>2$,
 	\[
 		\begin{aligned}
 			\sum_{a=0}^{\infty}\frac{\varphi(p^a)}{p^{as}}
@@ -4816,7 +4833,7 @@ subgroup, cyclic group, and element order, see Definitions~\ref{def:6.6.1}--\ref
 	Parts (a)--(d) hold for any element of finite order in a group,
 	and (e)--(g) hold for any two commuting elements of finite order, with
 	$\delta_m(\cdot)$ interpreted as the order of the element. The statement above
-	is the special case of the group $\ZmodUnits{m}$.
+	is the special case $G=\ZmodUnits{m}$.
 
 \end{theorem}
 
@@ -4991,7 +5008,7 @@ subgroup, cyclic group, and element order, see Definitions~\ref{def:6.6.1}--\ref
 		\varphi(m)$.
 
 \end{proof}
-\begin{theorem}\label{thm:6.2.2} If there exists a primitive root
+\begin{theorem}\label{thm:6.2.2} Let $n\in\mathbb{Z}^+$. If there exists a primitive root
 	modulo $n$, then there are exactly $\varphi(\varphi(n))$ pairwise
 	incongruent primitive roots modulo $n$.
 
@@ -5019,8 +5036,8 @@ subgroup, cyclic group, and element order, see Definitions~\ref{def:6.6.1}--\ref
 	which gives exactly $d$ solutions, namely
 	$\{g^{i\varphi(n)/d}\mid0\le i<d\}$. Since these are exactly the
 	classes whose order divides $d$, we obtain $\sum_{e \mid d} N(e) = d$. Comparing with
-	$\sum_{e \mid d}\varphi(e) = d$ and applying M{\"o}bius inversion gives
-	$N(d) = \varphi(d)$. Taking $d = \varphi(n)$ gives $N(\varphi(n)) =
+	$\sum_{e \mid d}\varphi(e) = d$ (Theorem~\ref{thm:5.1.5}) and applying M{\"o}bius inversion
+	(Theorem~\ref{thm:5.3.2}(c)) gives $N(d) = \varphi(d)$. Taking $d = \varphi(n)$ gives $N(\varphi(n)) =
 		\varphi(\varphi(n))$.
 
 \end{altproof}
@@ -6433,7 +6450,7 @@ applies when that additional hypothesis holds.
 	so the integer $|Z|$ satisfies $|Z|\equiv0\pmod p$. If all constant terms vanish, then $(0,\ldots,0)\in Z$, so $|Z|\ge1$. Since the positive integer $|Z|$ is divisible by $p$, in fact $|Z|\ge p\ge2$; therefore $Z$ contains a point different from $(0,\ldots,0)$.\qedhere
 
 \end{proof}
-\begin{theorem}\label{thm:6.10.3} For every odd prime $p$ there exist $x, y$ with $1 + x^{2} +
+\begin{theorem}\label{thm:6.10.3} For every odd prime $p$ there exist integers $x, y$ with $1 + x^{2} +
 		y^{2} \equiv 0 \pmod{p}$.
 
 \end{theorem}
@@ -6538,7 +6555,7 @@ Theorem~\ref{thm:12.2.1}.
 	Theorem~\ref{thm:5.1.5}, which is the left-hand side.
 
 \end{proof}
-\begin{theorem}\label{thm:6.11.4} If the roots of $\Phi_q$ are $\omega_1,\ldots,\omega_{\varphi(q)}$, then for every integer $n\ge1$,
+\begin{theorem}\label{thm:6.11.4} Let $q\in\mathbb{Z}^+$. If the roots of $\Phi_q$ are $\omega_1,\ldots,\omega_{\varphi(q)}$, then for every integer $n\ge1$,
 	\[
 		c_q(n)=\sum_{\substack{1\le k\le q\\\gcd(k,q)=1}}\zeta_q^{kn}=\sum_{j=1}^{\varphi(q)}\omega_j^n.
 	\]
@@ -7062,7 +7079,7 @@ Theorem~\ref{thm:7.2.1}.
 	quadratic residues in all, they represent every one of them.
 
 \end{proof}
-\begin{altproof}[Alternative proof of Theorem~\ref{thm:7.2.2} via the squaring map] The map $x
+\begin{altproof}[Alternative proof of the counting assertion in Theorem~\ref{thm:7.2.2} via the squaring map] The map $x
 		\mapsto x^{2}$ from the $p-1$ nonzero classes onto the set of
 	quadratic residues is two-to-one: $x^{2} \equiv y^{2} \pmod{p}$ holds if and
 	only if $p \mid (x-y)(x+y)$, that is, if and only if $y \equiv \pm x$,
@@ -7776,7 +7793,7 @@ Atkin's algorithm (Theorem~\ref{thm:7.6.8}) when $a=1$.
 
 \end{altproof}
 
-A further alternative proof of Theorem~\ref{thm:7.5.1}, via Gauss sums in finite fields, appears after
+A further alternative proof of Theorem~\ref{thm:7.5.1}, via Gauss sums, appears after
 Theorem~\ref{thm:7.10.3}, once its algebraic tools have been introduced.
 
 \begin{theorem}\label{thm:7.5.2} For an odd prime $p$:
@@ -8271,7 +8288,7 @@ $1/2$.
 \begin{definition}[$n$-th power residue]\label{def:7.7.1}
 	Let $p$ be an odd prime, let $a\in\mathbb{Z}$ with $\gcd(a, p) = 1$, and let $n \ge 1$ be an integer. If $x^{n} \equiv a
 		\pmod{p}$ has a solution, $a$ is an $n$-th power residue modulo $p$;
-	otherwise, it is an $n$-th power non-residue. For $n = 1$, every $a$ is a
+	otherwise, it is an $n$-th power non-residue. For $n = 1$, every $a$ coprime to $p$ is a
 	first power residue (take $x = a$). For $n = 2, 3, 4$, these are
 	the quadratic, cubic, and quartic (biquadratic) residues.
 
@@ -9146,7 +9163,7 @@ $1/2$.
 	equals $1$, and $G_p=i\sqrt{p}$.
 
 \end{proof}
-\begin{altproof}[Alternative proof of Theorem~\ref{thm:7.5.1} via Gauss sums in finite fields]
+\begin{altproof}[Alternative proof of Theorem~\ref{thm:7.5.1} via Gauss sums]
 	Let $p$ and $q$ be distinct odd primes. Put
 	\[
 		\Phi_p(T)=1+T+\cdots+T^{p-1}\in\mathbb{F}_q[T],\qquad
@@ -9478,7 +9495,7 @@ identities, factorization, and reduction of forms offer complementary approaches
 	By the pigeonhole principle, two distinct pairs $(u_1, v_1) \neq (u_2, v_2)$ satisfy
 	$u_1 - a v_1 \equiv u_2 - a v_2 \pmod{p}$. Put $x = u_1 - u_2$, $y =
 		v_1 - v_2$; then $x \equiv a y \pmod{p}$, $|x|, |y| \le k < \sqrt{p}$,
-	and $(x,y) \neq (0,0)$. If $y = 0$, then $x \equiv 0$ with $|x| < \sqrt{p}$
+	and $(x,y) \neq (0,0)$. If $y = 0$, then $x \equiv 0 \pmod{p}$ with $|x| < \sqrt{p}$
 	forces $x = 0$, a contradiction; hence $y \neq 0$, and then $0 < |y| < \sqrt{p} \le p$ gives $p \nmid y$, so
 	$p \nmid ay$ because $\gcd(a, p) = 1$; thus $x \equiv ay \not\equiv 0
 		\pmod{p}$ and $x \neq 0$.
@@ -10434,7 +10451,7 @@ to the commutative-ring convention used elsewhere in these notes
 	so $p^2\mid(2x+\beta y)^2-Dy^2=4p$, which is impossible. Thus $y$ is invertible
 	modulo $p$, so $D$ is a square modulo $p$ and $\leg{D}{p} = 1$.
 	To verify the three stated class numbers, let
-	$D\in\{-7,-4,-8\}$ and let $(a,b,c)$ be reduced. Then
+	$D\in\{-7,-4,-8\}$ and let $(a,b,c)$ be a reduced form. Then
 	$3a^2\le|D|\le8$, so the positive integer $a$ must be $1$.
 	Also $b\equiv D\pmod2$ and $|b|\le1$; when $|b|=1$,
 	the boundary rule selects $b=1$. The value $c=(b^2-D)/4$ is then forced:
@@ -10560,7 +10577,10 @@ to the commutative-ring convention used elsewhere in these notes
 	$a = 1$, only $b = 0,\ c = 5$ works, giving $(1, 0, 5) = x^{2} +
 		5y^{2}$, and for $a = 2$, only $b = \pm 2,\ c = 3$ works, where the
 	boundary rule $b \ge 0$ (as $|b| = a$) selects $(2, 2, 3) = 2x^{2} +
-		2xy + 3y^{2}$. Both are primitive, so $h(-20) = 2$.
+		2xy + 3y^{2}$. Both are primitive. By Theorem~\ref{thm:8.6.3}, they represent the two
+	proper-equivalence classes of primitive positive-definite forms of
+	discriminant $-20$, so $h(-20)=2$. Proper equivalence preserves the
+	represented integers by Theorem~\ref{thm:8.6.1}(a).
 	To distinguish the two forms, note that $5 \equiv 1 \pmod{4}$ gives $x^{2} + 5y^{2}
 		\equiv x^{2} + y^{2} \pmod{4}$, so an odd value of $x^{2} + 5y^{2}$ is
 	congruent to $1 \pmod{4}$; hence $p = x^{2} + 5y^{2}$ forces $p \equiv 1
@@ -11056,8 +11076,8 @@ to the commutative-ring convention used elsewhere in these notes
 	Let $\pi$ be irreducible and suppose $\pi\mid\alpha\beta$ but
 	$\pi\nmid\alpha$. A greatest common divisor of $\pi$ and $\alpha$ must
 	be a unit, since every divisor of $\pi$ is a unit or an associate of $\pi$.
-	Multiplying its B{\'e}zout identity by its inverse gives
-	$u\pi+v\alpha=1$. Multiplication by $\beta$ now proves $\pi\mid\beta$.
+	If $\delta$ is such a greatest common divisor, multiplying a B{\'e}zout identity
+	$u'\pi+v'\alpha=\delta$ by $\delta^{-1}$ gives $u\pi+v\alpha=1$. Multiplication by $\beta$ now proves $\pi\mid\beta$.
 	Thus every irreducible is prime. Conversely, if a prime $\pi$ equals
 	$\alpha\beta$, it divides one factor. If $\alpha=\pi\gamma$, cancellation
 	in $\pi=\pi\gamma\beta$ gives $\gamma\beta=1$. Hence $\beta$ is a unit,
@@ -12671,7 +12691,7 @@ perspective, connecting Diophantine questions with area and convexity.
 	fraction of integers, hence rational. Conversely, apply the algorithm to
 	$\theta=p/q$: set $s_0=p$, $s_1=q$, so $\theta_0=s_0/s_1$. Each step performs
 	the Euclidean division $s_n=a_ns_{n+1}+s_{n+2}$ with
-	$0\le s_{n+2}<s_{n+1}$; since $\theta_n=s_n/s_{n+1}$, this gives
+	$0\le s_{n+2}<s_{n+1}$; if $s_{n+2}>0$, then, since $\theta_n=s_n/s_{n+1}$,
 	$\theta_{n+1}=1/(\theta_n-a_n)=s_{n+1}/s_{n+2}$, which is exactly one step of the Euclidean algorithm. The remainders $q=s_1>s_2>\cdots\ge0$ strictly decrease,
 	so there is a least $N\ge0$ with $s_{N+2}=0$. At that stage
 	$s_N=a_Ns_{N+1}$ with $s_{N+1}\neq0$, so
@@ -12997,7 +13017,7 @@ perspective, connecting Diophantine questions with area and convexity.
 	$\beta_n=q_{n-1}/q_n$ (which lies in $(0,1]$ for $n\ge1$, with
 	$\beta_n<1$ for $n\ge2$). From
 	$\alpha=\dfrac{\alpha_{n+1}p_n+p_{n-1}}{\alpha_{n+1}q_n+q_{n-1}}$
-	(Theorem~\ref{thm:10.3.3}) one gets
+	(Theorem~\ref{thm:10.3.3}(c)) one gets
 	$\big|\alpha-\tfrac{p_n}{q_n}\big|=\dfrac{1}{q_n^2(\alpha_{n+1}+\beta_n)}$,
 	so the inequality at index $n$ holds if and only if
 	$\alpha_{n+1}+\beta_n>\sqrt{5}$. Suppose it failed at three consecutive
@@ -13583,7 +13603,7 @@ and Hensel lifting extend the congruence methods developed earlier.
 		      irreducible over $\mathbb{Q}$.
 		\item For every prime $p$, the $p$-th cyclotomic polynomial
 		      $\Phi_p(x)=x^{p-1}+x^{p-2}+\cdots+1$
-		      (Theorem~\ref{thm:6.11.1}) is irreducible over $\mathbb{Q}$.
+		      (Definition~\ref{def:6.11.1} and Theorem~\ref{thm:6.11.1}) is irreducible over $\mathbb{Q}$.
 	\end{enumerate}
 
 \end{theorem}
@@ -13616,8 +13636,8 @@ and Hensel lifting extend the congruence methods developed earlier.
 
 \begin{proof} For $n=1$, we have $\Phi_1(x)=x-1$, which is linear and
 	irreducible; assume henceforth that $n\ge2$. The case of prime $n$ is
-	Theorem~\ref{thm:11.3.3}(b); the general case follows by reduction modulo
-	primes not dividing $n$. Recall that $\Phi_n\in\mathbb{Z}[x]$ is monic of
+	Theorem~\ref{thm:11.3.3}(b); for general $n$ we argue directly, the key step
+	being reduction modulo primes not dividing $n$. Recall that $\Phi_n\in\mathbb{Z}[x]$ is monic of
 	degree $\varphi(n)$ (Theorem~\ref{thm:6.11.2}). Put $\zeta = e^{2\pi
 				i/n}$ and let $f\in\mathbb{Q}[x]$ be the minimal polynomial of
 	$\zeta$: the monic polynomial of least degree with $\zeta$ as a root.
@@ -13645,8 +13665,8 @@ and Hensel lifting extend the congruence methods developed earlier.
 	gives $q\in\mathbb{Z}[x]$. Reduce modulo $p$:
 	in $\mathbb{F}_p[x]$ the binomial theorem and
 	Theorem~\ref{thm:3.5.2} give $(u+v)^p=u^p+v^p$; applying this repeatedly
-	and using Fermat's little theorem (Theorem~\ref{thm:3.3.2}) on the
-	coefficients gives $\bar h(x^{p}) = \bar h(x)^{p}$. Hence
+	and using Fermat's little theorem (Theorem~\ref{thm:3.3.2}) on the nonzero
+	coefficients (a zero coefficient is unchanged) gives $\bar h(x^{p}) = \bar h(x)^{p}$. Hence
 	$\bar f\mid\bar h^{p}$. We use two facts about $\mathbb{F}_p[x]$.
 	First, every nonconstant polynomial $F$ has an irreducible factor: a
 	divisor of $F$ of least positive degree is irreducible, since a
@@ -14132,7 +14152,7 @@ additive representations then show how counting and algebra interact.
 		P_N(x)\le\exp\Bigl(\sum_{k=1}^{N}\frac{x^k}{1-x}\Bigr)
 		\le\exp\Bigl(\frac{x}{(1-x)^2}\Bigr).
 	\]
-	All terms below are nonnegative, so
+	Since $p_N(n)=p(n)$ for $n\le N$ and all terms below are nonnegative,
 	\[
 		\sum_{n=0}^{N}p(n)x^n\le\sum_{n\ge0}p_N(n)x^n=P_N(x)
 		\le\exp\Bigl(\frac{x}{(1-x)^2}\Bigr).
@@ -14212,8 +14232,8 @@ additive representations then show how counting and algebra interact.
 	all $r-1$ parts, then $s=r-1$, so every remaining part was increased
 	in the first move; the new smallest part is therefore the original
 	second-smallest part plus $1$, hence strictly greater than $s+1$, and
-	the second requirement fails. The second move is therefore
-	defined and reverses the first.
+	the second requirement fails. The second move therefore
+	applies to the result and reverses the first.
 
 	For the second move, if $t<r$, maximality of the top staircase
 	means that the gap between the $t$-th and $(t+1)$-th largest parts
@@ -14354,7 +14374,7 @@ additive representations then show how counting and algebra interact.
 \end{definition}
 \begin{theorem}\label{thm:12.6.1} Every nonnegative integer is a
 	sum of four squares, while there exist arbitrarily large integers
-	that are not sums of three squares; in the notation of Definition~\ref{def:12.6.1},
+	that are not sums of three squares. In the notation of Definition~\ref{def:12.6.1},
     \mbox{$g(2)=G(2)=4$}.
 
 \end{theorem}
