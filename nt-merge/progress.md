@@ -6,7 +6,7 @@
 
 ## 约定（后续章节须遵守）
 
-- 底稿：`branch1.tex` 以包内版本为准（SHA256 与 SHA256SUMS.txt 一致）。仓库根目录的 `nt-branch1.tex`（2026-11-05 上传）比包内 branch1 旧一轮（包内版已把 cancelling 统一为 canceling、Fermat 小定理改用 $p$ 等），没有用它覆盖。来源：合并
+- 底稿：`branch1.tex` 以包内版本为准（SHA256 与 SHA256SUMS.txt 一致）。仓库根目录的 `nt-branch1.tex`（2026-11-05 上传）比包内 branch1 旧一轮（包内版已把 cancelling 统一为 canceling、Fermat 小定理改用 $p$ 等），没有用它覆盖。用户已确认以本轮 zip 为准，并让删掉 zip 以外的文件；该文件已从本分支删除。来源：合并
 - 导言区（`\begin{document}` 之前）保持 branch1 原样。branch2 对导言区的改动（lmodern、microtype、longtable、tikz、makeidx/`\makeindex`、proposition/lemma/corollary/example/remark/definition* 环境、`\legs`/`\plegs`、`\statementitems` 改名 `\statementlist`、`\indexname`、parskip）一律不搬入；依赖它们的 branch2 正文在各单元里改成 branch1 能编译的写法。来源：合并
 - branch2 新增的描述性 label（如 `thm:fermat-little-theorem`、`def:prime`、`proof:alt-…`、`prop:…`、`cor:…`、`lem:…`、`sec:asymptotic-notation`、`subsec:3.5`、`fig:…`）和 `\phantomsection` 一律不搬入；指向它们的 `\ref`/`\hyperref` 改为指向 branch1 已有的 label，没有对应目标时改成不带链接的文字。来源：合并
 - branch2 的 `\index{…}` 不搬入（终稿导言区没有索引）。是否给讲义加索引留给作者（见未决事项）。来源：合并
