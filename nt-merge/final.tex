@@ -1093,8 +1093,10 @@ theorem lead to exponent reduction, binomial congruences, and polynomial root bo
 
 \begin{definition}[inverse]\label{def:3.2.1} Let $n \in
 		\mathbb{Z}^+$ and $a \in \mathbb{Z}$. If
-	$au \equiv 1 \pmod{n}$ for some $u \in \mathbb{Z}$, we call such a $u$ an inverse of $a$ modulo $n$; its residue class modulo $n$ is denoted $a^{-1} \pmod{n}$ (or simply $a^{-1}$ when
-	$n$ is clear from context).
+	$au \equiv 1 \pmod{n}$ for some $u \in \mathbb{Z}$, we call such a $u$ an inverse of $a$ modulo $n$, denoted $a^{-1} \pmod{n}$ (or simply $a^{-1}$ when
+	$n$ is clear from context). Any two inverses of $a$ modulo $n$ are
+	congruent modulo $n$ (Theorem~\ref{thm:3.2.2}); thus $a^{-1}$ denotes
+	any one of them and is determined modulo $n$.
 	The case $n=1$ is included: since $1\mid au-1$ for all integers $a,u$,
 	every integer is an inverse of every integer modulo $1$.
 
@@ -1125,7 +1127,8 @@ theorem lead to exponent reduction, binomial congruences, and polynomial root bo
 
 \end{proof}
 \begin{theorem}[linear congruence theorem]\label{thm:3.2.3} Let $m \in \mathbb{Z}^+$ and $a, b \in \mathbb{Z}$. The congruence $ax \equiv
-		b \pmod{m}$ has a solution if and only if $\gcd(a, m) \mid b$. In that case, setting $d = \gcd(a, m)$, let $u$ be an inverse of $a/d$ modulo $m/d$. Then the congruence has exactly $d$
+		b \pmod{m}$ has a solution if and only if $\gcd(a, m) \mid b$. In that case, put $d=\gcd(a,m)$; then $\gcd(a/d,m/d)=1$. Let $u$ be an inverse of $a/d$ modulo $m/d$,
+	which exists by Theorem~\ref{thm:3.2.1}. Then the congruence has exactly $d$
 	distinct solutions modulo $m$, namely
 	$x\equiv\tfrac{b}{d}u+\tfrac{m}{d}t\pmod{m}$ for
 	$t=0,\ldots,d-1$.
