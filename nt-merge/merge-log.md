@@ -512,7 +512,7 @@
 
 - muse · 1 分页机制与 altproof 的 QED · — · 不采纳 · 导言区，硬约束；转作者 · 否
 - muse · 2 §1.2 次序（floor 先于除法定理、def:1.2.4 前向引用、代数词汇的位置）· — · 部分采纳 · def:1.2.4 前向引用已去掉（同 gemini 报告4）；章节次序与 Assumed background 搬移属结构调整，转作者 · 否
-- muse · 3 缺例子、除法定理两证 · — · 部分采纳 · 在除法定理替代证明之后加普通段落：用 Definition~\ref{def:1.2.1} 写出 $q=\lfloor a/b\rfloor$、$r=a-b\lfloor a/b\rfloor$，并给 $-7=(-3)\cdot3+2$ 的例子（同时回应 gemini 报告5“导读说用 floor 却未用”）；两证互换、删去替代证明中的唯一性部分不采纳（替代证明按全书体例自足）· 否（自行补充的说明与例子）
+- muse · 3 缺例子、除法定理两证 · — · 部分采纳 · 在除法定理替代证明之后加普通段落：用 Definition~\ref{def:1.2.1} 写出 $q=\lfloor a/b\rfloor$、$r=a-b\lfloor a/b\rfloor$（同时回应 gemini 报告5“导读说用 floor 却未用”）；曾加的 $-7=(-3)\cdot3+2$ 例子按作者意见删去；两证互换、删去替代证明中的唯一性部分不采纳（替代证明按全书体例自足）· 否（自行补充的说明）
 - muse · 4 数字型 label、cleveref、计数器 · — · 不采纳 · 硬约束：label 与 branch1 相同；转作者 · 否
 - muse · 5 booktabs、microtype、hidelinks、`\leg` 行距、parindent · — · 不采纳 · 导言区，硬约束；转作者 · 否
 - muse · diff 中的定理斜体、example 环境、整除定义改写 · — · 不采纳 · 导言区 / 不新增环境；整除定义的边界说明保留 · 否

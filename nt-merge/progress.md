@@ -43,9 +43,9 @@
 - （交作者）导言区：是否采用 branch2 的索引（makeidx + `\printindex`，branch2 全文约 254 条 `\index`）、lmodern、microtype、行内小号 Legendre 符号 `\legs`/`\plegs`（`\bigl(\tfrac{…}{…}\bigr)`）等排版改动。终稿按硬约束保持 branch1 的导言区，这些都没有搬入。
 - （交作者）插图：branch2 在 thm:7.5.1（二次互反律）的格点证明处加了一幅 TikZ 图（`fig:quadratic-reciprocity-lattice`，$p=7$, $q=11$ 的格点计数）。终稿导言区没有 tikz，图未搬入；是否加图（需在导言区加 tikz）留给作者。
 - （交作者，可选；疑难复核附带）thm:3.4.5：$n\ge\log_2 m$ 的情形目前并在陈述末句“In particular, …”中；若更愿意单列为推论，需要新增带编号环境。
-- （交作者或第 5 步，可选；疑难复核附带）thm:2.5.5 / def:2.5.1：“$F_k>0$（$k\ge1$）”的说明在 thm:2.5.5 证明开头，而 thm:2.5.4 的证明已用到 $F_m\ge0$；由定义显然，若要严格按先后顺序，可把这句移到 Definition 2.5.1 之后。
+- （已处理：交叉审查第一轮把这句说明移到 Definition 2.5.1 之后）（交作者或第 5 步，可选；疑难复核附带）thm:2.5.5 / def:2.5.1：“$F_k>0$（$k\ge1$）”的说明在 thm:2.5.5 证明开头，而 thm:2.5.4 的证明已用到 $F_m\ge0$；由定义显然，若要严格按先后顺序，可把这句移到 Definition 2.5.1 之后。
 - （交作者；交叉审查第一轮转来）证明末 QED 符号单独成行：全书所有以正文结尾的证明都如此（证明末尾的空行加 branch1 导言区对 proof 的重定义所致，已渲染核对）。要改需动导言区或删去全书约 900 处 `\end{proof}` 前的空行。
 - （交作者；muse、gemini 报告4/5）导言区与全书体例：`\statementbreaks` 等分页机制的维护风险、altproof 的 QED 处理、`\leg` 改用 `\genfrac`、定理斜体与定义区分、定理与定义共用计数器、booktabs、microtype、语义化 label 与 cleveref。硬约束下终稿未动。
 - （交作者；muse、ernie）结构与记号：§1.2 中 floor 等定义在除法定理之前的次序、Assumed background 中代数与几何前提的位置、ernie 第四部分列出的记号多义（$p$、$c$、$\delta$、$\varepsilon$、$\theta_d$、模数 $n$/$m$ 等）与多套记号、几处小节标题与内容不完全对应，以及若干未单独定义的术语（Mersenne prime、group action、$\mathrm{SL}_2(\mathbb{Z})$、additive basis 等）。
 - （交作者；ernie 第六部分）源码风格的批量统一（缩进、数学模式空格、`\pmod` 花括号、`\ne`/`\neq`、超长行）与第五部分其余英文润色。
-
+- （作者意见）正文不加例子：交叉审查中建议补例子的条目（muse 第 3 条、ernie 若干条）一律不采纳；除法定理后曾加的例子已删去。
