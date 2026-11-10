@@ -2089,6 +2089,9 @@ The sufficient condition $n\ge\log_2 m$ is convenient when a factorization of $m
 
 \section{Digit Expansions, Floor Functions, and \texorpdfstring{$p$}{p}-adic Valuations}
 
+Digit expansions and floor sums connect arithmetic with counting. Valuations then measure divisibility prime by
+prime, culminating in factorial formulas and the lifting-the-exponent lemmas.
+
 \subsection{Base Representations and Lucas's Theorem}
 
 \begin{definition}[base-$b$ representation]\label{def:4.1.1} Let $b\ge2$ be an integer.
@@ -2108,7 +2111,7 @@ The sufficient condition $n\ge\log_2 m$ is convenient when a factorization of $m
 	division algorithm, $n = qb + r$ where $0 \le r < b$. For
 	$0 \le n < b$, we have $q = 0$ and $r = n$, so $n = (d_0)_b$ with $d_0 = n$
 	(in particular $n = (0)_b$ when $n = 0$) is the unique
-	representation: a representation with at least two digits and no leading
+	representation, since a representation with at least two digits and no leading
 	zero would have value at least $b$. Now assume that $n \ge b$ and that every integer
 	less than $n$ has a unique base-$b$ representation. Then $q\ge1$ and $q<n$ (because $n=qb+r$ with $b\ge2$ and $0\le r<b$), so $q$ has a unique base-$b$
 	representation $q = \sum_{i=0}^{k} d_i b^{i}$ with leading digit $d_k
@@ -2116,7 +2119,7 @@ The sufficient condition $n\ge\log_2 m$ is convenient when a factorization of $m
 	$d_0' = r$ and $d_i' = d_{i-1}$ for $1\le i\le k+1$ gives a base-$b$
 	representation of $n$ with leading digit $d_{k+1}' = d_k \neq 0$ (no leading
 	zero). Uniqueness follows by the same inductive argument: in any representation
-	$n = \sum_{i=0}^{k}d_i b^i$ with $0 \le d_i < b$, reducing modulo $b$
+	$n = \sum_{i=0}^{k}d_i b^i$ with $0 \le d_i < b$ and no leading zero ($d_k\neq0$ when $n>0$), reducing modulo $b$
 	forces $d_0 \equiv n \pmod{b}$ with $0 \le d_0 < b$, so $d_0$ is the
 	division-algorithm remainder $r$; then $(n - d_0)/b = q$ has
 	the representation $\sum_{i \ge 1} d_i b^{i-1}$, which is unique by the inductive
@@ -2205,7 +2208,7 @@ The sufficient condition $n\ge\log_2 m$ is convenient when a factorization of $m
 	all later zeros by $b-1$ gives a second expansion, since
 	$\sum_{i>\ell}(b-1)b^{-i}=b^{-\ell}$.
 	There is only one terminating digit sequence: two such sequences could be
-	compared after multiplication by a common power of $b$, using uniqueness
+	compared after multiplication by a common power of $b$, using the uniqueness
 	of finite base-$b$ representations with leading zeros omitted
 	(Theorem~\ref{thm:4.1.1}). When any other expansion is compared with this terminating
 	one, the equality case above forces the first difference to occur at
@@ -2332,7 +2335,7 @@ The sufficient condition $n\ge\log_2 m$ is convenient when a factorization of $m
 		      $b^{n}-1$ without increasing the digit sum. It must terminate at a
 		      positive multiple below $b^{n}$ (if $m<b^{n}$, no step is needed). Such a multiple
 		      can only be $b^{n}-1$, because $2(b^{n}-1)=b^{n}+(b^{n}-2)\ge b^{n}$.
-		      Therefore $S_b(m)\ge S_b(b^{n}-1)=n(b-1)$.
+		      Therefore $S_b(m)\ge S_b(b^{n}-1)=n(b-1)$.\qedhere
 	\end{enumerate}
 
 \end{proof}
@@ -2369,7 +2372,7 @@ The sufficient condition $n\ge\log_2 m$ is convenient when a factorization of $m
 \begin{theorem}[Kempner's theorem]\label{thm:4.2.6} Fix a digit
 	$d\in\{0,1,\ldots,9\}$ and let $\mathcal{A}_d$ be the set of positive integers
 	whose decimal expansion contains no digit equal to $d$. Then
-	$\sum_{a\in\mathcal{A}_d}\frac1a$ converges; in fact, the sum is less than $90$.
+	$\sum_{a\in\mathcal{A}_d}\tfrac1a$ converges; in fact, the sum is less than $90$.
 
 \end{theorem}
 
@@ -2382,7 +2385,7 @@ The sufficient condition $n\ge\log_2 m$ is convenient when a factorization of $m
 		\frac{9\cdot 9^{\,j-1}}{10^{\,j-1}}=9\left(\frac{9}{10}\right)^{j-1}.
 	\]
 	Summing the geometric series over $j\ge 1$ gives
-	$\sum_{a\in\mathcal{A}_d}\frac1a\le 9\cdot\frac{1}{1-9/10}=90$. The
+	$\sum_{a\in\mathcal{A}_d}\tfrac1a\le 9\cdot\tfrac{1}{1-9/10}=90$. The
 	inequality is strict: in the one-digit case, if $d\neq0$ there are only $8$
 	admissible leading digits, and if $d=0$ the term $a=2$ contributes $\tfrac12$,
 	strictly less than the bound $1$ used for it; hence the total is less than
@@ -2497,7 +2500,7 @@ the positive integers not exceeding $x$.
 		      Choose integers $j,k$ attaining the minima for $x,y$, respectively. Then
 		      \[
 			      \lVert x+y\rVert\le |(x+y)-(j+k)|
-			      \le |x-j|+|y-k|=\lVert x\rVert+\lVert y\rVert.
+			      \le |x-j|+|y-k|=\lVert x\rVert+\lVert y\rVert.\qedhere
 		      \]
 	\end{enumerate}
 \end{proof}
@@ -2520,7 +2523,7 @@ the positive integers not exceeding $x$.
 	$0\le d_i\le b-1$,
 	\[
 		S_b(n)=\sum_{i=0}^{k}d_i\le(b-1)(k+1)
-		=(b-1)(\lfloor\log_b n\rfloor+1).
+		=(b-1)(\lfloor\log_b n\rfloor+1).\qedhere
 	\]
 
 \end{proof}
@@ -2735,7 +2738,7 @@ the positive integers not exceeding $x$.
 	This convention allows the valuation inequality (Theorem~\ref{thm:4.5.1}(c)) to apply when a sum is zero; the power and quotient formulas below retain the hypothesis that their inputs are nonzero.
 	If $p_1,p_2,\ldots,p_r$ are the distinct prime divisors of a nonzero
 	integer $n$, then the fundamental theorem of arithmetic (Theorem~\ref{thm:2.3.3}) gives
-	$|n|=\prod_{i=1}^{r}p_i^{v_{p_i}(n)}$.
+	$|n|=\prod_{i=1}^{r}p_i^{v_{p_i}(n)}$ (for $n=\pm1$ we have $r=0$, and the empty product is $1$).
 
 \end{definition}
 \begin{theorem}\label{thm:4.5.1} Fix a prime $p$, and let $a,b$ be
@@ -2769,7 +2772,7 @@ the positive integers not exceeding $x$.
 		      $a=k_1p^{\alpha}$ and $b=k_2p^{\beta}$ with $p\nmid k_1k_2$.
 		      Then $a+b=p^{\beta}(k_1p^{\alpha-\beta}+k_2)$, so
 		      $v_p(a+b)\ge\beta$. If $\alpha>\beta$, the expression in parentheses
-		      is congruent to $k_2\not\equiv0\pmod p$, so $v_p(a+b)=\beta$.
+		      is congruent to $k_2\not\equiv0\pmod{p}$, so $v_p(a+b)=\beta$.
 		\item For $k=0$, we have $v_p(a^0)=v_p(1)=0$.
 		      The induction step follows from
 		      $v_p(a^{k+1})=v_p(a^k)+v_p(a)$ by part (b).\qedhere
@@ -2860,7 +2863,7 @@ the positive integers not exceeding $x$.
 		      induction using part (a). Also, by part (a),
 		      $0=v_p(1)=v_p(qq^{-1})=v_p(q)+v_p(q^{-1})$, so
 		      $v_p(q^{-1})=-v_p(q)$. If $k<0$, apply the positive-exponent
-		      case to $(q^{-1})^{-k}$ to obtain $v_p(q^k)=k\,v_p(q)$.
+		      case to $(q^{-1})^{-k}$ to obtain $v_p(q^k)=k\,v_p(q)$.\qedhere
 	\end{enumerate}
 \end{proof}
 \begin{theorem}\label{thm:4.5.6}
@@ -2987,9 +2990,9 @@ the positive integers not exceeding $x$.
 
 \end{altproof}
 \begin{altproof}[Alternative proof of Theorem~\ref{thm:2.2.12} via $p$-adic valuations]
-	By Theorem~\ref{thm:4.6.1}, $\min\{v_p(a)+v_p(b),\,v_p(a)+v_p(c)\}
-		=v_p(a)+\min\{v_p(b),v_p(c)\}$, and likewise with $\max$ in place of
-	$\min$; Theorems~\ref{thm:4.5.1}(b) and~\ref{thm:4.5.3} then give both
+	We have $\min\{v_p(a)+v_p(b),\,v_p(a)+v_p(c)\} =v_p(a)+\min\{v_p(b),v_p(c)\}$, and likewise with $\max$ in place of
+	$\min$. By Theorems~\ref{thm:4.6.1} and~\ref{thm:4.5.1}(b), these say that the two sides of each identity have the
+	same $p$-adic valuation for every prime $p$, so Theorem~\ref{thm:4.5.3} gives both
 	identities.
 
 \end{altproof}
@@ -2998,8 +3001,8 @@ the positive integers not exceeding $x$.
 	\[
 		\min\{v_p(a_1),v_p(b_1)\}=\min\{v_p(a)-v_p(d),\,v_p(b)-v_p(d)\}=0
 	\]
-	for every prime $p$, whence $\gcd(a_1,b_1)=1$ by
-	Theorems~\ref{thm:4.6.1} and~\ref{thm:4.5.3}.
+	for every prime $p$, whence $v_p(\gcd(a_1,b_1))=0$ for every prime $p$ by Theorem~\ref{thm:4.6.1}, and so
+	$\gcd(a_1,b_1)=1$ by Theorem~\ref{thm:4.5.3}.
 
 \end{altproof}
 \subsection{Legendre's Formula and Kummer's Theorem}
@@ -3067,7 +3070,7 @@ the positive integers not exceeding $x$.
 \end{altproof}
 
 \begin{theorem}[Legendre's digit-sum formula]\label{thm:4.7.2} For
-	all nonnegative integers $n$ and primes $p$, we have $v_p(n!) = \frac{n -
+	all nonnegative integers $n$ and primes $p$, we have $v_p(n!) = \tfrac{n -
 			S_p(n)}{p - 1}$.
 
 \end{theorem}
@@ -3097,7 +3100,7 @@ the positive integers not exceeding $x$.
 	\]
 	For the last equality, the $i=0$ term $d_0(p^0-1)$ is $0$, so the
 	numerator is
-	$\sum_{i=0}^{m}d_i(p^i-1)=n-S_p(n)$. Empty sums cover the case $m=0$.
+	$\sum_{i=0}^{m}d_i(p^i-1)=n-S_p(n)$. The convention that empty sums are zero covers the case $m=0$.
 
 \end{proof}
 \begin{theorem}[Kummer's theorem]\label{thm:4.7.3} Let
@@ -3133,14 +3136,15 @@ the positive integers not exceeding $x$.
     Dividing by $p-1$ and using the valuation formula above proves
     the carry interpretation.
 
-	This also gives a valuation-based proof of integrality without assuming it in
-	advance: the calculation applies to the positive rational number
-	$Q=n!/(k!(n-k)!)$ and shows that $v_p(Q)\ge0$ for every prime $p$.
-	Write $Q=A/B$ in lowest terms with $A,B\in\mathbb{Z}^+$.
-	If $B>1$, a prime divisor $p$ of $B$ would satisfy $p\nmid A$ and
-	$v_p(Q)=-v_p(B)<0$, a contradiction. Hence $B=1$, so $Q$ is an integer.
-
 \end{proof}
+
+This also gives a valuation-based proof of integrality without assuming it in
+advance: the calculation applies to the positive rational number
+$Q=n!/(k!(n-k)!)$ and shows that $v_p(Q)\ge0$ for every prime $p$.
+Write $Q=A/B$ in lowest terms with $A,B\in\mathbb{Z}^+$.
+If $B>1$, a prime divisor $p$ of $B$ would satisfy $p\nmid A$ and
+$v_p(Q)=-v_p(B)<0$, a contradiction. Hence $B=1$, so $Q$ is an integer.
+
 \begin{theorem}\label{thm:4.7.4} Let $p$ be a prime. Then:
 
 	\begin{enumerate}[label={\alph*)}]
@@ -3169,7 +3173,7 @@ the positive integers not exceeding $x$.
 		\item By Definition~\ref{def:4.5.1},
 		      $p\mid\binom{n}{k}$ if and only if
 		      $v_p\!\left(\binom{n}{k}\right)\ge1$. Theorem~\ref{thm:4.7.3} identifies this
-		      valuation with the number of carries, proving both assertions.
+		      valuation with the number of carries, proving both assertions.\qedhere
 	\end{enumerate}
 
 \end{proof}
@@ -3231,7 +3235,8 @@ the positive integers not exceeding $x$.
 
 \end{theorem}
 
-\begin{proof}
+\begin{proof} We first handle the part of the exponent coprime to $p$,
+	then apply the prime-exponent case once for each factor of $p$.
 Write $n=p^t m$ with $p\nmid m$, so $t=v_p(n)$, and set
     $A_j=a^{mp^j}$, $B_j=b^{mp^j}$ for $0\le j\le t$.
     The hypotheses imply $p\nmid ab$, so $p\nmid A_jB_j$ for every $j$.
@@ -3294,7 +3299,7 @@ Write $n=p^t m$ with $p\nmid m$, so $t=v_p(n)$, and set
 	\]
 	otherwise $v_2(a-b)=1$ and
 	\[
-		v_2(a^2-b^2)=v_2(a+b)+1.
+		v_2(a^2-b^2)=v_2(a+b)+1.\qedhere
 	\]
 
 \end{proof}
@@ -3309,7 +3314,9 @@ Write $n=p^t m$ with $p\nmid m$, so $t=v_p(n)$, and set
 
 \end{theorem}
 
-\begin{proof} The hypothesis $a\neq\pm b$ guarantees
+\begin{proof} We separate the odd part of $n$, then factor repeated differences
+	of squares to count the contributions from powers of $2$.
+	The hypothesis $a\neq\pm b$ guarantees
 	$a^{n}-b^{n}\neq0$ for every $n\ge1$. For odd $n$ this holds because $a\neq b$
 	and $x\mapsto x^{n}$ is injective on $\mathbb{Z}$; for even $n$,
 	the equality $a^{n}=b^{n}$ would force $|a|=|b|$, that is, $a=\pm b$.
@@ -3317,7 +3324,7 @@ Write $n=p^t m$ with $p\nmid m$, so $t=v_p(n)$, and set
 	so all the $2$-adic valuations are finite. Write $n=2^{s}m$
 	with $m$ odd, so that $s=v_2(n)$.
 
-	If $s=0$, then $n=m$ is odd, so $\gcd(n,2)=1$ and Theorem~\ref{thm:4.8.1},
+	If $s=0$, then $n=m$ is odd, so $\gcd(n,2)=1$; since $a,b$ are odd, $\gcd(a,2)=1$ and $2\mid a-b$, so Theorem~\ref{thm:4.8.1},
 	applied with $p=2$, gives $v_2(a^{n}-b^{n})=v_2(a-b)$.
 
 	Now suppose $s\ge1$. Repeatedly applying the identity $x^{2}-y^{2}=(x-y)(x+y)$ with
@@ -3326,7 +3333,7 @@ Write $n=p^t m$ with $p\nmid m$, so $t=v_p(n)$, and set
 		a^{n}-b^{n}=(a^{m}-b^{m})\prod_{j=0}^{s-1}\big(a^{2^{j}m}+b^{2^{j}m}\big),
 	\]
 	so by additivity of $v_2$ (Theorem~\ref{thm:4.5.1}(b)) it suffices to evaluate
-	the valuation of each factor. First, $m$ is odd, so Theorem~\ref{thm:4.8.1} with $p=2$ gives
+	the valuation of each factor. First, $m$ is odd (and $\gcd(a,2)=1$, $2\mid a-b$ as above), so Theorem~\ref{thm:4.8.1} with $p=2$ gives
 	$v_2(a^{m}-b^{m})=v_2(a-b)$. Next,
 	\[
 		a^m+b^m=(a+b)\sum_{i=0}^{m-1}(-1)^i a^{m-1-i}b^i.
@@ -3338,10 +3345,10 @@ Write $n=p^t m$ with $p\nmid m$, so $t=v_p(n)$, and set
 	of odd integers. Every odd square is $1$ modulo $4$, since
 	$(2t+1)^2=4t(t+1)+1\equiv1\pmod4$. Hence each is congruent to $1\pmod{4}$, so
 	$a^{2^{j}m}+b^{2^{j}m}\equiv2\pmod{4}$ and
-	$v_2\big(a^{2^{j}m}+b^{2^{j}m}\big)=1$; there are $s-1$ such factors,
-	where this range is empty when $s=1$. Adding the contributions gives
+	$v_2\big(a^{2^{j}m}+b^{2^{j}m}\big)=1$; there are $s-1$ such factors (this range is empty when $s=1$). Adding the
+	contributions gives
 	\[
-		v_2(a^{n}-b^{n})=v_2(a-b)+v_2(a+b)+(s-1)=v_2(a-b)+v_2(a+b)+v_2(n)-1.
+		v_2(a^{n}-b^{n})=v_2(a-b)+v_2(a+b)+(s-1)=v_2(a-b)+v_2(a+b)+v_2(n)-1.\qedhere
 	\]
 
 \end{proof}
@@ -3452,6 +3459,9 @@ Write $n=p^t m$ with $p\nmid m$, so $t=v_p(n)$, and set
 
 \section{Number-Theoretic Functions}
 
+Arithmetic functions organize information about divisors and prime factors. Multiplicativity, convolution, and
+inversion provide identities, while average orders describe their aggregate behavior.
+
 \subsection{Divisor Functions and Basic Divisor-Sum Identities}
 
 \begin{definition}[arithmetic function and multiplicative function]\label{def:5.1.1} An
@@ -3514,7 +3524,7 @@ Write $n=p^t m$ with $p\nmid m$, so $t=v_p(n)$, and set
 		      and
 		      \[
 			      \sigma(n)=\prod_{i=1}^{k}(1+p_i+\cdots+p_i^{a_i})
-			      =\prod_{i=1}^{k}\frac{p_i^{a_i+1}-1}{p_i-1}.
+			      =\prod_{i=1}^{k}\frac{p_i^{a_i+1}-1}{p_i-1}.\qedhere
 		      \]
 	\end{enumerate}
 
@@ -3528,13 +3538,13 @@ Write $n=p^t m$ with $p\nmid m$, so $t=v_p(n)$, and set
 	and this correspondence is a bijection. Hence $F(mn) = \sum_{d_1 \mid
 			m} \sum_{d_2 \mid n} f(d_1 d_2) = \big(\sum_{d_1 \mid m}
 		f(d_1)\big)\big(\sum_{d_2 \mid n} f(d_2)\big) = F(m) F(n)$, using
-	$f(d_1 d_2) = f(d_1) f(d_2)$ since $\gcd(d_1, d_2) = 1$. Moreover, $F(1) = f(1) = 1$, so $F$ is not identically zero and is multiplicative.
+	$f(d_1 d_2) = f(d_1) f(d_2)$ since $\gcd(d_1, d_2) = 1$. Moreover, $F(1) = f(1) = 1$ (Theorem~\ref{thm:5.1.1}), so $F$ is not identically zero and is multiplicative.
 
 \end{proof}
 \begin{theorem}\label{thm:5.1.4} Let $n\in\mathbb{Z}^+$ and let
 	$d\in\mathbb{Z}^+$ with $d\mid n$. Among the fractions
 	$1/n,2/n,\ldots,n/n$, exactly $\varphi(d)$ reduce to a fraction with
-	denominator $d$.
+	denominator $d$ in lowest terms.
 
 \end{theorem}
 
@@ -3575,7 +3585,7 @@ Write $n=p^t m$ with $p\nmid m$, so $t=v_p(n)$, and set
 
 \end{proof}
 \begin{altproof}[Alternative proof of Theorem~\ref{thm:5.1.5} via multiplicativity]
-	Since $\varphi$ is multiplicative, Theorem~\ref{thm:5.1.3} shows that
+	Since $\varphi$ is multiplicative (Theorem~\ref{thm:3.4.2}), Theorem~\ref{thm:5.1.3} shows that
 	$F(n)=\sum_{d\mid n}\varphi(d)$ is multiplicative. If
 	$n=\prod_{i=1}^{k}p_i^{a_i}$, where the $p_i$ are distinct primes and
 	$a_i\in\mathbb{Z}^+$, then
@@ -3590,6 +3600,9 @@ Write $n=p^t m$ with $p\nmid m$, so $t=v_p(n)$, and set
 	\]
 
 \end{altproof}
+
+A further alternative proof of Theorem~\ref{thm:5.1.5}, via Dirichlet series, appears after Theorem~\ref{thm:5.7.4}.
+
 \begin{definition}[divisor power sums $\sigma_k$]\label{def:5.1.3} For $k\ge0$ and $n\in\mathbb{Z}^+$,
 	put $\sigma_k(n) = \sum_{d\mid n} d^{k}$; thus $\sigma_0 = \tau$ and
 	$\sigma_1 = \sigma$.
@@ -3936,7 +3949,7 @@ Write $n=p^t m$ with $p\nmid m$, so $t=v_p(n)$, and set
 			      \end{aligned}
 		      \]
 		      where in the middle sum we wrote $c=de$; the last equality again
-		      follows from (a). This proves the converse and hence the equivalence.
+		      follows from (a). This proves the converse and hence the equivalence.\qedhere
 	\end{enumerate}
 
 \end{proof}
@@ -3958,6 +3971,10 @@ Write $n=p^t m$ with $p\nmid m$, so $t=v_p(n)$, and set
 	Thus $F=f*\mathbf{1}$ if and only if $f=F*\mu$.
 
 \end{altproof}
+
+A further alternative proof of Theorem~\ref{thm:5.3.2}(c), via the M{\"o}bius function of the divisor poset,
+appears after Theorem~\ref{thm:5.4.1}.
+
 \begin{theorem}\label{thm:5.3.3} Let $f$ be an
 	arithmetic function. Then, as formal power series in $\mathbb{C}[[x]]$
 	(and as an identity in $\mathbb{C}$ for $|x|<1$ whenever the right-hand side converges absolutely),
@@ -4069,19 +4086,20 @@ Write $n=p^t m$ with $p\nmid m$, so $t=v_p(n)$, and set
 	\]
 	because M{\"o}bius inversion applied to $\sum_{d\mid r}\varphi(d)=r$ (Theorem~\ref{thm:5.1.5}) gives $\varphi(r)=r\sum_{k\mid r}\mu(k)/k$. This proves all three formulas.
 
-	For a word of least cyclic
-	period $d$, the shifts fixing it form a subgroup of $(\mathbb{Z}_n,+)$.
-	The $d$ cosets of this subgroup correspond to the distinct rotations
-	(Definition~\ref{def:6.6.4}), as the proof above shows directly.
-
 \end{proof}
+
+For a word of least cyclic
+period $d$, the shifts fixing it form a subgroup of $(\mathbb{Z}_n,+)$.
+The $d$ cosets of this subgroup correspond to the distinct rotations
+(Definition~\ref{def:6.6.4}), as the proof above shows directly.
+
 \begin{theorem}\label{thm:5.3.5} If $f$ and $g$ are multiplicative functions, then
 	$f*g$ is multiplicative.
 
 \end{theorem}
 
 \begin{proof} Let $m,n\in\mathbb{Z}^+$ with
-	$\gcd(m,n)=1$. By unique prime factorization, every divisor of $mn$ has
+	$\gcd(m,n)=1$. By unique prime factorization (Theorem~\ref{thm:2.3.3}), every divisor of $mn$ has
 	a unique factorization $d_1d_2$ with $d_1\mid m$ and $d_2\mid n$; moreover,
 	$\gcd(d_1,d_2)=\gcd(m/d_1,n/d_2)=1$. Hence
 	\[
@@ -4122,7 +4140,7 @@ Write $n=p^t m$ with $p\nmid m$, so $t=v_p(n)$, and set
 	because $n/d<n$ when $d>1$. The resulting function satisfies
 	$f*g=\varepsilon$, and commutativity gives $g*f=\varepsilon$.
 
-	Now suppose that $f$ is multiplicative. Define $h(1)=1$ and, for each prime $p$, define recursively
+	Now suppose that $f$ is multiplicative, so that $f(1)=1$ by Theorem~\ref{thm:5.1.1}. Define $h(1)=1$ and, for each prime $p$, define recursively
 	\[
 		h(p^a)=-\sum_{j=1}^{a}f(p^j)h(p^{a-j})\quad(a\ge1).
 	\]
@@ -4269,7 +4287,7 @@ Write $n=p^t m$ with $p\nmid m$, so $t=v_p(n)$, and set
 	$\sum_{d \mid n}\Lambda(d)=\sum_{p\in\Primes}v_p(n)\,\ln p
 		=\ln\!\left(\prod_{p\in\Primes}p^{v_p(n)}\right)=\ln n$, where the last equality follows from
 	the prime factorization $n=\prod_{p\in\Primes} p^{v_p(n)}$ (Definition~\ref{def:4.5.1}). M{\"o}bius inversion (Theorem~\ref{thm:5.3.2}(c)) gives $\Lambda(n) = \sum_{d \mid n}
-		\mu(d)\ln\frac{n}{d} = \big(\sum_{d \mid n}\mu(d)\big)\ln n - \sum_{d
+		\mu(d)\ln\tfrac{n}{d} = \big(\sum_{d \mid n}\mu(d)\big)\ln n - \sum_{d
 			\mid n}\mu(d)\ln d$. Since $\big(\sum_{d \mid n}\mu(d)\big)\ln n = 0$
 	both when $n=1$ and when $n \ge 2$, we get $\Lambda(n) = -\sum_{d \mid
 			n}\mu(d)\ln d$.
@@ -4384,7 +4402,8 @@ Both sides equal
 \end{definition}
 \begin{definition}[average order]\label{def:5.7.2} An arithmetic
 	function $g$ is an average order of an arithmetic function $f$ if
-	$\sum_{n\le x}f(n)\sim\sum_{n\le x}g(n)$ as $x\to\infty$.
+	$\sum_{n\le x}f(n)\sim\sum_{n\le x}g(n)$ as $x\to\infty$, in the sense of Definition~\ref{def:5.7.1}.
+	In particular, $\sum_{n\le x}g(n)$ must be nonzero for all sufficiently large $x$.
 
 \end{definition}
 \begin{theorem}\label{thm:5.7.1} Let $\gamma$ be Euler's constant. Then:
@@ -4723,7 +4742,7 @@ Both sides equal
 	\]
 	so the left-hand side, as a function of $n$, is multiplicative by Theorem~\ref{thm:5.3.5}; $\mu^2$ is multiplicative as well.
 	At a prime power $p^{a}$, the displayed sum equals $\mu(1)+[a\ge2]\,\mu(p)$,
-	which is $1$ when $a\le1$ and $0$ when $a\ge2$, exactly
+	which is $1$ when $a\le1$ and $0$ when $a\ge2$, agreeing exactly with
 	$\mu^2(p^{a})$. The two multiplicative functions agree at $1$ and at
 	every prime power, so Theorem~\ref{thm:5.1.10} shows that the identity
 	holds for all positive integers.

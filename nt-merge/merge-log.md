@@ -107,3 +107,76 @@
 - 单元 def:3.6.1 · 类型：冲突处理 · 改了什么：取 branch1（identity 改为 congruence，补“when $p=2$”）；branch2 只有描述性 label、`\index` 和 `\pmod{p}` 加括号 · 理由：branch2 没有实质修改。
 - 单元 thm:3.6.1 · 类型：冲突处理 · 改了什么：取 branch1（除法步骤写成减去 $x^{j}(x-x_1)$ 的整数倍）；branch2 只加了描述性 label 和 `\index` · 理由：同上。
 - 单元 thm:3.6.2 · 类型：冲突处理 · 改了什么：取 branch1（陈述声明 $n\in\mathbb{Z}_{\ge0}$ 并删去多余的“with nonzero leading coefficient”；替代证明标题“modulo $p$ via leading terms”）；branch2 的替代证明标题“, modulo $p$, via factorization and degrees”及描述性 label、`\index` 未采用 · 理由：标题按 branch1 的格式；branch2 没有其他实质修改。
+
+## 第 2 批（§4–§5）
+
+### §4 Digit Expansions, Floor Functions, and $p$-adic Valuations
+
+- 单元 def:4.1.1 · 类型：冲突处理 · 改了什么：取 branch1（说明 $(0)_b$ 是 $d_k\ne0$ 的唯一例外）；branch2 只加了描述性 label 和 `\index` · 理由：branch2 没有实质修改。
+- 单元 thm:4.1.1 · 类型：冲突处理 · 改了什么：取 branch2 的版本：它在陈述中加的“Let $b\ge2$ be an integer.”与 branch1 完全相同，另外在证明中把冒号改为“since”，并在唯一性部分补“and no leading zero ($d_k\neq0$ when $n>0$)” · 理由：后一处补的是归纳假设能够适用的前提（$q$ 的表示须无前导零），是证明中的缺口；两边陈述的改动一致。
+- 单元 thm:4.1.2 · 类型：冲突处理 · 改了什么：取 branch1（“for some $k\ge0$”“padding with leading zeros as needed”，“Writing $b=\ldots$ and expanding”）；branch2 只加了描述性 label 和 `\index` · 理由：branch2 没有实质修改。
+- 单元 thm:4.1.3 · 类型：冲突处理 · 改了什么：取 branch1（“eventually all $0$'s”的说法、存在性部分对取整的说明）；另采用 branch2 的“using the uniqueness”（加冠词）· 理由：两边改的位置不重叠；branch2 只有这一处措辞。
+- 单元 def:4.2.1 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
+- 单元 thm:4.2.4 · 类型：冲突处理 · 改了什么：取 branch1 对 (b) 终止论证的修补（“if $m<b^{n}$, no step is needed”，并说明为何只能是 $b^n-1$）；另采用 branch2 在 (b) 末尾加的 `\qedhere` · 理由：两边改的位置不重叠。
+- 单元 thm:4.2.6 · 类型：回滚 · 改了什么：采用 branch2 的行内 `\tfrac`；描述性 label 和 `\index` 不搬入 · 理由：见约定。
+- 单元 thm:4.3.1 · 类型：冲突处理 · 改了什么：取 branch1（§4.3 标题改为“The Floor Function and Distance to the Nearest Integer”）；两边都删去了 (b) 中“The same argument applies to negative $x$.”；另采用 branch2 在 (g) 末尾加的 `\qedhere` · 理由：标题按 branch1；两边一致的删改照收；`\qedhere` 不冲突。
+- 单元 thm:4.3.3 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
+- 单元 def:4.4.1 · 类型：冲突处理 · 改了什么：取 branch1（一般有理数的小数部分写成 $a/n$ 再套用递推）；branch2 只加了描述性 label 和 `\index` · 理由：branch2 没有实质修改。
+- 单元 def:4.4.2 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
+- 单元 def:4.5.1 · 类型：冲突处理 · 改了什么：融合两边：branch1 补的“(Theorem~\ref{thm:4.5.1}(c))”和“below”，加上 branch2 补的“(for $n=\pm1$ we have $r=0$, and the empty product is $1$)”；描述性 label 和 `\index` 不搬入 · 理由：两处补充互不冲突。
+- 单元 def:4.5.2 · 类型：冲突处理 · 改了什么：取 branch1（“For a prime $p$, let …”）；branch2 只加了描述性 label 和 `\index` · 理由：branch2 没有实质修改。
+- 单元 thm:4.6.4 · 类型：冲突处理 · 改了什么：主证明取 branch1（引用改为“Theorems~\ref{thm:4.5.3} and~\ref{thm:4.6.1}”）；三个替代证明的标题取 branch1 的“via $p$-adic valuations”；Theorem 2.2.12 替代证明的正文取 branch2（说明 min/max 恒等式表示两边的 $p$ 进赋值相同，再用 Theorem 4.5.3）；Theorem 2.2.13 替代证明的末句取 branch2（先由 Theorem 4.6.1 得 $v_p(\gcd(a_1,b_1))=0$，再由 Theorem 4.5.3）；branch2 的 `\phantomsection\label{proof:alt-…}` 不搬入 · 理由：原来 2.2.12 的替代证明把 min 的算术恒等式说成“By Theorem 4.6.1”，逻辑次序不对，branch2 改对了；标题与第 1 批 thm:2.2.13 后的指引句（“via $p$-adic valuations”）一致。
+- 单元 thm:4.7.1 · 类型：冲突处理 · 改了什么：取 branch1（替代证明标题“via a recursion for $v_p(n!)$”）；branch2 的标题“via counting multiples of powers of p”、行内 `\tfrac` 和描述性 label、`\index` 未采用 · 理由：该替代证明用的是递推 $v_p(n!)=\lfloor n/p\rfloor+v_p(\lfloor n/p\rfloor!)$，计数是主证明的方法，branch2 的标题不准确。
+- 单元 thm:4.7.2 · 类型：回滚 · 改了什么：采用 branch2 的行内 `\tfrac` 和末句“The convention that empty sums are zero covers the case $m=0$.”；描述性 label 和 `\index` 不搬入 · 理由：见约定。
+- 单元 thm:4.7.3 · 类型：冲突处理 · 改了什么：证明取 branch1（进位计数改为引用 Theorem 4.2.3 证明中的进位计算，branch1 在 thm:4.2.3 中已写出该计算）；按 branch2 的做法把“This also gives a valuation-based proof of integrality …”一段移到证明之后作普通段落（文字两边相同）；branch2 保留的原进位论证、描述性 label 和 `\index` 未采用 · 理由：branch1 的写法避免与 thm:4.2.3 重复；整除性一段不是 Kummer 定理证明的一部分。
+- 单元 remark@3340 · 类型：回滚 · 改了什么：remark 环境不保留，文字作为 thm:4.7.3 证明之后的段落 · 理由：终稿没有 remark 环境。
+- 单元 thm:4.8.1 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
+- 单元 thm:4.8.2 · 类型：回滚 · 改了什么：同上 · 理由：见约定。
+- 单元 thm:4.8.3 · 类型：冲突处理 · 改了什么：取 branch1 重写的证明（以有限正赋值保证每步差非零，不再用 $|a|=|b|$ 的论证）；在开头加 branch2 的导引句“We first handle the part of the exponent coprime to $p$, then apply the prime-exponent case once for each factor of $p$.”；branch2 保留的原证明正文未采用 · 理由：branch1 的证明更短且已核对；导引句同样适用于 branch1 的证明结构。
+- 单元 thm:4.8.4 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
+- 单元 thm:4.8.5 · 类型：回滚 · 改了什么：采用 branch2 的 `\qedhere`；描述性 label 和 `\index` 不搬入 · 理由：见约定。
+- 单元 thm:4.8.6 · 类型：冲突处理 · 改了什么：融合两边：branch1 补的“Every odd square is $1$ modulo $4$, since $(2t+1)^2=4t(t+1)+1$”；branch2 的开头导引句、两处对 Theorem 4.8.1 适用条件的说明（“since $a,b$ are odd, $\gcd(a,2)=1$ and $2\mid a-b$”）、“(this range is empty when $s=1$)”和末尾 `\qedhere` · 理由：两边补的都是证明中省略的理由，位置不重叠。
+- 单元 def:4.9.1 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
+- 单元 thm:4.9.2 · 类型：冲突处理 · 改了什么：取 branch1（替代证明标题“via the lifting-the-exponent lemma”）；branch2 的标题“, via LTE”未采用 · 理由：标题按 branch1 的格式，LTE 缩写在正文中没有定义为标题用语。
+- 单元 thm:4.9.3 · 类型：冲突处理 · 改了什么：取 branch1（`\clearpage`）；branch2 在 §5 标题后加了导读，本单元末尾原有的 `\section{Number-Theoretic Functions}` 因此归入 §5 导读单元，文字本身不变 · 理由：branch2 对本单元没有其他修改。
+
+### §5 Number-Theoretic Functions
+
+- 单元 def:5.1.1 · 类型：冲突处理 · 改了什么：取 branch1（补完全积性函数的定义）；branch2 只加了描述性 label 和 `\index` · 理由：branch2 没有实质修改。
+- 单元 def:5.1.2 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
+- 单元 thm:5.1.2 · 类型：冲突处理 · 改了什么：取 branch1（(c) 开头补“Let $k\in\mathbb{Z}_{\ge0}$.”）；另采用 branch2 在 (c) 末尾行间公式里加的 `\qedhere`；branch2 的 `\statementlist` 不采用（仍用 `\statementitems`）· 理由：两边改的位置不重叠；宏名见约定。
+- 单元 thm:5.1.5 · 类型：冲突处理 · 改了什么：取 branch1（替代证明标题“via multiplicativity”）；另采用 branch2 在替代证明里补的“(Theorem~\ref{thm:3.4.2})”；branch2 标题里的逗号未采用 · 理由：标题按 branch1 的格式；引用是小改进。
+- 单元 thm:5.1.5 · 类型：自行优化 · 改了什么：在本单元末尾加一句“A further alternative proof of Theorem~\ref{thm:5.1.5}, via Dirichlet series, appears after Theorem~\ref{thm:5.7.4}.” · 理由：该替代证明在 §5.7（branch1 新拆出的 altproof，位于 thm:5.7.4 之后），离原定理很远，branch2 没有为它加指引；Introduction 写了“a note after the original theorem then says where they are”，按约定补上。
+- 单元 def:5.1.3 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
+- 单元 thm:5.1.7 · 类型：冲突处理 · 改了什么：取 branch1（开头“Let $r\in\mathbb{Z}_{\ge0}$.”涵盖 $n=1$）；branch2 的同类修补“(allowing the empty product, $r=0$, when $n=1$)”和行内 `\tfrac` 未采用 · 理由：两边修补同一处，branch1 的写法更简洁，与 thm:3.4.3 的处理一致。
+- 单元 def:5.2.1 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
+- 单元 thm:5.2.1 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`（另有一段只是重新折行），不搬入 · 理由：见约定。
+- 单元 def:5.2.2 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
+- 单元 thm:5.2.5 · 类型：回滚 · 改了什么：branch2 只把 `Th{\=a}bit` 改成 UTF-8 并加了描述性 label、`\index`，均不采用 · 理由：见约定。
+- 单元 def:5.3.1 · 类型：回滚 · 改了什么：branch2 只加了描述性 label、`\index`，并把小节标题里的 `M{\"o}bius` 改成 UTF-8，均不采用 · 理由：见约定。
+- 单元 def:5.3.2 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
+- 单元 def:5.3.3 · 类型：回滚 · 改了什么：同上 · 理由：见约定。
+- 单元 def:5.3.4 · 类型：冲突处理 · 改了什么：取 branch1（“The arithmetic function $\id$ is defined by …”）；branch2 只加了描述性 label 和 `\index` · 理由：branch2 没有实质修改。
+- 单元 def:5.3.5 · 类型：冲突处理 · 改了什么：取 branch1（说明不带下标的 $\log$ 只在此意义下使用）；branch2 只加了描述性 label 和 `\index` · 理由：同上。
+- 单元 def:5.3.6 · 类型：冲突处理 · 改了什么：取 branch1（$r\ge1$ 的写法）；branch2 只有 UTF-8 的 Möbius 和描述性 label、`\index` · 理由：同上。
+- 单元 thm:5.3.2 · 类型：冲突处理 · 改了什么：取 branch1（替代证明标题“via Dirichlet convolution”）；另采用 branch2 在 (c) 证明末尾加的 `\qedhere`；branch2 在证明后加的 remark（链接到 §5.4 的替代证明）改写为本单元末尾的一句：“A further alternative proof of Theorem~\ref{thm:5.3.2}(c), via the M{\"o}bius function of the divisor poset, appears after Theorem~\ref{thm:5.4.1}.”；`\statementlist`、UTF-8、标题中的逗号不采用 · 理由：链接目标是不能搬入的新 label；替代证明在 branch1 中确在 thm:5.4.1 之后，标题与 branch1 的标题一致。
+- 单元 remark@4170 · 类型：回滚 · 改了什么：remark 环境和 `\hyperref` 不保留，改写为 thm:5.3.2 末尾的指引句 · 理由：同上。
+- 单元 thm:5.3.3 · 类型：冲突处理 · 改了什么：取 branch1（陈述中补“as an identity in $\mathbb{C}$”，并说明两个特例对形式幂级数和 $|x|<1$ 都成立）；branch2 只有 UTF-8 和重新折行 · 理由：branch2 没有实质修改。
+- 单元 thm:5.3.4 · 类型：冲突处理 · 改了什么：陈述取 branch1（“for every $j\in\mathbb{Z}$”“over an alphabet of $m$ symbols (colors)”）；按 branch2 的做法把证明最后一段（周期移位构成子群、陪集对应旋转）移到证明之后作普通段落；UTF-8 不采用 · 理由：这一段是补充说明，不是证明的一部分；终稿没有 remark 环境。
+- 单元 remark@4309 · 类型：回滚 · 改了什么：remark 环境不保留，文字作为 thm:5.3.4 证明之后的段落 · 理由：终稿没有 remark 环境。
+- 单元 thm:5.3.6 · 类型：冲突处理 · 改了什么：融合两边：branch1 的“when it exists, it is denoted by $f^{-1}$”，加上 branch2 补的“so that $f(1)=1$ by Theorem~\ref{thm:5.1.1}”（构造 $h$ 时验证 $(f*h)(1)=1$ 要用到）· 理由：两处补充互不冲突；branch2 补的是证明中省略的一步。
+- 单元 def:5.4.1 · 类型：冲突处理 · 改了什么：取 branch1（$F:\{(x,y)\in P^2\mid x\le y\}\to\mathbb{C}$）；branch2 只有 UTF-8 和描述性 label、`\index` · 理由：branch2 没有实质修改。
+- 单元 thm:5.4.1 · 类型：冲突处理 · 改了什么：取 branch1（措辞调整；替代证明标题“via the M{\"o}bius function of the divisor poset”）；branch2 的标题“, via the incidence algebra”、`\phantomsection\label{proof:alt-5-3-2-2}`、UTF-8 和重新折行未采用 · 理由：标题按 branch1；thm:5.3.2 末尾的指引句与此标题一致。
+- 单元 def:5.5.1 · 类型：冲突处理 · 改了什么：取 branch1（补“($p$ is then uniquely determined by $n$)”）；branch2 只加了描述性 label 和 `\index` · 理由：branch2 没有实质修改。
+- 单元 thm:5.5.1 · 类型：回滚 · 改了什么：采用 branch2 的行内 `\tfrac`；UTF-8 的 Möbius 不采用 · 理由：见约定。
+- 单元 thm:5.5.2 · 类型：回滚 · 改了什么：branch2 只把 `M{\"o}bius` 改成 UTF-8，不采用 · 理由：见约定。
+- 单元 def:5.6.1 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
+- 单元 thm:5.6.1 · 类型：冲突处理 · 改了什么：取 branch1（辅助和改记为 $E_q$）；branch2 只有 UTF-8 和重新折行 · 理由：branch2 没有实质修改。
+- 单元 thm:5.6.3 · 类型：回滚 · 改了什么：branch2 只把 `H{\"o}lder` 改成 UTF-8 并加了描述性 label、`\index`，均不采用 · 理由：见约定。
+- 单元 def:5.7.2 · 类型：冲突处理 · 改了什么：baseline 的 def:5.7.1（average order，内含渐近记号的定义）两边处理不同：branch1 拆成 def:5.7.1（渐近记号）和 def:5.7.2（average order）；branch2 把渐近记号移到 Notation 并在此处链接 `sec:asymptotic-notation`，另补“$\sum_{n\le x}g(n)$ must be nonzero for all sufficiently large $x$”。终稿取 branch1 的拆分，并采用 branch2 补的那句，链接改为“in the sense of Definition~\ref{def:5.7.1}”· 理由：硬约束要求带编号环境与 branch1 一致；branch2 的补充把 $\sim$ 的非零前提落实到这里，与 def:5.7.1 的约定一致。branch2 正文中指向 average order 的 `def:5.7.1` 在终稿里都是 def:5.7.2（thm:5.7.2、thm:5.7.5 等都取 branch1，已是 def:5.7.2）。
+- 单元 thm:5.7.1 · 类型：冲突处理 · 改了什么：取 branch1（各项前写“as $x\to\infty$”，新增 (c) $\sum n^{-s}$ 收敛及界）；branch2 在 `\displaystyle` 求和中把 `\frac` 改成 `\tfrac`（会把分数排小）未采用 · 理由：branch1 的 (c) 是后文 Basel 问题与 Euler 积的收敛依据；branch2 的改动只是排版，且落在被 branch1 重写的行里。
+- 单元 thm:5.7.2 · 类型：冲突处理 · 改了什么：取 branch1（“an average order”，对 $\lfloor x\rfloor$ 误差的补充，引用 def:5.7.2）；branch2 只加了描述性 label、`\index` 并重新折行 · 理由：branch2 没有实质修改；引用按 label 对照应为 def:5.7.2。
+- 单元 thm:5.7.3 · 类型：冲突处理 · 改了什么：取 branch1（收敛性引用 Theorem 5.7.1(c)；Euler 积替代证明改用 $P_y$ 截断并估计尾项；标题“via the Euler product”）；branch2 的行内 `\tfrac`、标题中的逗号、`\phantomsection\label{proof:alt-2-1-2-2}`、描述性 label 和 `\index` 未采用 · 理由：branch1 的改写是实质改进；其余无排版差别或涉及不能搬入的 label。第 1 批 thm:2.1.2 后的指引（“via the Euler product after Theorem 5.7.3”）与此一致。
+- 单元 thm:5.7.4 · 类型：冲突处理 · 改了什么：取 branch1（“the series defining …”、绝对收敛的依据、把 $\sum_{d\mid n}\varphi(d)=n$ 的推导改为 Theorem 5.1.5 的替代证明并调整段落次序）；branch2 只有 UTF-8 和重新折行 · 理由：branch2 没有实质修改。
+- 单元 thm:5.7.5 · 类型：冲突处理 · 改了什么：取 branch1（“an average order”，引用 def:5.7.2）；branch2 同样把 the 改为 an，另有 UTF-8 · 理由：两边一致的改动照收，引用按 label 对照。
+- 单元 thm:5.7.7 · 类型：冲突处理 · 改了什么：取 branch1（$Q(x)$ 写成 $n\in\mathbb{Z}^+$、自然密度改引用 def:4.2.2、补“so the left-hand side, as a function of $n$, is multiplicative”、`\clearpage`）；另采用 branch2 的措辞“agreeing exactly with $\mu^2(p^{a})$” · 理由：两边改的位置不重叠。§6 导读属于第 3 批。
