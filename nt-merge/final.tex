@@ -5053,60 +5053,52 @@ A further alternative proof of Theorem~\ref{thm:6.2.2}, via indices, appears aft
 
 \begin{proof} When $e=3$, there is no $j$ in the stated range.
 	If $k=0$, the expression inside $v_2$ is zero and its valuation is
-	$+\infty$, so the claim holds. Assume $k\neq0$.
-	Since $(2k)^j=2^jk^j$, we have $v_2\big((2k)^j\big)\ge j$.
-	For the binomial coefficient, Lucas's theorem (Theorem~\ref{thm:4.1.2}) already shows that $\binom{2^{e-2}}{j}$ is even for $0 < j < 2^{e-2}$: in base
-	$2$, the number $2^{e-2}$ is a $1$ followed by $e-2$ zeros, so
-	$\binom{2^{e-2}}{j} \equiv \prod_{i=0}^{e-2}\binom{(2^{e-2})_i}{j_i} \pmod{2}$
-	vanishes unless $j \in \{0, 2^{e-2}\}$. Kummer's theorem (Theorem~\ref{thm:4.7.3}) refines this to the exact value
+	$+\infty$, so the claim holds. Assume $k\neq0$ and put $s=e-2$.
+	From $\binom{2^{s}}{j} = \frac{(2^{s})!}{j!\,(2^{s}-j)!}$ we obtain the absorption identity
+	$j\binom{2^s}{j}=2^s\binom{2^s-1}{j-1}$, which gives
 	\[
-		v_2\!\left(\binom{2^{e-2}}{j}\right) = S_2(j) + S_2(2^{e-2}-j) - S_2(2^{e-2}) = (e-2) - v_2(j),
+		v_2\!\left(\binom{2^s}{j}\right)=s-v_2(j)+v_2\!\left(\binom{2^s-1}{j-1}\right).
 	\]
-	where the last equality holds trivially when $j=2^{e-2}$ (both sides are $0$),
-	and holds for $3\le j<2^{e-2}$ because adding $j$ and $2^{e-2}-j$ (whose sum is
-	the single-bit number $2^{e-2}$) produces exactly $(e-2)-v_2(j)$ carries in
-	base $2$: with $t=v_2(j)$, which satisfies $t\le e-3$ in this range,
-	positions $0,\ldots,t-1$ of both summands are $0$ and generate no carry;
-	at position $t$ both bits are $1$ (since $2^{e-2}-j\equiv-j\equiv2^{t}
-	\pmod{2^{t+1}}$), generating a carry; and at each of the $e-3-t$ positions
-	$t+1,\ldots,e-3$ the two bits are complementary, so the incoming carry is
-	passed on, one further carry per position, for a total of
-	$1+(e-3-t)=(e-2)-v_2(j)$ carries (the last carry, into position $e-2$,
-	produces the leading $1$ of $2^{e-2}$). Hence
+	Since $2^s-1=(11\cdots1)_2$ has all $s$ binary digits equal to $1$,
+	Lucas's theorem (Theorem~\ref{thm:4.1.2}) gives
+	$\binom{2^s-1}{j-1}\equiv1\pmod{2}$. Thus
+	$v_2\bigl(\tbinom{2^s}{j}\bigr)=s-v_2(j)$. Since $(2k)^j=2^jk^j$, we have
+	$v_2\big((2k)^j\big)\ge j$, and therefore
 	\[
-		v_2\!\left(\binom{2^{e-2}}{j}(2k)^j\right) \ge (e-2) - v_2(j) + j = e +
-		\big(j - v_2(j) - 2\big).
+		v_2\!\left(\binom{2^{e-2}}{j}(2k)^j\right)
+		\ge(e-2)-v_2(j)+j
+		=e+\bigl(j-v_2(j)-2\bigr)\ge e.
 	\]
-
-	Finally, $j - v_2(j) \ge 2$ for every $j \ge 3$: if $v_2(j) = 0$ then
-	$j - v_2(j) = j \ge 3$; if $v_2(j) \ge 1$ then $j \ge 2^{v_2(j)} \ge
-		2\,v_2(j)$, so $j - v_2(j) \ge v_2(j) \ge 1$, and $j - v_2(j) = 1$
-	would force $v_2(j) = 1,\ j = 2$, excluded by $j \ge 3$. Therefore
-	$v_2\bigl(\tbinom{2^{e-2}}{j}(2k)^j\bigr) \ge e$.
+	For the last inequality, put $t=v_2(j)$. If $t=0$, then $j-t\ge3$.
+	If $t=1$, then $j\ge4$, so $j-t\ge3$.
+	If $t\ge2$, then $j-t\ge2^t-t\ge2$.
 
 \end{proof}
-\begin{altproof}[Alternative proof of Theorem~\ref{thm:6.2.4} via the absorption identity]
-	The case $k=0$ is immediate, so assume $k\neq0$.
-	Put $s = e-2$, so the
-	binomial coefficient in question is $\binom{2^{s}}{j}$. From $\binom{2^{s}}{j} =
-		\frac{(2^{s})!}{j!\,(2^{s}-j)!}$ we obtain the absorption identity
-	$j\binom{2^{s}}{j} = 2^{s}\binom{2^{s}-1}{j-1}$; applying $v_2$ to both sides gives
+\begin{altproof}[Alternative proof of Theorem~\ref{thm:6.2.4} via Kummer's theorem]
+	When $e=3$, the range for $j$ is empty. If $k=0$, the valuation is
+	$+\infty$, so assume $k\neq0$ and put $s=e-2$.
+	Kummer's theorem (Theorem~\ref{thm:4.7.3}) gives
 	\[
-		v_2(j) + v_2\!\left(\binom{2^s}{j}\right) = s + v_2\!\left(\binom{2^s-1}{j-1}\right).
+		v_2\!\left(\binom{2^s}{j}\right)
+		=S_2(j)+S_2(2^s-j)-S_2(2^s)=s-v_2(j).
 	\]
-
-	The integer $2^{s}-1 = (11\cdots1)_2$ has all
-	$s$ of its base-$2$ digits equal to $1$, so for any $0 \le j-1 \le
-		2^{s}-1$ every digit satisfies $(j-1)_i \le 1$ and hence, by Lucas's theorem (Theorem~\ref{thm:4.1.2}),
-	$\binom{2^{s}-1}{j-1} \equiv \prod_{i=0}^{s-1}\binom{1}{(j-1)_i} \equiv 1
-		\pmod{2}$; that is, $\binom{2^{s}-1}{j-1}$ is odd, so
-	$v_2\bigl(\tbinom{2^s-1}{j-1}\bigr) = 0$. Therefore
+	To verify the last equality, first note that both sides are $0$ when
+	$j=2^s$. If $3\le j<2^s$, put $t=v_2(j)<s$ and add $j$ and $2^s-j$
+	in base $2$. Positions $0,\ldots,t-1$ of both summands are $0$.
+	At position $t$, both bits are $1$, since
+	$2^s-j\equiv-j\equiv2^t\pmod{2^{t+1}}$, so a carry starts there.
+	At each position $t+1,\ldots,s-1$, the two bits are complementary,
+	and the incoming carry produces another carry. Indeed, the output bit is
+	$0$, and the two input bits together with the incoming $1$ must sum to $2$.
+	The last carry produces the leading $1$ in position $s$.
+	There are therefore $s-t$ carries, proving the equality. Consequently,
 	\[
-		v_2\!\left(\binom{2^s}{j}\right) = s - v_2(j) = (e-2) - v_2(j),
+		v_2\!\left(\binom{2^{e-2}}{j}(2k)^j\right)
+		\ge(e-2)-v_2(j)+j
+		=e+\bigl(j-v_2(j)-2\bigr).
 	\]
-	the same value obtained above using Kummer's theorem. Hence
-	$v_2\bigl(\tbinom{2^{e-2}}{j}(2k)^j\bigr) \ge (e-2) - v_2(j) + j = e +
-		\big(j - v_2(j) - 2\big) \ge e$, again using $j - v_2(j) \ge 2$ for $j \ge 3$.
+	Since $j-v_2(j)\ge2$ for every $j\ge3$, as shown in the proof above,
+	the displayed valuation is at least $e$.
 
 \end{altproof}
 \begin{theorem}\label{thm:6.2.5} Let $p$ be an odd prime and let $g$ be a

@@ -21,7 +21,8 @@
 
 ## 第 3 批（§6）
 
-- [待复核] 单元 thm:6.2.4 · 情形：A · 暂定处理：取 branch1 的安排：主证明用 Kummer 定理（数 $j$ 与 $2^{e-2}-j$ 相加的进位），替代证明用 absorption 恒等式 $j\binom{2^s}{j}=2^s\binom{2^s-1}{j-1}$ 加 Lucas 定理；branch2 把两者对调（主证明用 absorption，替代证明用 Kummer），并各自重写了文字（branch2 的进位论证与 $j-v_2(j)\ge2$ 的分情形写法更清楚）。· 疑点：两边包含的是同样两个论证，都已核对无误，分歧只在主次与写法。请判断维持 branch1 的安排，还是改用 branch2 的安排或把 branch2 较清楚的局部写法（进位论证、$t=v_2(j)$ 的分情形）并入。
+- [改写] 单元 thm:6.2.4 · 情形：A · 暂定处理：取 branch1 的安排：主证明用 Kummer 定理（数 $j$ 与 $2^{e-2}-j$ 相加的进位），替代证明用 absorption 恒等式 $j\binom{2^s}{j}=2^s\binom{2^s-1}{j-1}$ 加 Lucas 定理；branch2 把两者对调（主证明用 absorption，替代证明用 Kummer），并各自重写了文字（branch2 的进位论证与 $j-v_2(j)\ge2$ 的分情形写法更清楚）。· 疑点：两边包含的是同样两个论证，都已核对无误，分歧只在主次与写法。请判断维持 branch1 的安排，还是改用 branch2 的安排或把 branch2 较清楚的局部写法（进位论证、$t=v_2(j)$ 的分情形）并入。
+  - 复核：改用 branch2 的安排，并入 branch1 的两处细节。主证明＝absorption 恒等式加 Lucas 定理（branch2 的写法；保留 branch1 的“From $\binom{2^s}{j}=\frac{(2^s)!}{j!\,(2^s-j)!}$ we obtain the absorption identity”和“Since $(2k)^j=2^jk^j$, we have $v_2((2k)^j)\ge j$”，使恒等式与这一步都有出处）；替代证明＝Kummer 定理的进位计数（branch2 的写法，标题按 branch1 的格式写成“via Kummer's theorem”，结尾的 $j-v_2(j)\ge2$ 改为回引主证明，不重复三行分情形）；记号统一为终稿的 $v_2\!\left(\binom{\cdot}{\cdot}\right)$。理由：两个论证都正确，但 absorption 证明短、只用到 Lucas 定理，适合作第一遍阅读的主证明，进位计数较长，正是 Introduction 所说可留到第二遍读的内容；branch2 的 Kummer 写法补上了 branch1/baseline 里未说明的一步（位置 $t+1,\ldots,s-1$ 上两位为何互补：输出位为 $0$ 且有进位 $1$），并去掉了与结论无关的 Lucas 旁注；$j-v_2(j)\ge2$ 的分情形也更干净。branch1 在本单元的数学文字即 baseline 原文（它只做了排版、把替代证明移到定理后并加标题），这些都保留，没有丢失经审查的修正。· 影响：无（全书只有 thm:6.2.6 的一处替代证明引用本定理的结论；没有指向“via the absorption identity”标题的指引句）
 
 ## 第 4 批（§7）
 
