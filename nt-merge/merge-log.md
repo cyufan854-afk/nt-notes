@@ -631,3 +631,9 @@
 - 单元 def:6.6.4 · 类型：自行优化 · 改了什么：删去指向 Theorem 8.1.8 的例外说明；该例外已在 thm:8.1.8 证明后的段落中回指 Definition 6.6.4 说明 · 理由：同上。
 - 单元 thm:7.4.2、thm:7.6.8 · 类型：自行优化 · 改了什么：thm:7.4.2 后段落删去“This is also the value of $c$ in Atkin's algorithm (Theorem 7.6.8) when $a=1$”；改在 thm:7.6.8 证明之后加“For $a=1$, the element $c$ above is $2\cdot2^{(p-5)/4}=2^{(p-1)/4}$, the square root of $-1$ noted after Theorem 7.4.2.” · 理由：同上；已核对 $c=2ab^2$、$b=(2a)^{(p-5)/8}$。
 - 单元 sec:orders-primitive-roots-and-multiplicativ · 类型：自行优化 · 改了什么：§6 导读删去“For group, subgroup, cyclic group, and element order, see Definitions 6.6.1--6.6.3.”（Notation 的 Algebraic vocabulary 已指出这些定义的位置）· 理由：同上。
+
+## 作者意见：□ 不单独成行
+
+- 单元 thm:6.3.1 · 类型：自行优化 · 改了什么：证明 (e) 项原为一整行行内公式，□ 放不下而换行；改写为“Since $a\equiv g^{\ind(a)}$ and $\delta_m(g)=\varphi(m)$, Theorem~\ref{thm:6.1.1}(d) gives”加行间公式，并沿用证明开头约定的缩写 $\ind$，□ 用 `\qedhere` 放在公式行 · 理由：作者要求 □ 尽量不单独成行。
+- 单元 thm:3.4.3、thm:4.3.1、thm:4.7.1、thm:5.1.2、thm:5.1.5、thm:5.7.4（及 thm:6.3.1 的 (e) 项）· 类型：自行优化 · 改了什么：在末尾行间公式或最后一个列表项末尾补 `\qedhere`，使每个证明只有一个 □ 且与最后一行同行 · 理由：同上。用带零宽标记的编译版本按字形坐标核对：全书所有 □ 都与证明最后一行同行。
+

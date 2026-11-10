@@ -1468,7 +1468,7 @@ Suppose first that $p$ is prime. For $p=2$, the result is
 				& =n\sum_{I\subseteq\{1,2,\ldots,k\}}
 						(-1)^{|I|}\prod_{i\in I}\frac{1}{p_i}             \\
 				& =n\prod_{i=1}^{k}\left(1-\frac{1}{p_i}\right).
-		\end{aligned}
+		\end{aligned}\qedhere
 	\]
 \end{altproof}
 \begin{theorem}[generalized Chinese remainder theorem]\label{thm:3.4.4}\index{generalized chinese remainder theorem@Generalized Chinese remainder theorem} For $a, b \in \mathbb{Z}$ and $m, n
@@ -2409,8 +2409,8 @@ the positive integers not exceeding $x$.
 					Choose integers $j,k$ attaining the minima for $x,y$, respectively. Then
 					\[
 						\lVert x+y\rVert\le |(x+y)-(j+k)|
-						\le |x-j|+|y-k|=\lVert x\rVert+\lVert y\rVert.\qedhere
-					\]
+						\le |x-j|+|y-k|=\lVert x\rVert+\lVert y\rVert.\qedhere\qedhere
+		\]
 	\end{enumerate}
 \end{proof}
 \begin{theorem}\label{thm:4.3.2} For integers $b\ge2$ and
@@ -2940,7 +2940,7 @@ $v_p(y) \le v_p(x)$ for all $p$, which holds if and only if $x \mid y$ and $y \m
 				& =\left\lfloor\frac{n}{p}\right\rfloor
 			+\sum_{i=1}^{\infty}\left\lfloor\frac{n}{p^{i+1}}\right\rfloor
 			=\sum_{i=1}^{\infty}\left\lfloor\frac{n}{p^i}\right\rfloor.
-		\end{aligned}
+		\end{aligned}\qedhere
 	\]
 \end{altproof}
 
@@ -3373,8 +3373,8 @@ inversion provide identities, while average orders describe their aggregate beha
 					and
 					\[
 						\sigma(n)=\prod_{i=1}^{k}(1+p_i+\cdots+p_i^{a_i})
-						=\prod_{i=1}^{k}\frac{p_i^{a_i+1}-1}{p_i-1}.\qedhere
-					\]
+						=\prod_{i=1}^{k}\frac{p_i^{a_i+1}-1}{p_i-1}.\qedhere\qedhere
+		\]
 	\end{enumerate}
 \end{proof}
 \begin{theorem}\label{thm:5.1.3} If $f$ is a multiplicative
@@ -3442,7 +3442,7 @@ belonging to $m$ and $d_2$ those belonging to $n$; thus $d_1\mid m$, $d_2\mid n$
 			=\prod_{i=1}^{k}\sum_{j=0}^{a_i}\varphi(p_i^j)                      \\
 				& =\prod_{i=1}^{k}\left(1+\sum_{j=1}^{a_i}(p_i^j-p_i^{j-1})\right)
 			=\prod_{i=1}^{k}p_i^{a_i}=n.
-		\end{aligned}
+		\end{aligned}\qedhere
 	\]
 \end{altproof}
 
@@ -4477,7 +4477,7 @@ gives
 	convergence of the series defining $\zeta(s-1)$. Thus (b) yields
 	\[
 		\mathcal{D}_{\varphi}(s)=\prod_p\frac{1-p^{-s}}{1-p^{1-s}}
-		=\frac{\zeta(s-1)}{\zeta(s)}.
+		=\frac{\zeta(s-1)}{\zeta(s)}.\qedhere
 	\]
 \end{proof}
 \begin{altproof}[Alternative proof of Theorem~\ref{thm:5.1.5} via Dirichlet series]
@@ -5247,9 +5247,10 @@ $g^{k}$ for a unique $0 \le k <
 						g'^{\ind_{m,g'}(a)} \equiv
 						g^{\ind_{m,g}(g')\, \ind_{m,g'}(a)} \pmod{m}$,
 					part (a) gives the identity.
-		\item By Theorem~\ref{thm:6.1.1}(d) with $a \equiv
-						g^{\ind_{m,g}(a)}$ and $\delta_m(g) = \varphi(m)$,
-					we get $\delta_m(a) = \frac{\varphi(m)}{\gcd(\varphi(m), \, \ind_{m,g}(a))}$.\qedhere
+		\item Since $a\equiv g^{\ind(a)}$ and $\delta_m(g)=\varphi(m)$, Theorem~\ref{thm:6.1.1}(d) gives
+					\[
+						\delta_m(a)=\frac{\varphi(m)}{\gcd(\varphi(m),\ind(a))}.\qedhere\qedhere
+		\]
 	\end{enumerate}
 \end{proof}
 \begin{altproof}[Alternative proof of Theorem~\ref{thm:6.2.2} via indices] Fix a modulus $m$

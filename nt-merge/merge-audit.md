@@ -1,7 +1,7 @@
 # 合并核对（merge_check.py audit）
 
-最终稿每个单元取自哪边：branch1 49，branch1/baseline 9，branch1/branch2 1，branch1/branch2/baseline 54，branch2 47，new 352。
-需要在 merge-log.md 里说明的单元 361 个，其中 0 个日志里没有提到。
+最终稿每个单元取自哪边：branch1 48，branch1/baseline 9，branch1/branch2 1，branch1/branch2/baseline 54，branch2 47，new 353。
+需要在 merge-log.md 里说明的单元 362 个，其中 0 个日志里没有提到。
 
 | 单元 | 取自 | branch1 改过 | branch2 改过 | 需要说明 | 日志里有 |
 |---|---|---|---|---|---|
@@ -63,6 +63,7 @@
 | thm:3.3.4 | new | 是 | 是 | 新写或融合的文字（最接近 branch1） | 有 |
 | thm:3.4.1 | new |  | 是 | 新写或融合的文字（最接近 branch2） | 有 |
 | thm:3.4.2 | new |  | 是 | 新写或融合的文字（最接近 branch2） | 有 |
+| thm:3.4.3 | new | 是 | 是 | 新写或融合的文字（最接近 branch1） | 有 |
 | thm:3.4.4 | new |  | 是 | 新写或融合的文字（最接近 branch2） | 有 |
 | thm:3.4.5 | new | 是 | 是 | 新写或融合的文字（最接近 branch2） | 有 |
 | thm:3.5.1 | new | 是 | 是 | 新写或融合的文字（最接近 branch2） | 有 |
