@@ -242,3 +242,75 @@
 - 单元 thm:6.11.8 · 类型：冲突处理 · 改了什么：取 branch1（cases 环境中补“if”和标点）；branch2 把“By Theorem 6.11.7 (or Theorem 6.1.1(c) applied to $ab^{-1}$)”改述、并把 $p=2$ 一段重新断句，均未采用 · 理由：branch2 只是换一种说法，内容相同。
 - 单元 thm:6.11.9 · 类型：冲突处理 · 改了什么：取 branch1（写明根估计并补全 $(a^p-b^p)/(a+b)\ge1$ 的理由）；branch2 在证明开头加的两句导引（“For $n\ge3$, the absence of a primitive prime factor forces $\Phi_n(a,b)$ to equal the largest prime factor of $n$ …”）未采用 · 理由：branch1 已有“We first reduce this assumption to a condition involving a single cyclotomic value.”；branch2 的导引放在先处理 $n=1,2$ 的证明开头，次序不顺。
 - 单元 thm:6.11.10 · 类型：冲突处理 · 改了什么：取 branch1（“integer $n\ge1$”，`\clearpage`）；branch2 只有 `\pmod{2}`，另因 §7 导读使 `\section{Quadratic Residues}` 移出本单元 · 理由：branch2 没有实质修改；§7 导读属于第 4 批。
+
+## 第 4 批（§7）
+
+### §7 Quadratic Residues
+
+- 单元 sec:quadratic-residues · 类型：回滚 · 改了什么：采用 branch2 在 §7 标题后新增的导读，只把 UTF-8 撇号改回 ASCII（Euler's），“the later sections”改为“the later subsections” · 理由：导读已对照 §7 各小节核对（根的求法在 §7.6–§7.8，二次代数在 §7.9，Gauss 和在 §7.10–§7.11，都是 §7 内的小节）；全文用 ASCII 字符。
+- 单元 def:7.1.1 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
+- 单元 thm:7.1.2 · 类型：冲突处理 · 改了什么：取 branch1 的安排：多项式根的替代证明留在本定理之后（标题“via polynomial roots”），Wilson 配对的替代证明移到 thm:7.2.1 之后；采用 branch2 补的“(Theorem~\ref{thm:6.2.1})”；按约定在本单元末尾加一句指引：“A further alternative proof of Theorem~\ref{thm:7.1.2}, via Wilson's theorem, appears after Theorem~\ref{thm:7.2.1}.” · 理由：两边都把 Wilson 配对证明移到 thm:7.2.1 附近，分歧只在多项式根证明放在 remark 之后还是直接跟在定理后，以及标题写法；按 branch1。指引句对应 branch2 remark@7250 的第二句。
+- 单元 remark@7250 · 类型：回滚 · 改了什么：remark 环境不保留；第二句改写为 thm:7.1.2 末尾的指引句（见上条）；branch2 跟在 remark 后面的多项式根替代证明与终稿 thm:7.1.2 中 branch1 的版本只差标题（“via polynomial root counts”），不重复收入 · 理由：终稿没有 remark 环境；替代证明的位置和标题按 branch1。
+- 单元 def:7.2.1 · 类型：回滚 · 改了什么：branch2 只有描述性 label、`\index` 和 `\legs`，不搬入 · 理由：见约定。
+- 单元 thm:7.2.1 · 类型：冲突处理 · 改了什么：取 branch1（主证明末尾补出由单一同余式和 Wilson 定理推出 $a^{(p-1)/2}\equiv\leg{a}{p}$ 的最后一步；从 thm:7.1.2 移来的替代证明，标题“via Wilson's theorem”）；另采用 branch2 在该替代证明中补的“(Theorem~\ref{thm:3.3.4})”；branch2 的标题“via Wilson pairing”和 `\legs` 未采用 · 理由：两边改的位置基本不重叠；标题按 branch1。
+- 单元 thm:7.2.2 · 类型：冲突处理 · 改了什么：取 branch1（替代证明标题“via the squaring map”）；branch2 只在标题里多加逗号并重新折行 · 理由：branch2 没有实质修改。
+- 单元 thm:7.2.3 · 类型：冲突处理 · 改了什么：取 branch1（陈述开头“Let $p$ be an odd prime. Modulo $p$, …”，替代证明标题“via counting”）；branch2 的替代证明标题“via products of residue and non-residue sets”未采用 · 理由：标题按 branch1。
+- 单元 thm:7.2.4 · 类型：冲突处理 · 改了什么：融合两边：取 branch1 新增的两个替代证明（via Wilson's and Fermat's theorems；via orbits of $x\mapsto\pm x^{\pm1}$）；采用 branch2 在主证明中补的“(Theorem~\ref{thm:7.1.2})” · 理由：两边改的位置不重叠。
+- 单元 thm:7.2.5 · 类型：冲突处理 · 改了什么：取 branch1；branch2 只有描述性 label、`\index` 和 `\legs` · 理由：branch2 没有实质修改。
+- 单元 thm:7.3.1 · 类型：冲突处理 · 改了什么：取 branch1 的记号：Gauss 引理中的计数仍记作 $\mu$，保留 branch1 加的说明“(the letter $\mu$ here denotes this count, not the M{\"o}bius function of Definition~\ref{def:5.3.6})”和“least positive residue”；branch2 把它改名为 $N_{-}$ 未采用；采用 branch2 补的“(Theorem~\ref{thm:7.1.2})” · 理由：两边都是为了避免与 M{\"o}bius 函数 $\mu$ 混淆，branch1 用说明、branch2 用改名，作用相同；取 branch1 时 thm:7.3.2 和 thm:7.5.1 的格点替代证明（“the number $\mu$ in Gauss's lemma”）不必跟着改。Notation at a Glance 因此不收 branch2 的 $N_{-}$ 一行（见 progress.md）。
+- 单元 thm:7.3.2 · 类型：回滚 · 改了什么：采用 branch2 在证明末尾行间公式加的 `\qedhere`；branch2 随 thm:7.3.1 把 $\mu$ 改成的 $N_{-}$、描述性 label、`\index` 和 `\legs` 未采用 · 理由：记号按 thm:7.3.1 的处理；其余见约定。
+- 单元 def:7.3.1 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
+- 单元 thm:7.3.4 · 类型：冲突处理 · 改了什么：取 branch1；branch2 只有描述性 label、`\index` 和 `\legs` · 理由：branch2 没有实质修改。
+- 单元 thm:7.4.1 · 类型：冲突处理 · 改了什么：取 branch1（证明末尾补的说明：所用同余式就是 Theorem~\ref{thm:3.5.9}(b) 模 $p$ 的约化）；branch2 在行间公式末尾加的 `\qedhere` 不采用 · 理由：branch1 在该公式之后加了一段文字，证明不再以行间公式结尾，`\qedhere` 已不适用。
+- 单元 thm:7.4.2 · 类型：回滚 · 改了什么：本单元两边都没改；branch2 在其后加的 remark@7684（$-1$ 模 $p$ 的平方根公式 $\pm\big(\tfrac{p-1}{2}\big)!$，以及 $p\equiv5\pmod8$ 时的 $\pm2^{(p-1)/4}$）原样写成本单元证明之后的普通段落 · 理由：终稿没有 remark 环境；内容已核对：$p\equiv5\pmod8$ 时 $2$ 是非剩余，$\big(2^{(p-1)/4}\big)^2=2^{(p-1)/2}\equiv-1$，且 Theorem~\ref{thm:7.6.8} 中 $a=1$ 时 $c\equiv2b^2=2^{(p-1)/4}$。
+- 单元 remark@7684 · 类型：回滚 · 改了什么：remark 环境不保留，文字作为 thm:7.4.2 证明之后的段落（见上条）· 理由：终稿没有 remark 环境。
+- 单元 thm:7.4.3 · 类型：冲突处理 · 改了什么：融合两边：取 branch1 新增的替代证明（via the multiplication rules）；采用 branch2 补的“(Theorem~\ref{thm:7.1.2})”；`\legs` 不采用 · 理由：两边改的位置不重叠。
+- 单元 thm:7.5.1 · 类型：冲突处理 · 改了什么：取 branch1（两个替代证明留在本定理之后，标题“via half-systems”“via lattice points”，半系证明里改用 Theorem~\ref{thm:7.4.1}）；branch2 把这两个替代证明移到 remark@7794 之后、标题改为“via half-system products”“via a lattice-point involution”未采用；branch2 在主证明中加的 TikZ 格点图（`fig:quadratic-reciprocity-lattice`，$p=7$, $q=11$）及指向它的“(see Figure~… for the case $p=7$, $q=11$)”未采用；行内 `\tfrac`、`\legs` 未采用；按约定在本单元末尾加指引：“A further alternative proof of Theorem~\ref{thm:7.5.1}, via Gauss sums in finite fields, appears after Theorem~\ref{thm:7.10.3}, once its algebraic tools have been introduced.” · 理由：终稿导言区没有 tikz，图无法编译（是否加图留给作者，见 progress.md）；替代证明的位置和标题按 branch1；指引句对应 remark@7794 的内容。
+- 单元 remark@7794 · 类型：回滚 · 改了什么：remark 环境和 `\hyperref[proof:qr-gauss-sums]` 不保留，改写为 thm:7.5.1 末尾的指引句（见上条）；remark 后面的两个替代证明与终稿 thm:7.5.1 中 branch1 的版本相比只差标题，半系证明中 branch2 仍用 Wilson 定理直接推出 $\big(\big(\tfrac{q-1}{2}\big)!\big)^{2}\equiv(-1)^{(q+1)/2}$（branch1 改为引用 Theorem~\ref{thm:7.4.1}），格点证明中把 $\mu$ 写作 $N_{-}$；都取 branch1 · 理由：终稿没有 remark 环境；记号见 thm:7.3.1。
+- 单元 thm:7.5.2 · 类型：冲突处理 · 改了什么：取 branch1（“upper argument”，新增 (e) 的 Gauss 引理替代证明）；branch2 只有行内 `\tfrac` 和 `\legs` · 理由：branch2 没有实质修改。
+- 单元 thm:7.5.3 · 类型：回滚 · 改了什么：采用 branch2 补的“by Theorem~\ref{thm:7.2.4}”；`\legs` 不采用 · 理由：见约定。
+- 单元 thm:7.5.4 · 类型：回滚 · 改了什么：采用 branch2 补的理由“so $q \nmid 2n+1$ (otherwise $q \mid 4N-(2n+1)^2 = 3$)”（这是使用 Theorem~\ref{thm:7.5.2} 所需的条件）和“by Theorem~\ref{thm:7.5.2}”；`\legs` 不采用 · 理由：见约定。
+- 单元 def:7.6.1 · 类型：冲突处理 · 改了什么：取 branch1；branch2 只有描述性 label、`\index` 和 `\legs` · 理由：branch2 没有实质修改。
+- 单元 thm:7.6.1 · 类型：回滚 · 改了什么：branch2 只有 `\legs` 和行内 `\tfrac`，不采用 · 理由：见约定（`\legs` 不在终稿导言区中；行内 `\tfrac` 无排版差别）。
+- 单元 thm:7.6.2 · 类型：冲突处理 · 改了什么：取 branch1（陈述中的括号说明改短为“(By Theorem~\ref{thm:7.6.1}(b), $\leg{a}{n}=\pm1$ already implies $\gcd(a,n)=1$; for $\gcd(a,n)>1$, the Jacobi symbol is $0$.)”，(b) 写明“the converse implication, that … fails”）；另采用 branch2 在证明末尾补的“counted with multiplicity (for instance a single non-residue factor raised to an even power, as in …)”，其中 `\legs` 改为 `\leg`（$\leg{2}{9}=\leg{2}{3}^{2}=1$）· 理由：两边改的位置不重叠；branch2 的补充说明了偶数个 $-1$ 因子可以来自同一个素因子的偶次幂。
+- 单元 remark@8087 · 类型：回滚 · 改了什么：branch2 把 thm:7.6.2 陈述中的括号说明移成定理与证明之间的 remark；终稿按 branch1 把这段说明改短留在陈述里（见上条），remark 不保留；branch2 归在这个单元里的 thm:7.6.2 的证明见上条 · 理由：两边对同一段说明处理不同，取 branch1；终稿没有 remark 环境。
+- 单元 thm:7.6.3 · 类型：回滚 · 改了什么：采用 branch2 的位置调整：把陈述之后关于算法效率的一段（“The formula uses no factorization …”）移到证明之后，作普通段落（文字不变，branch2 写成 remark@8206）；branch2 对证明末句的改写（“This also covers the case $t=0$, where the partition is empty (which includes $n=1$).”）与 `\legs` 未采用 · 理由：这一段是说明而不是陈述的一部分；末句改写只是措辞。
+- 单元 remark@8206 · 类型：回滚 · 改了什么：remark 环境不保留，文字作为 thm:7.6.3 证明之后的段落（见上条）· 理由：终稿没有 remark 环境。
+- 单元 def:7.6.2 · 类型：回滚 · 改了什么：branch2 只有描述性 label、`\index` 和 `\legs`，不搬入 · 理由：见约定。
+- 单元 thm:7.6.4 · 类型：冲突处理 · 改了什么：取 branch1（陈述改为“For every $a,n\in\mathbb{Z}$”，新增上变元的乘法性及其例外与证明，“constant rule”“sign rule”）；另采用 branch2 补的“(Theorem~\ref{thm:2.3.3})”；branch2 新增的 example@8274（两个 Kronecker 符号算例）写成本单元证明之后的普通段落；branch2 新增的 proposition `prop:kronecker-decomposition` 不采用（见该条）· 理由：两边改的位置不重叠；算例已按 Definition~\ref{def:7.6.2} 核对：$\leg{5}{2}=-1$（$5\equiv-3\pmod8$），$\leg{5}{12}=(-1)^2\leg{5}{3}=-1$；$\leg{-3}{-1}=-1$，$\leg{-3}{2}=-1$（$-3\equiv5\pmod8$），$\leg{-3}{-8}=(-1)(-1)^3=1$。
+- 单元 prop:kronecker-decomposition · 类型：回滚 · 改了什么：不采用 branch2 新增的 proposition（$n=\varepsilon2^em$ 时 $\leg{a}{n}=\leg{a}{\varepsilon}\leg{a}{2}^{e}\leg{a}{m}$）· 理由：不能新增带编号环境；其内容是 Definition~\ref{def:7.6.2} 与 Theorem~\ref{thm:7.6.4}（下变元完全乘法性、奇数下变元时与 Jacobi 符号一致）的直接组合，终稿 thm:7.6.4 已含这两点；后面的算例段落直接按定义计算，不依赖它。
+- 单元 example@8274 · 类型：回滚 · 改了什么：example 环境不保留，文字作为 thm:7.6.4 证明之后的段落（`\legs` 改为 `\leg`，“For an even denominator, … For a negative denominator, …”合成一句“For example, …, and …”）· 理由：终稿没有 example 环境。
+- 单元 thm:7.6.5 · 类型：回滚 · 改了什么：采用 branch2 补的“(Theorem~\ref{thm:7.1.2})”；`\legs` 不采用 · 理由：见约定。
+- 单元 thm:7.6.6 · 类型：回滚 · 改了什么：采用 branch2 补的“(Theorem~\ref{thm:7.2.5})”；`\legs` 不采用 · 理由：见约定。
+- 单元 thm:7.6.7 · 类型：冲突处理 · 改了什么：取 branch1（“$z\in\mathbb{Z}$”“$a\in\mathbb{Z}$”）；另采用 branch2 的修正：陈述与证明中终止下标的界由 $J\le s$ 改为 $J\le s-1$、$M_J\ge0$ 改为 $M_J\ge1$，补“(Theorem~\ref{thm:6.2.6})”和“(Theorem~\ref{thm:7.1.2})”；branch2 在 thm:7.6.8 之前新增的 remark@8365（如何找非剩余 $z$）改写为本单元末尾的普通段落 · 理由：两边改的位置不重叠；界已核对：$M_0=s$，每步 $M_{j+1}=i_j<M_j$ 且 $i_j\ge1$，而 $M_j=1$ 迫使 $t_j=1$，所以 $J\le s-1$、$M_J\ge1$。
+- 单元 remark@8365 · 类型：回滚 · 改了什么：remark 环境和小标题“\textit{Finding the non-residue.}”不保留，文字改写为 thm:7.6.7 末尾的段落，首句改为“To find the non-residue $z$, test candidates with Euler's criterion: the value $z^{(p-1)/2}\equiv-1\pmod{p}$ identifies a non-residue.”，其余原样 · 理由：终稿没有 remark 环境；改写只为让段落与上文衔接。
+- 单元 thm:7.6.8 · 类型：回滚 · 改了什么：branch2 只有描述性 label、`\index` 和 `\legs`，不搬入 · 理由：见约定。
+- 单元 def:7.7.1 · 类型：冲突处理 · 改了什么：取 branch1；branch2 只加了描述性 label 和 `\index` · 理由：branch2 没有实质修改。
+- 单元 def:7.7.2 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
+- 单元 thm:7.7.1 · 类型：冲突处理 · 改了什么：融合两边：取 branch1 对陈述的修改（“let $a\in\mathbb{Z}$ with $\gcd(a,p)=1$”，(d) 改为“it depends on $n$ only through $d=\gcd(n,p-1)$”）；采用 branch2 对证明的改写（“which is solvable if and only if $d \mid c$ (Theorem~\ref{thm:3.2.3}), in which case it has exactly $d$ solutions $y$ modulo $p-1$”）；branch2 的行内 `\tfrac` 未采用 · 理由：两边改的位置不重叠；行内 `\tfrac` 无排版差别。
+- 单元 def:7.7.3 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
+- 单元 def:7.7.4 · 类型：冲突处理 · 改了什么：取 branch1；branch2 只加了描述性 label 和 `\index` · 理由：branch2 没有实质修改。
+- 单元 def:7.7.5 · 类型：回滚 · 改了什么：branch2 只有描述性 label、`\index` 和 `\legs`，不搬入 · 理由：见约定。
+- 单元 thm:7.7.3 · 类型：回滚 · 改了什么：branch2 只把 `\leg` 改成 `\legs`，不采用 · 理由：见约定。
+- 单元 thm:7.7.4 · 类型：回滚 · 改了什么：同上 · 理由：见约定。
+- 单元 thm:7.7.7 · 类型：冲突处理 · 改了什么：取 branch1（$k\ge2$ 放宽为 $k\ge1$）；branch2 只有行内 `\tfrac` · 理由：无排版差别。
+- 单元 thm:7.8.2 · 类型：冲突处理 · 改了什么：取 branch1（补“$r\ge0$”）；branch2 只有 `\pmod{4}` 和重新缩进 · 理由：branch2 没有实质修改。
+- 单元 thm:7.8.4 · 类型：冲突处理 · 改了什么：融合两边：取 branch1（(c) 中把根的同余式写成 $x^{\varphi(p^e)/2}\equiv1$，替代证明标题“via the structure of $\ZmodUnits{2^e}$”）；采用 branch2 补的“$t\ge0$”；branch2 的 `\pmod` 加括号、`\legs` 和重新缩进未采用 · 理由：两边改的位置不重叠；“$t\ge0$”与 branch1 在 thm:7.8.2 补的“$r\ge0$”同类（允许 $m$ 是 $2$ 的幂）。
+- 单元 def:7.9.1 · 类型：冲突处理 · 改了什么：取 branch1（删去定义末尾“When $n=p$ is an odd prime with $p\nmid d$, the algebra is the field … and it is isomorphic to $\mathbb{F}_p\times\mathbb{F}_p$ …”一句）；branch2 对同一句的措辞修改（When→If）与 `\legs` 未采用 · 理由：branch1 删掉的是定义里未加证明的断言；$\leg{d}{p}=-1$ 时是域由 Theorem~\ref{thm:7.9.1}(a) 证明。
+- 单元 thm:7.9.1 · 类型：回滚 · 改了什么：branch2 只把 `\leg` 改成 `\legs`，不采用 · 理由：见约定。
+- 单元 thm:7.9.2 · 类型：回滚 · 改了什么：采用 branch2 补的“(Theorem~\ref{thm:7.1.2})”；描述性 label、`\index` 和 `\legs` 不搬入 · 理由：见约定。
+- 单元 thm:7.9.3 · 类型：回滚 · 改了什么：branch2 只把 `\leg` 改成 `\legs`，不采用 · 理由：见约定。
+- 单元 thm:7.9.4 · 类型：冲突处理 · 改了什么：取 branch1；branch2 只有描述性 label、`\index` 和 `\legs` · 理由：branch2 没有实质修改。
+- 单元 thm:7.9.5 · 类型：回滚 · 改了什么：branch2 只把 `\leg` 改成 `\legs`，不采用 · 理由：见约定。
+- 单元 def:7.10.1 · 类型：回滚 · 改了什么：采用 branch2 改的 §7.10 标题“The Quadratic Gauss Sum and Reciprocity”；描述性 label 和 `\index` 不搬入 · 理由：本小节含二次互反律借助 Gauss 和的替代证明（thm:7.10.3 之后），新标题与内容相符。
+- 单元 thm:7.10.1 · 类型：回滚 · 改了什么：采用 branch2 在证明末尾行间公式加的 `\qedhere`；`\legs` 不采用 · 理由：见约定。
+- 单元 thm:7.10.2 · 类型：回滚 · 改了什么：branch2 只把 `\leg` 改成 `\legs`，不采用 · 理由：见约定。
+- 单元 thm:7.10.3 · 类型：冲突处理 · 改了什么：取 branch1（$\mathbb{F}_p$，求和指标由 $m$ 改为 $r$，替代证明标题“via Gauss sums in finite fields”及其中的断句，Canceling）；另采用 branch2 的两处改写：“since $P^{2}=I$, we also have $F^{4}=I$”，以及把“Hence $\mathbb{C}^{p}$ has a basis of eigenvectors of $F$”改为“Each nonzero $\pi_\omega(v)$ is an eigenvector, and the sum identity shows that these eigenvectors span $\mathbb{C}^{p}$. Selecting a basis from this spanning set gives an eigenbasis of $F$.”；branch2 的替代证明标题“via Gauss sums”、行内 `\tfrac`、`\legs`、Cancelling 未采用 · 理由：两边改的位置不重叠；branch2 的改写补出了特征基存在的理由。
+- 单元 def:7.11.1 · 类型：冲突处理 · 改了什么：取 branch1；branch2 只加了描述性 label 和 `\index` · 理由：branch2 没有实质修改。
+- 单元 thm:7.11.1 · 类型：回滚 · 改了什么：branch2 只有描述性 label、`\index` 和 `\legs`，不搬入 · 理由：见约定。
+- 单元 thm:7.11.2 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
+- 单元 def:7.11.2 · 类型：冲突处理 · 改了什么：取 branch1；branch2 只有描述性 label、`\index` 和 `\legs` · 理由：branch2 没有实质修改。
+- 单元 thm:7.11.3 · 类型：回滚 · 改了什么：采用 branch2 对证明的两处补充：写明把 $|\mathcal{G}(\chi)|^2$ 展开成 $s,t\in\mathbb{F}_p^{\times}$ 上 $\chi(s)\bar\chi(t)\zeta_p^{\,s-t}$ 的二重和再令 $s=tu$，以及“Orthogonality (Theorem~\ref{thm:7.11.2}) gives $\sum_{u\ne1}\chi(u)=-1$, so $|\mathcal{G}(\chi)|^2=(p-1)+1=p$.”；描述性 label、`\index` 和 `\legs` 不搬入 · 理由：补充已核对（$\chi(tu)\bar\chi(t)=\chi(u)$，内层和在 $u=1$ 时为 $p-1$，否则为 $-1$）。
+- 单元 def:7.11.3 · 类型：回滚 · 改了什么：branch2 只加了描述性 label 和 `\index`，不搬入 · 理由：见约定。
+- 单元 thm:7.11.4 · 类型：回滚 · 改了什么：采用 branch2 补的“(Theorem~\ref{thm:7.11.2})”和对零项的说明“at $x=0$ and $x=1$ both sides vanish, since $\chi(0)=\lambda(0)=0$ for the nonprincipal $\chi,\lambda$”；描述性 label 和 `\index` 不搬入 · 理由：见约定；说明已核对。
+- 单元 thm:7.11.5 · 类型：冲突处理 · 改了什么：取 branch1（“let $g$ be a primitive root modulo $p$”，`\clearpage`）；branch2 在本单元的改动只是 §8 导读使 `\section{Quadratic Representations of Integers}` 标题归入该导读单元（第 5 批处理）· 理由：branch2 对本单元没有实质修改。
