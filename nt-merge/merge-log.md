@@ -613,3 +613,21 @@
 - 单元 thm:2.1.x、thm:2.3.7、thm:2.6.x、def:3.2.4、thm:3.3.3、thm:3.5.1、thm:3.5.10、thm:3.5.11、thm:4.2.7、thm:4.9.1、thm:5.1.2、def:5.3.2、thm:5.7.4、thm:6.2.6、thm:8.6.6、thm:10.5.1、thm:11.3.4 · 类型：自行优化 · 改了什么：英文润色（ernie 第五部分中确属改进的约 20 条）：去掉教师口吻、补明指代、调整冠词与语序、“$\tau(n)$ and $\sigma(n)$”改为“$\tau$ and $\sigma$”、thm:3.5.11 陈述改为按 $p\mid n$ 分情形的写法（内容不变）等；其余属措辞偏好的条目未改 · 理由：作者决定润色。
 - 单元 （全书源码）· 类型：自行优化 · 改了什么：裸 `\pmod x` 加括号（86 处）；`\ne`→`\neq`（22 处）；行首空格缩进改为 tab（976 行）；连续空行合并（12 处）；超过 120 字符的行在空格处折行（394 行；含 `\label`/`\index` 的环境首行不折）。数学模式内的空格写法未统一（改动风险大于收益）· 理由：作者决定统一源码风格；以上均不改变排版。
 - 单元 thm:8.1.11、thm:9.1.10、thm:9.1.11、thm:4.9.1、thm:2.3.7、thm:4.2.7 · 类型：自行优化 · 改了什么：只受上面全书源码与润色改动影响（`\pmod` 括号、折行、空行等），文字无实质变化 · 理由：同上。
+
+## 作者意见：正文不再前向引用
+
+作者决定正文（§1 起）不保留指向后文的引用：定义中提到的、由后面定理保证的事实，改由那个定理自己说；跨度大的旁注改放到后一处作回指。前置部分（Introduction、Notation、符号表）的指路引用保留。改后用脚本核对，§1 起已无指向后文的 `\ref`。
+
+- 单元 def:3.2.1 · 类型：自行优化 · 改了什么：删去“Any two inverses … (Theorem~\ref{thm:3.2.2}); thus …”，改为“thus $a^{-1}$ denotes any one inverse of $a$ modulo $n$”；thm:3.2.2 证明末句改为“Thus $a^{-1}\pmod{n}$ in Definition 3.2.1, which denotes any one inverse, is determined modulo $n$.” · 理由：作者决定；记号约定（疑难复核所定）不变，只是“模 $n$ 确定”改由定理说明。
+- 单元 thm:3.2.2 · 类型：自行优化 · 改了什么：见上条 · 理由：同上。
+- 单元 def:3.5.2 · 类型：自行优化 · 改了什么：删去“their basic properties are collected in Theorem 3.5.10 below” · 理由：Theorem 3.5.10 紧随其后，本身即陈述这些性质。
+- 单元 def:4.5.1、thm:4.5.1 · 类型：自行优化 · 改了什么：定义中删去说明约定用途的一句（指向 Theorem 4.5.1(c)、4.5.5(b)）；thm:4.5.1(c) 补“with the convention $v_p(0)=+\infty$ of Definition 4.5.1, this also holds when $a+b=0$”（thm:4.5.5(b) 原已有同类说明）· 理由：作者决定。
+- 单元 def:6.6.3、thm:6.6.1 · 类型：自行优化 · 改了什么：定义中删去“its uniqueness up to isomorphism is Theorem 6.6.1 below”；thm:6.6.1 陈述补“in particular, the group $C_n$ of Definition 6.6.3 is determined up to isomorphism” · 理由：同上。
+- 单元 thm:7.2.4 · 类型：自行优化 · 改了什么：第一个替代证明中删去“(this is Theorem 7.4.2 below)” · 理由：同上。
+- 单元 def:10.8.1、thm:10.8.1 · 类型：自行优化 · 改了什么：定义中删去“This area is independent of the chosen lattice basis (Theorem 10.8.1)”；thm:10.8.1 陈述补“Hence the covolume $d(\Lambda)$ of Definition 10.8.1 does not depend on the chosen basis” · 理由：同上。
+- 单元 def:12.3.1 · 类型：自行优化 · 改了什么：删去“whose existence is proved in Theorem 12.3.4(a)”（thm:12.3.4(a) 原已陈述 $D(G)$ 存在）· 理由：同上。
+- 单元 def:1.2.4 · 类型：自行优化 · 改了什么：删去“(see also Theorem 4.3.1(g))”（最小值可取到已就地证明）· 理由：同上。
+- 单元 thm:5.3.4 · 类型：自行优化 · 改了什么：证明后段落不再借用 §6.6 的陪集概念（原引 Definition 6.6.4），改写为“the shifts fixing it are exactly the multiples of $d$ … so its rotations by $0,1,\ldots,d-1$ places are distinct and are all of its rotations” · 理由：同上；内容不变。
+- 单元 def:6.6.4 · 类型：自行优化 · 改了什么：删去指向 Theorem 8.1.8 的例外说明；该例外已在 thm:8.1.8 证明后的段落中回指 Definition 6.6.4 说明 · 理由：同上。
+- 单元 thm:7.4.2、thm:7.6.8 · 类型：自行优化 · 改了什么：thm:7.4.2 后段落删去“This is also the value of $c$ in Atkin's algorithm (Theorem 7.6.8) when $a=1$”；改在 thm:7.6.8 证明之后加“For $a=1$, the element $c$ above is $2\cdot2^{(p-5)/4}=2^{(p-1)/4}$, the square root of $-1$ noted after Theorem 7.4.2.” · 理由：同上；已核对 $c=2ab^2$、$b=(2a)^{(p-5)/8}$。
+- 单元 sec:orders-primitive-roots-and-multiplicativ · 类型：自行优化 · 改了什么：§6 导读删去“For group, subgroup, cyclic group, and element order, see Definitions 6.6.1--6.6.3.”（Notation 的 Algebraic vocabulary 已指出这些定义的位置）· 理由：同上。

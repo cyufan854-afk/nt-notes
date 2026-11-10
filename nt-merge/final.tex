@@ -282,7 +282,7 @@ functions and the division algorithm to control quotients and remainders.
 	For $x\in\mathbb{R}$, put $\lVert x\rVert=\min_{k\in\mathbb{Z}}|x-k|$. The minimum is attained:
 	$|x-k|\ge\{x\}$ for $k\le\lfloor x\rfloor$ and $|x-k|\ge1-\{x\}$ for $k\ge\lfloor x\rfloor+1$,
 	with equality at $k=\lfloor x\rfloor$ and $k=\lfloor x\rfloor+1$, so $\lVert
-	x\rVert=\min\{\{x\},1-\{x\}\}$ (see also Theorem~\ref{thm:4.3.1}(g)).
+	x\rVert=\min\{\{x\},1-\{x\}\}$.
 \end{definition}
 \begin{theorem}[division algorithm]\label{thm:1.2.1}\index{division algorithm@Division algorithm}
 	Given integers $a,b$ with $b>0$, there exist unique integers $q,r\in\mathbb{Z}$ with $0\le r<b$ such that $a=qb+r$.
@@ -1073,9 +1073,7 @@ theorem lead to exponent reduction, binomial congruences, and polynomial root bo
 		\mathbb{Z}^+$ and $a \in \mathbb{Z}$. If
 	$au \equiv 1 \pmod{n}$ for some $u \in \mathbb{Z}$, we call such a $u$ an inverse of $a$ modulo
 	$n$, denoted $a^{-1} \pmod{n}$ (or simply $a^{-1}$ when
-	$n$ is clear from context). Any two inverses of $a$ modulo $n$ are
-	congruent modulo $n$ (Theorem~\ref{thm:3.2.2}); thus $a^{-1}$ denotes
-	any one of them and is determined modulo $n$.
+	$n$ is clear from context); thus $a^{-1}$ denotes any one inverse of $a$ modulo $n$.
 	The case $n=1$ is included: since $1\mid au-1$ for all integers $a,u$,
 	every integer is an inverse of every integer modulo $1$.
 \end{definition}
@@ -1098,8 +1096,8 @@ theorem lead to exponent reduction, binomial congruences, and polynomial root bo
 
 \begin{proof} If $x_1, x_2$ are both inverses of $a$,
 	then $x_1 \equiv x_1 a x_2 \equiv x_2 \pmod{n}$, so any two inverses are congruent modulo $n$.
-	Thus the notation $a^{-1} \pmod{n}$ in Definition~\ref{def:3.2.1} is
-	unambiguous modulo $n$.
+	Thus $a^{-1} \pmod{n}$ in Definition~\ref{def:3.2.1}, which denotes any one inverse, is
+	determined modulo $n$.
 \end{proof}
 \begin{theorem}[linear congruence theorem]\label{thm:3.2.3}\index{linear congruence theorem@Linear congruence theorem} Let $m \in \mathbb{Z}^+$ and $a, b \in \mathbb{Z}$. The congruence $ax \equiv
 		b \pmod{m}$ has a solution if and only if $\gcd(a, m) \mid b$. In that case, put $d=\gcd(a,m)$;
@@ -1827,7 +1825,7 @@ we have $p\nmid a$.
 
 	Equality is coefficientwise; no convergence of numerical series is required.
 	The same definitions with coefficients in $\mathbb{Q}$ or $\mathbb{C}$ give the rings
-	$\mathbb{Q}[[x]]$ and $\mathbb{C}[[x]]$; their basic properties are collected in Theorem~\ref{thm:3.5.10} below.
+	$\mathbb{Q}[[x]]$ and $\mathbb{C}[[x]]$.
 \end{definition}
 \begin{theorem}[formal power series]\label{thm:3.5.10}\index{formal power series@Formal power series}
 	Let $R$ be one of the rings $\mathbb{Z}$, $\mathbb{Q}$, $\mathbb{C}$.
@@ -2633,9 +2631,6 @@ every $t\ge0$. Taking $L=i$ and $P=j-i$ proves the assertion.
 	$v_p(n)$ is the exponent of $p$ in the prime factorization of $|n|$;
 	equivalently, $v_p(n)$ is the largest integer $\alpha \ge 0$ with
 	$p^{\alpha} \mid n$. By convention, $v_p(0)=+\infty$, taken to be greater than every integer.
-	This convention allows the valuation inequalities (Theorems~\ref{thm:4.5.1}(c)
-	and~\ref{thm:4.5.5}(b)) to apply when a sum is zero; the power and quotient formulas below retain
-	the hypothesis that their inputs are nonzero.
 	If $p_1,p_2,\ldots,p_r$ are the distinct prime divisors of a nonzero
 	integer $n$, then the fundamental theorem of arithmetic (Theorem~\ref{thm:2.3.3}) gives
 	$|n|=\prod_{i=1}^{r}p_i^{v_{p_i}(n)}$ (for $n=\pm1$ we have $r=0$, and the empty product is $1$).
@@ -2647,8 +2642,8 @@ every $t\ge0$. Taking $L=i$ and $P=j-i$ proves the assertion.
 		\item For every $\alpha\in\mathbb{Z}_{\ge0}$, we have $v_p(a)=\alpha$ if and only if
 					$a=kp^{\alpha}$ for some $k\in\mathbb{Z}$ with $\gcd(k,p)=1$.
 		\item $v_p(ab) = v_p(a) + v_p(b)$.
-		\item $v_p(a + b) \ge \min\{v_p(a), v_p(b)\}$, with equality when
-					$v_p(a) \neq v_p(b)$.
+		\item $v_p(a + b) \ge \min\{v_p(a), v_p(b)\}$, with equality when $v_p(a) \neq v_p(b)$; with the convention $v_p(0)=+\infty$ of
+		      Definition~\ref{def:4.5.1}, this also holds when $a+b=0$.
 		\item $v_p(a^{k}) = k\, v_p(a)$ for every integer $k \ge 0$.
 	\end{enumerate}
 \end{theorem}
@@ -3906,11 +3901,9 @@ $2^{p}-1$ prime. As $3\nmid
 	gives $\varphi(r)=r\sum_{k\mid r}\mu(k)/k$. This proves all three formulas.
 \end{proof}
 
-For a word of least cyclic
-period $d$, the shifts fixing it form a subgroup of $(\mathbb{Z}_n,+)$.
-The $d$ cosets of this subgroup correspond to the distinct rotations
-(Definition~\ref{def:6.6.4}), since the shifts fixing the word are exactly the
-multiples of $d$, as shown in the proof above.
+For a word of least cyclic period $d$, the shifts fixing it are exactly the multiples of $d$, as
+shown in the proof above, so its rotations by $0,1,\ldots,d-1$ places are distinct and are all of
+its rotations.
 
 \begin{theorem}\label{thm:5.3.5} If $f$ and $g$ are multiplicative functions, then
 	$f*g$ is multiplicative.
@@ -4613,8 +4606,7 @@ gives
 \section{Orders, Primitive Roots, and Multiplicative Structure Modulo \texorpdfstring{$m$}{m}}
 
 Multiplication of residue classes leads to orders, primitive roots, and the structure of unit groups. This section
-connects these ideas with Carmichael functions, finite-field arguments, and primitive prime factors. For group,
-subgroup, cyclic group, and element order, see Definitions~\ref{def:6.6.1}--\ref{def:6.6.3}.
+connects these ideas with Carmichael functions, finite-field arguments, and primitive prime factors.
 
 \subsection{The Order of an Element; Period Lengths of Base-\texorpdfstring{$m$}{m} Expansions}\label{subsec:6.1}
 
@@ -5451,8 +5443,7 @@ admitting a primitive root, and choose
 	size of $\langle g\rangle$; when this size is finite, it is equivalently
 	the least positive integer $r$ with $g^r$ equal to the identity element. A group is cyclic if it is
 	generated by one element, and such an element is called a generator.
-	For $n\in\mathbb{Z}^+$, the symbol $C_n$ denotes a cyclic group of order $n$;
-	its uniqueness up to isomorphism is Theorem~\ref{thm:6.6.1} below.
+	For $n\in\mathbb{Z}^+$, the symbol $C_n$ denotes a cyclic group of order $n$.
 	A direct product of groups has componentwise multiplication; the empty
 	direct product is the one-element group.
 	In particular, $\mathbb{Z}_n$ is a cyclic group under addition,
@@ -5463,7 +5454,8 @@ admitting a primitive root, and choose
 	positive $r$ with $a^r\equiv1\pmod{n}$.
 \end{definition}
 \begin{theorem}[uniqueness of $C_n$]\label{thm:6.6.1}\index{uniqueness of c n@Uniqueness of \ensuremath{C_n}}
-	Let $n\in\mathbb{Z}^+$. Any two cyclic groups of order $n$ are isomorphic.
+	Let $n\in\mathbb{Z}^+$. Any two cyclic groups of order $n$ are isomorphic; in particular, the group
+	$C_n$ of Definition~\ref{def:6.6.3} is determined up to isomorphism.
 \end{theorem}
 
 \begin{proof} If $g$ and $h$ generate cyclic
@@ -5481,9 +5473,7 @@ admitting a primitive root, and choose
 	A commutative ring with identity is a set whose addition makes it an
 	abelian group, and whose multiplication is associative, commutative,
 	distributive over addition, and has an identity $1$.
-	This is the sense in which the word ring is used throughout, with
-	one exception: the proof of Theorem~\ref{thm:8.1.8} uses quaternions and $2 \times 2$
-	complex matrices, whose multiplication is not commutative.
+	This is the sense in which the word ring is used throughout.
 	The same terminology as for groups is used for rings, with a
 	homomorphism required
 	to preserve addition, multiplication, and $1$. For a ring homomorphism, the kernel is the preimage
@@ -6992,8 +6982,7 @@ Wilson's theorem (Theorem~\ref{thm:3.3.4}) with the two cases of
 	\[
 		-1\equiv(p-1)!\equiv\prod_{k=1}^{h}k(p-k)\equiv(-1)^{h}(h!)^{2}=(h!)^{2}\pmod{p},
 	\]
-	so $x=h!$ solves $x^{2}\equiv-1\pmod{p}$ (this is
-	Theorem~\ref{thm:7.4.2} below).
+	so $x=h!$ solves $x^{2}\equiv-1\pmod{p}$.
 
 	Conversely, suppose $p\equiv3\pmod{4}$, say $p=4m+3$ with
 	$m\in\mathbb{Z}$, and suppose some $x$ satisfies $x^{2}\equiv-1\pmod{p}$.
@@ -7316,8 +7305,7 @@ when $p \mid a$ both sides are congruent to $0
 For every prime $p\equiv1\pmod{4}$, the two square roots of $-1$ modulo $p$
 are $\pm\big(\tfrac{p-1}{2}\big)!$. When $p\equiv5\pmod{8}$, another
 formula is $\pm2^{(p-1)/4}$: its square is $2^{(p-1)/2}\equiv-1\pmod{p}$
-by the second supplementary law. This is also the value of $c$ in
-Atkin's algorithm (Theorem~\ref{thm:7.6.8}) when $a=1$.
+by the second supplementary law.
 
 \begin{theorem}\label{thm:7.4.3}
 	For a prime $p \equiv 3 \pmod{4}$, we have
@@ -8110,6 +8098,10 @@ $1/2$.
 			c}{2}\,(c^2 - 2c + 1) \equiv \tfrac{a c}{2}\,(-2c) \equiv -a\,c^2
 		\equiv a \pmod{p}$.
 \end{proof}
+
+For $a=1$, the element $c$ above is $2\cdot2^{(p-5)/4}=2^{(p-1)/4}$, the square root of $-1$
+noted after Theorem~\ref{thm:7.4.2}.
+
 \subsection{Higher Power Residues, Roots of Unity, and the Power-Residue Symbol}
 
 \begin{definition}[$n$-th power residue]\label{def:7.7.1}\index{power residues@Power residues}
@@ -12905,8 +12897,7 @@ perspective, connecting Diophantine questions with area and convexity.
 		\{t_1e_1+t_2e_2\mid 0\le t_1,t_2<1\},
 	\]
 	and its area $d(\Lambda)=|\det(e_1,e_2)|$ is called the covolume of
-	$\Lambda$. This area is independent of the chosen lattice basis
-	(Theorem~\ref{thm:10.8.1}). When no lattice
+	$\Lambda$. When no lattice
 	is specified, a lattice point means a point of $\mathbb{Z}^2$. A lattice
 	path is a polygonal path whose vertices are lattice points, and a lattice
 	polygon is a polygon whose vertices are lattice points; it is simple if
@@ -12917,7 +12908,8 @@ perspective, connecting Diophantine questions with area and convexity.
 \begin{theorem}[covolume]\label{thm:10.8.1}\index{covolume@Covolume}
 	Let $\Lambda=\mathbb{Z}e_1+\mathbb{Z}e_2$ be a planar lattice. If $(f_1,f_2)$ is
 	another pair of linearly independent vectors generating $\Lambda$, then
-	$|\det(f_1,f_2)|=|\det(e_1,e_2)|$.
+	$|\det(f_1,f_2)|=|\det(e_1,e_2)|$. Hence the covolume $d(\Lambda)$ of Definition~\ref{def:10.8.1} does
+	not depend on the chosen basis.
 \end{theorem}
 
 \begin{proof} If $(f_1,f_2)$ is
@@ -13712,8 +13704,7 @@ multiplicity). The base case $n = 1$ is trivial, and the
 	$n - 1$ available ones. The sum is then $k\not\equiv0\pmod{n}$.
 \end{proof}
 \begin{definition}[Davenport constant]\label{def:12.3.1}\index{davenport constant@Davenport constant} For a finite abelian group
-	$G$, written additively, the Davenport constant $D(G)$, whose existence is proved in
-	Theorem~\ref{thm:12.3.4}(a), is the least
+	$G$, written additively, the Davenport constant $D(G)$ is the least
 	positive integer $\ell$ such that every sequence $g_1, \ldots,
 		g_\ell$ of $\ell$ elements of $G$ has a nonempty subsequence whose
 	sum is $0$.
